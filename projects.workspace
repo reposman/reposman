@@ -303,11 +303,12 @@ g:source = g:gh1/
 g:mirror = g:gr1/
 
 [gm_scripts]
+name = gm-scripts
 checkout = ./firefox/gm_scripts
 g:local = g:local/
-g:source = g:ufd/gmscripts
+g:source = g:ufd/
 g:mirrors_1 = g:sf-zrepos/
-g:mirrors_2 = g:asm/gmscripts
+g:mirrors_2 = g:asm/
 
 [babebase]
 checkout = ./perl/urlrule
