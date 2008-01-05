@@ -209,8 +209,8 @@ sub get_repo {
 	my %r;
 	$project = {'s:local'=>'s:local/','s:source'=>'s:source/'} unless($project);
 	my ($name,$new_target) = parse_query($query_name);
-    $r{shortname} = $name;
-	$r{name} = $project->{name} ? $project->{name} : $project->{shortname};
+    $r{shortname} = $name ? $name : $project->{shortname};
+	$r{name} = $project->{name} ? $project->{name} : $r{shortname};
 	foreach(qw/user email author username type checkout/) {
 		$r{$_} = $project->{$_} ? $project->{$_} : $CONFIG{$_};
 	}
