@@ -82,6 +82,7 @@ name = zprofiles/homebase
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
+g:mirrors_1 = g:sf-zrepos/
 
 [drawing]
 name = eotect/drawing
@@ -160,6 +161,7 @@ name = vcsplace/reposman
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
+g:mirrors_1 = g:sf-zrepos/
 
 [sf-sync]
 name = vcsplace/sf-sync
@@ -173,6 +175,7 @@ checkout = .
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
+g:mirrors_1 = g:sf-zrepos/
 
 ;zcodebase
 [vb6]
@@ -256,12 +259,14 @@ name = zscripts/perl
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
+g:mirrors_1 = g:sf-zrepos/
 
 [shellscript]
 name = zscripts/sh
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
+g:mirrors_1 = g:sf-zrepos/
 
 [batch]
 name = zscripts/batch
@@ -275,6 +280,7 @@ checkout = ./perl/modules/MyPlace
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
+g:mirrors_1 = g:sf-zrepos/
 
 [badluck]
 g:local = g:local/
@@ -302,26 +308,25 @@ g:local = g:local/
 g:source = g:gh1/
 g:mirror = g:gr1/
 
-[gm_scripts]
-name = gm-scripts
+[gm-scripts]
 checkout = ./firefox/gm_scripts
 g:local = g:local/
-g:source = g:ufd/
+g:source = g:asm/
 g:mirrors_1 = g:sf-zrepos/
-g:mirrors_2 = g:asm/
+g:mirrors_2 = g:ufd/
 
 [babebase]
 checkout = ./perl/urlrule
 g:local = g:local/
-g:source = g:ufd/
+g:source = g:asm/
 g:mirrors_1 = g:sf-zrepos/
-g:mirrors_2 = g:asm/
+g:mirrors_2 = g:ufd/
 
 [gsbridge]
 g:local = g:local/
-g:source = g:ufd/
+g:source = g:asm/
 g:mirrors_1 = g:sf-zrepos/
-g:mirrors_2 = g:asm/
+g:mirrors_2 = g:ufd/
 
 [htmlscripts]
 name = zwebdev/htmlscripts
