@@ -297,10 +297,34 @@ g:local = g:local/
 g:source = g:gh1/
 g:mirror = g:gr1/
 
+;USB Disk Booting System
 [usys]
+name = usys/usys
+checkout = usys/usys
 g:local = g:local/
-g:source = g:gh1/
-g:mirror = g:gr1/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[xrdos]
+name = usys/xrdos
+checkout = usys/xrdos
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[toolbox]
+name = usys/toolbox
+checkout = usys/toolbox
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[sysbuilder]
+name = usys/sysbuilder
+checkout = usys/sysbuilder
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
 
 [websaver2]
 checkout = ./firefox/extensions/websaver2@myplace.hell
