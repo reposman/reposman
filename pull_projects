@@ -1,0 +1,216 @@
+#!/usr/bin/perl -w
+# $Id$
+use strict;
+require v5.10.0;
+our $VERSION = 'v0.1';
+
+my %OPTS;
+my @OPTIONS = qw/help|h|? manual|m test|t/;
+if(@ARGV)
+{
+    require Getopt::Long;
+    Getopt::Long::GetOptions(\%OPTS,@OPTIONS);
+}
+if($OPTS{help}) {
+    require Pod::Usage;
+    Pod::Usage::pod2usage(-exitval=>0,-verbose => 1);
+    exit 0;
+}
+elsif($OPTS{manual}) {
+    require Pod::Usage;
+    Pod::Usage::pod2usage(-exitval=>0,-verbose => 2);
+    exit 0;
+}
+
+
+my $gc = "googlecode.com/svn";
+my $gh = "git\@github.com:eotect";
+
+sub get_repo {
+    my ($name,$gcname,$gitname,$gcsubname,$target,$user) = @_;
+    $gcname = $name unless($gcname);
+    $gitname = $name unless($gitname);
+    $target = $name unless($target);
+    $user = 'xiaoranzzz' unless($user);
+    my %r;
+    $r{name} = $name;
+    if($gcsubname) {
+        $r{google} = "https://$gcname.$gc/$gcsubname";
+    }
+    else {
+        $r{google} = "https://$gcname.$gc";
+    }
+    $r{github} = "$gh/$gitname.git";
+    $r{target} = $target;
+    $r{user} = $user;
+    $r{email} = "$user\@gmail.com";
+    return \%r;
+}
+
+
+sub clone_repo {
+    my $repo = shift;
+    unless(run(qw/git svn clone -A/,$repo->{user} . ".txt","-s",$repo->{google},$repo->{target})) {
+        die "Error while pulling $repo->{name}, ABORT!\n";
+    }
+}
+
+sub update_repo {
+    my $repo = shift;
+    run(qw/git config user.name/,$repo->{user}) or die("Error while git config\n");
+    run(qw/git config user.email/,$repo->{email}) or die("Error while git config\n");
+    run(qw/git remote add github/,$repo->{github}) or die("Error while git remote add\n");
+    run(qw/git fetch --all/) or die("Error while git fetch\n");
+    run(qw/git branch -av/) or die("Error while git branch\n");
+}
+
+my $F_TEST = $OPTS{test};
+
+sub run {
+    print join(" ",@_),"\n";
+    return 1 if($F_TEST);
+    return system(@_) == 0;
+}
+
+
+use Cwd qw/getcwd/;
+
+my $PROGRAM_DIR = $0;
+$PROGRAM_DIR =~ s/[^\/\\]+$//;
+
+my %project;
+my %sub_project;
+
+sub parse_project {
+    foreach(@_) {
+        chomp;
+        next if(m/^\s*#/);
+        my @data = (split(/\s*\|\s*/,$_),'','','','','','','');
+        next unless($data[0]);
+        if($data[4] =~ m/.+\/.+/) {
+            $project{$data[0]} = [@data[1,2,3,4.5]];
+        }
+        else {
+            $sub_project{$data[0]} = [@data[1,2,3,4,5]];
+        }
+    }
+}
+
+my $PROJECT_FILE;
+foreach my $fn (".PROJECTS","$PROGRAM_DIR/.PROJECTS","~/git-svn/.PROJECTS") {
+    if(-f $fn) {
+        $PROJECT_FILE = $fn;
+        last;
+    }
+}
+
+if(-f $PROJECT_FILE) {
+    print STDERR "Reading projects from \"$PROJECT_FILE\"\n";
+    open FI,"<".$PROJECT_FILE;
+    parse_project(<FI>);
+    close FI;
+}
+else {
+    print STDERR "Input projects data line by line\n";
+    print STDERR "Separate filed by | :\n";
+    print STDERR "name|google_name|github_name|google_subname|target_dir|username\n";
+    print STDERR "---- ----------- ----------- -------------- ---------- --------\n";
+    parse_project(<STDIN>);
+}
+
+
+if(@ARGV) {
+    if( ($ARGV[0] eq '-t') or ($ARGV[0] eq '--test') ) {
+       $F_TEST = 1; 
+       shift @ARGV;
+    }
+}
+my $cwd = getcwd();
+my @pname = @ARGV ? @ARGV : (keys %project,keys %sub_project);
+
+my $idx = 0;
+my $count = @pname;
+
+print STDERR "$count projects read\n";
+
+foreach my $name (@pname) {
+    $idx++;
+    print "[$idx/$count] Pulling project [$name]...\n";
+    my $pdata = $project{$name} ? $project{$name} : $sub_project{$name};
+    my $repo = get_repo($name,@{$pdata});
+    clone_repo($repo) or die("Error while clone repo\n");
+    unless($F_TEST) {
+        chdir($repo->{target}) or die("$!\n");
+    }
+    update_repo($repo) or die("Error while update repo\n");
+    unless($F_TEST) {
+        chdir($cwd) or die("$!\n");
+    }        
+    print "\n";
+}
+
+exit 0;
+
+__END__
+
+=pod
+
+=head1  NAME
+
+git-svn-pull-projects - PERL script
+
+=head1  SYNOPSIS
+
+git-svn-pull-projects [options] [project_name] ...
+
+    git-svn-pull-projects -t firefox perl
+    git-svn-pull-projects -t
+
+=head1  OPTIONS
+
+=over 12
+
+=item B<-t>,B<--test>
+
+Testing mode.
+
+=item B<-h>,B<--help>
+
+Print a brief help message and exits.
+
+=item B<--manual>,B<--man>
+
+View application manual
+
+=back
+
+=head1  FILES
+
+=item B<./.PROJECTS>
+
+Default projects definition file, one line a project, 
+echo field separated by |.
+
+=back
+
+=head1 PROJECTS FILE FORMAT
+
+name           |googlecode         |github     |sub name   |target     |user
+
+=head1  DESCRIPTION
+
+git-svn projects manager
+
+=head1  CHANGELOG
+
+    2010-11-01  xiaoranzzz  <xiaoranzzz@myplace.hell>
+        
+        * file created.
+
+=head1  AUTHOR
+
+xiaoranzzz <xiaoranzzz@myplace.hell>
+
+=cut
+
+#       vim:filetype=perl
