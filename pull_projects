@@ -5,7 +5,7 @@ require v5.10.0;
 our $VERSION = 'v0.1';
 
 my %OPTS;
-my @OPTIONS = qw/help|h|? manual|m test|t/;
+my @OPTIONS = qw/help|h|? manual|m test|t dump dump-config dump-data/;
 if(@ARGV)
 {
     require Getopt::Long;
@@ -23,24 +23,75 @@ elsif($OPTS{manual}) {
 }
 
 
-my $gc = "googlecode.com/svn";
-my $gh = "git\@github.com:eotect";
+my %CONFIG;
+$CONFIG{svn} = "https://#1.googlecode.com/svn/#2";
+$CONFIG{git} = "git\@github.com:#1/#2.git";
+$CONFIG{user} = 'eotect';
+my %MACRO;
 
-sub get_repo {
-    my ($name,$gcname,$gitname,$gcsubname,$target,$user) = @_;
-    $gcname = $name unless($gcname);
-    $gitname = $name unless($gitname);
-    $target = $name unless($target);
-    $user = 'xiaoranzzz' unless($user);
-    my %r;
-    $r{name} = $name;
-    if($gcsubname) {
-        $r{google} = "https://$gcname.$gc/$gcsubname";
+my %project;
+my %sub_project;
+sub parse_project {
+    foreach(@_) {
+        chomp;
+        #print "[1]",$_,"\n";
+        foreach my $v_name (keys %MACRO) {
+            s/#$v_name#/$MACRO{$v_name}/g;
+        }
+        #print "[2]",$_,"\n";
+        if(m/^\s*#([^#]+)#\s*=\s*(.+?)\s*$/) {
+            my $name = $1;
+            my $value = $2;
+            next unless($value);
+            if($name =~ m/^(?:user|svn|git)$/) {
+                $CONFIG{$name} = $value;
+                print STDERR "config: $name = $value\n";
+            }
+            $MACRO{$name} = $value;
+            next;
+        }
+        elsif(m/^\s*#/) {
+            next;
+        }
+        my @data = (split(/\s*\|\s*/,$_),'','','','','','','');
+        next unless($data[0]);
+        if($data[3] =~ m/.+\/.+/) {
+            $project{$data[0]} = [@data[1,2,3,4]];
+        }
+        else {
+            $sub_project{$data[0]} = [@data[1,2,3,4]];
+        }
+    }
+}
+
+sub translate_url {
+    my $url = shift;
+    my $path = shift;
+    if($path =~ m/^([^\/]+)\/(.+)$/) {
+        my $a = $1;
+        my $b = $2;
+        $url =~ s/#1/$a/g;
+        $url =~ s/#2/$b/g;
     }
     else {
-        $r{google} = "https://$gcname.$gc";
+        $url =~ s/#1/$path/g;
+        $url =~ s/#2//g;
     }
-    $r{github} = "$gh/$gitname.git";
+    $url =~ s/\/+$//;
+    return $url;
+}
+
+
+sub get_repo {
+    my ($name,$svn_name,$git_name,$target,$user) = @_;
+    $svn_name = $name unless($svn_name);
+    $git_name = $name unless($git_name);
+    $target = $name unless($target);
+    $user = $CONFIG{user} unless($user);
+    my %r;
+    $r{name} = $name;
+    $r{svn} = translate_url($CONFIG{svn},$svn_name);
+    $r{git} = translate_url($CONFIG{git},$git_name);
     $r{target} = $target;
     $r{user} = $user;
     $r{email} = "$user\@gmail.com";
@@ -50,18 +101,32 @@ sub get_repo {
 
 sub clone_repo {
     my $repo = shift;
-    unless(run(qw/git svn clone -A/,$repo->{user} . ".txt","-s",$repo->{google},$repo->{target})) {
-        die "Error while pulling $repo->{name}, ABORT!\n";
+    my $user_file = $repo->{user} . ".txt";
+    if(! -f $user_file) {
+        open FO,">",$user_file;
+        print FO $repo->{user}," = ",$repo->{user}," <$repo->{user}\@gmail.com>\n";
+        close FO;
+    }
+    unless(run(qw/git svn clone -A/,$user_file,"-s",$repo->{svn},$repo->{target})) {
+        die "fatal: while pulling $repo->{name}, ABORT!\n";
     }
 }
 
 sub update_repo {
     my $repo = shift;
-    run(qw/git config user.name/,$repo->{user}) or die("Error while git config\n");
-    run(qw/git config user.email/,$repo->{email}) or die("Error while git config\n");
-    run(qw/git remote add github/,$repo->{github}) or die("Error while git remote add\n");
-    run(qw/git fetch --all/) or die("Error while git fetch\n");
-    run(qw/git branch -av/) or die("Error while git branch\n");
+    run(qw/git config user.name/,$repo->{user}) or die("fatal: while git config\n");
+    run(qw/git config user.email/,$repo->{email}) or die("fatal: while git config\n");
+    my $url = $repo->{git};
+    my $repo_name;
+    if($url =~ m/\@([^.]+)\./) {
+        $repo_name = $1;
+    }
+    else {
+        $repo_name = 'git_remote';
+    }
+    run(qw/git remote add/,$repo_name,$repo->{git}) or die("fatal: while git remote add\n");
+    run(qw/git fetch --all/) or die("fatal: while git fetch\n");
+    run(qw/git branch -av/) or die("fatal: while git branch\n");
 }
 
 my $F_TEST = $OPTS{test};
@@ -78,71 +143,95 @@ use Cwd qw/getcwd/;
 my $PROGRAM_DIR = $0;
 $PROGRAM_DIR =~ s/[^\/\\]+$//;
 
-my %project;
-my %sub_project;
 
-sub parse_project {
-    foreach(@_) {
-        chomp;
-        next if(m/^\s*#/);
-        my @data = (split(/\s*\|\s*/,$_),'','','','','','','');
-        next unless($data[0]);
-        if($data[4] =~ m/.+\/.+/) {
-            $project{$data[0]} = [@data[1,2,3,4.5]];
-        }
-        else {
-            $sub_project{$data[0]} = [@data[1,2,3,4,5]];
-        }
-    }
-}
-
+my $cwd = getcwd();
+my $QUERY_NAME=shift;
 my $PROJECT_FILE;
+
 foreach my $fn (".PROJECTS","$PROGRAM_DIR/.PROJECTS","~/git-svn/.PROJECTS") {
     if(-f $fn) {
         $PROJECT_FILE = $fn;
         last;
     }
 }
-
-if(-f $PROJECT_FILE) {
-    print STDERR "Reading projects from \"$PROJECT_FILE\"\n";
-    open FI,"<".$PROJECT_FILE;
-    parse_project(<FI>);
-    close FI;
-}
-else {
-    print STDERR "Input projects data line by line\n";
-    print STDERR "Separate filed by | :\n";
-    print STDERR "name|google_name|github_name|google_subname|target_dir|username\n";
-    print STDERR "---- ----------- ----------- -------------- ---------- --------\n";
-    parse_project(<STDIN>);
-}
-
-
-if(@ARGV) {
-    if( ($ARGV[0] eq '-t') or ($ARGV[0] eq '--test') ) {
-       $F_TEST = 1; 
-       shift @ARGV;
+if($PROJECT_FILE) {
+    if(-f $PROJECT_FILE) {
+        print STDERR "read: \"$PROJECT_FILE\"\n";
+        open FI,"<".$PROJECT_FILE;
+        parse_project(<FI>);
+        close FI;
     }
 }
-my $cwd = getcwd();
-my @pname = @ARGV ? @ARGV : (keys %project,keys %sub_project);
+
+if(not (@ARGV or $PROJECT_FILE)) {
+    print STDERR "input projects data line by line\n";
+    print STDERR "separate fields by \"|\".\n";
+    print STDERR "name|svn_name|git_name|target_dir|username\n";
+    print STDERR "----|--------|--------|----------|--------\n";
+    parse_project(<STDIN>);
+}
+if(@ARGV) {
+    my @pdata = (@ARGV,'','','','','','');
+    if($pdata[2] =~ m/[\/\\]/) {
+        $sub_project{$QUERY_NAME} = [@pdata];
+    }
+    else {
+        $project{$QUERY_NAME} = [@pdata];
+    }
+}
+
+
+my $total = scalar(keys %project) + scalar(keys %sub_project);
+print STDERR "read: $total", $total > 1 ? " projects" : " project", "\n";
+
+
+if($OPTS{'dump'}) {
+    $OPTS{'dump-config'} = 1;
+    $OPTS{'dump-data'} = 1;
+}
+
+if($OPTS{'dump-config'}) {
+    use Data::Dumper;
+    print Data::Dumper->Dump([\%CONFIG],["*CONFIG"]);
+}
+
+if($OPTS{'dump-data'}) {
+    use Data::Dumper;
+    my @query = $QUERY_NAME ? ($QUERY_NAME) : (keys %project,keys %sub_project);
+    foreach my $name (@query) {
+        my $pdata = $project{$name} ? $project{$name} : $sub_project{$name};
+        my $repo = get_repo($name,@{$pdata});
+        print Data::Dumper->Dump([$repo],["*$name"]);
+    }
+}
+if($OPTS{'dump-config'} or $OPTS{'dump-data'}) {
+    exit 0;
+}
+
 
 my $idx = 0;
-my $count = @pname;
+my @query = $QUERY_NAME ? ($QUERY_NAME) : (keys %project,keys %sub_project);
+my $count = $QUERY_NAME ? 1 : $total;
+print STDERR "pulling $count ", $count > 1 ? "projects" : "project", " ...\n";
 
-print STDERR "$count projects read\n";
 
-foreach my $name (@pname) {
+
+
+foreach my $name (@query) {
     $idx++;
-    print "[$idx/$count] Pulling project [$name]...\n";
+    print "[$idx/$count] pulling project [$name]...\n";
     my $pdata = $project{$name} ? $project{$name} : $sub_project{$name};
     my $repo = get_repo($name,@{$pdata});
-    clone_repo($repo) or die("Error while clone repo\n");
+    unless($F_TEST or -d $repo->{target}) {
+        if(system("mkdir","-p",$repo->{target}) != 0) {
+            die("fatal: while create directory " . $repo->{target});
+        }
+    }
+    clone_repo($repo) or die("fatal: while clone repo\n");
     unless($F_TEST) {
         chdir($repo->{target}) or die("$!\n");
     }
-    update_repo($repo) or die("Error while update repo\n");
+    update_repo($repo) or die("fatal: while update repo\n");
     unless($F_TEST) {
         chdir($cwd) or die("$!\n");
     }        
@@ -161,9 +250,8 @@ git-svn-pull-projects - PERL script
 
 =head1  SYNOPSIS
 
-git-svn-pull-projects [options] [project_name] ...
-
-    git-svn-pull-projects -t firefox perl
+git-svn-pull-projects [options] [project_name] [svn_name] [git_name] [target_dir] [user]
+    git-svn-pull-projects -t firefox 
     git-svn-pull-projects -t
 
 =head1  OPTIONS
@@ -173,6 +261,18 @@ git-svn-pull-projects [options] [project_name] ...
 =item B<-t>,B<--test>
 
 Testing mode.
+
+=item B<--dump>
+
+Dump CONFIG and DATA
+
+=item B<--dump-config>
+
+Dump CONFIG
+
+=item B<--dump-data>
+
+Dump DATA
 
 =item B<-h>,B<--help>
 
@@ -195,7 +295,7 @@ echo field separated by |.
 
 =head1 PROJECTS FILE FORMAT
 
-name           |googlecode         |github     |sub name   |target     |user
+name    |svn_name   |git_name   |target |user
 
 =head1  DESCRIPTION
 

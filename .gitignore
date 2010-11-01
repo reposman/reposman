@@ -1,6 +1,15 @@
-.gitignore
-*/
 emuos
 eotect.txt
 googlecode.txt
 xiaoranzzz.txt
+drawing/
+ebook/
+firefox/
+git/
+perl/
+projects/
+shellscript/
+text/
+usys/
+vb6/
+www/

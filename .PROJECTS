@@ -1,16 +1,21 @@
-#name           |googlecode         |github     |sub name   |target     |user
-perl            |xrzperl            |           |           |           |eotect
-shellscript     |xrzshellscript     |           |           |           |       
-text            |ztext              |           |           |           |
-usys            |zusys              |           |           |           |
-vb6             |xrzvb6             |           |           |           |
-freebasic       |zfreebasic         |           |           |           |
-ebook           |zebook
-firefox         |xrzworkspace       |           |firefox    |           |eotect
-batch           |xrzworkspace       |           |batch
-c               |xrzworkspace       |           |c
-cpp             |xrzworkspace       |           |cpp
-drawing         |xrzworkspace       |           |drawing
-badluck         |                   |           |           |perl/backluck
-nightgun        |                   |           |           |perl/nightgun
-websaver2       |                   |           |           |firefox/websaver2        
+#user#=xiaoranzzz
+#svn#=
+#u#=eotect
+#git#=git@github.com:#u#/#1.git
+#p#=xrzworkspace
+#name           |googlecode         |github     |target              |user
+perl            |xrzperl            |           |                    |eotect
+shellscript     |xrzshellscript     |           |                    |       
+text            |ztext              |           |                    |
+usys            |zusys              |           |                    |
+vb6             |xrzvb6             |           |                    |
+freebasic       |zfreebasic         |           |                    |
+ebook           |zebook             |           |                    |
+firefox         |#p#/firefox        |           |                    |eotect
+batch           |#p#/batch          |           |                    | 
+c               |#p#/c              |           |                    | 
+cpp             |#p#/cpp            |           |                    |
+drawing         |#p#/drawing        |           |                    |
+badluck         |                   |           |perl/backluck       |
+nightgun        |                   |           |perl/nightgun       |
+websaver2       |                   |           |firefox/websaver2   |        
