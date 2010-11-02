@@ -1,0 +1,18 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[svn-remote "svn"]
+	url = https://gsbridge.googlecode.com/svn
+	fetch = trunk:refs/remotes/trunk
+	branches = branches/*:refs/remotes/*
+	tags = tags/*:refs/remotes/tags/*
+[svn]
+	authorsfile = /myplace/workspace/authors.txt
+[remote "github"]
+	url = git@github.com:eotect/gsbridge.git
+	fetch = +refs/heads/*:refs/remotes/github/*
+[remote "gitorious"]
+	url = git@gitorious.org:eotect/gsbridge.git
+	fetch = +refs/heads/*:refs/remotes/gitorious/*

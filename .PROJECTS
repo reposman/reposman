@@ -1,17 +1,18 @@
-#user#=xiaoranzzz
-#svn#=
+#authors#=authors
+#user
 #u#=eotect
-#git#=git@github.com:#u#/#1.git
+#git:github#=git@github.com:#u#/#1.git
+#git:gitorious#=git@gitorious.org:#u#/#1.git
 #p#=xrzworkspace
 #name           |googlecode         |github     |target              |user
-perl            |xrzperl            |           |                    |eotect
+perl            |xrzperl            |           |                    |
 shellscript     |xrzshellscript     |           |                    |       
 text            |ztext              |           |                    |
 usys            |zusys              |           |                    |
 vb6             |xrzvb6             |           |                    |
 freebasic       |zfreebasic         |           |                    |
 ebook           |zebook             |           |                    |
-firefox         |#p#/firefox        |           |                    |eotect
+firefox         |#p#/firefox        |           |                    |
 batch           |#p#/batch          |           |                    | 
 c               |#p#/c              |           |                    | 
 cpp             |#p#/cpp            |           |                    |
@@ -19,3 +20,4 @@ drawing         |#p#/drawing        |           |                    |
 badluck         |                   |           |perl/backluck       |
 nightgun        |                   |           |perl/nightgun       |
 websaver2       |                   |           |firefox/websaver2   |        
+libmyplace-perl |                   |           |perl/modules/MyPlace |

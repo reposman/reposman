@@ -1,3 +1,0 @@
-user1 = User1 Name<user1@gmail.com>
-user2 = User2 Name<user2@gmail.com>
-
