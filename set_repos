@@ -1,0 +1,44 @@
+#!/usr/bin/perl -w
+use strict;
+
+
+if(!@ARGV) {
+    die("usage: $0 project_dir [project_name]\n");
+}
+
+
+my $OLDNAME='gsbridge';
+my $repos_data;
+
+sub set_repos {
+    my $dst = shift;
+    my $name = shift;
+    if(!$name) {
+        $name = $dst;
+        $name =~ s/\/+$//;
+        $name =~ s/^.+\///;
+    }
+    open FO,">","$dst/.repos" or return("can't write to \"$dst/.repos\"");
+    my $new_data = $repos_data;
+    $new_data =~ s/$OLDNAME/$name/g;
+    print FO $new_data;
+    close FO;
+    return undef;
+}
+
+open FI,"<",".repos" or die("can't read .repos\n");
+$repos_data = join("",<FI>);
+close FI;
+
+foreach(@ARGV) {
+    print STDERR "creating .repos in $_...";
+    my $error = set_repos($_);
+    if(!$error) {
+        print STDERR "\t[ok]\n";
+        system('editor',"$_/.repos");
+        system('gsvn-init-repos','--dump',$_);
+    }
+    else {
+        print STDERR "\t[failed]\nfatal: $error\n";
+    }
+}
