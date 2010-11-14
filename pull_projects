@@ -122,7 +122,7 @@ sub clone_repo {
     }
     my @cmd = qw/git svn clone/;
     push @cmd,'-A',$user_file if(-f $user_file);
-    push @cmd,"--username",$repo->{user} if($repo->{user});
+    #push @cmd,"--username",$repo->{user} if($repo->{user});
 
     unless(run(@cmd,"-s",$repo->{svn},$repo->{target})) {
         die "fatal: while pulling $repo->{name}, ABORT!\n";
