@@ -87,7 +87,7 @@ sub translate_url {
 
 
 sub get_repo {
-    my ($name,$svn_name,$git_name,$target,$username,$email) = @_;
+    my ($name,$svn_name,$git_name,$target,$user,$username,$email) = @_;
     $svn_name = $name unless($svn_name);
     $git_name = $name unless($git_name);
     $target = $name unless($target);
@@ -105,6 +105,7 @@ sub get_repo {
         }
     }
     $r{target} = $target;
+    $r{user} = $user ? $user : $CONFIG{user};
     $r{username} = $username;
     $r{email} = $email;
     return \%r;
@@ -119,7 +120,11 @@ sub clone_repo {
         print FO "$repo->{user} = $repo->{username} <$repo->{email}>\n";
         close FO;
     }
-    unless(run(qw/git svn clone -A/,$user_file,"-s",$repo->{svn},$repo->{target})) {
+    my @cmd = qw/git svn clone/;
+    push @cmd,'-A',$user_file if(-f $user_file);
+    push @cmd,"--username",$repo->{user} if($repo->{user});
+
+    unless(run(@cmd,"-s",$repo->{svn},$repo->{target})) {
         die "fatal: while pulling $repo->{name}, ABORT!\n";
     }
 }

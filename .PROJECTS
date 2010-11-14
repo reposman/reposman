@@ -1,5 +1,5 @@
 #authors#=authors
-#user
+#user#=eotect
 #u#=eotect
 #git:github#=git@github.com:#u#/#1.git
 #git:gitorious#=git@gitorious.org:#u#/#1.git
