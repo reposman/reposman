@@ -17,7 +17,7 @@ batch           |#p#/batch          |           |                    |
 c               |#p#/c              |           |                    | 
 cpp             |#p#/cpp            |           |                    |
 drawing         |#p#/drawing        |           |                    |
-badluck         |                   |           |perl/backluck       |
+badluck         |                   |           |perl/badluck       |
 nightgun        |                   |           |perl/nightgun       |
 websaver2       |                   |           |firefox/websaver2   |        
 libmyplace-perl |                   |           |perl/modules/MyPlace |
