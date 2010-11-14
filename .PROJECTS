@@ -9,7 +9,7 @@
 #git:github#=git@github.com:#u#/#1.git
 #git:gitorious#=git@gitorious.org:#u#/#1.git
 #git:unfuddle#=git@#u#.unfuddle.com:#u#/#1.git
-#svn:unfuddle#=http://#u#.unfuddle.com/svn/#u#_#1.git
+#svn:unfuddle#=http://#u#.unfuddle.com/svn/#u#_#1
 #git:local#=/myplace/repos/#1.git
 #p#=xrzworkspace
 #name	|googlecode	|github	|target	|user
@@ -32,4 +32,5 @@ websaver2	|firefox/websaver2      |	| svn/websaver2 	    | git/websaver2 	      
 libmyplace-perl	|perl/modules/MyPlace   |	| svn/libmyplace-perl       | git/libmyplace-perl 	| git:gitorious/libmyplace-perl | git:local/libmyplace-perl 
 www	        |	                |	| svn/#p#/www 	            | git/www 	                | git:gitorious/www 	        | git:local/ 
 utils	        |	                |	| svn/zutils 	            | git/utils 	        | git:gitorious/utils 	        | git:local/ 
-gm_scripts	|firefox/gm_scripts	|	| svn:unfuddle/geasemonkey  | git:unfuddle/gmscripts 	|
+gm_scripts	|firefox/gm_scripts	|	| svn:unfuddle/geasemonkey  | git:unfuddle/gmscripts 	| git:local/
+

@@ -202,8 +202,8 @@ sub init_git_repo {
             $name = $url;
         }
     }
-    run(qw/git remote add/,$name,$url) 
-        or die("fatal: while git remote add [$name] $url\n");
+    run(qw/git remote add/,$name,$url); 
+#        or die("fatal: while git remote add [$name] $url\n");
     run(qw/git fetch/,$name) 
         or die("fatal: while git fetch $name\n");
     return 1;    
