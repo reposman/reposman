@@ -6,7 +6,7 @@ git.gitorious       =   git@gitorious.org:$user$/$name$.git
 svn.googlecode      =   https://$name$.googlecode.com/svn
 svn.googlecode2     =   https://$topname$.googlecode.com/svn/$name$
 user                =   Nahn Eotect <eotect$email$>
-authors.eotect      =   Nahn Eoetct <eotect$email$>
-authors.xiaoranzzz  =   xiaoranzzz <xiaoranzzz$email$>
 authors.(no author) =   Nahn Eotect <eotect$email$>
+authors.xiaoranzzz  =   Nahn Eotect <eotect$email$>
+authors.eotect      =   Nahn Eotect <eotect$email$>
 
