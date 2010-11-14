@@ -26,7 +26,7 @@ elsif($OPTS{manual}) {
 my %CONFIG;
 $CONFIG{svn} = "https://#1.googlecode.com/svn/#2";
 $CONFIG{'git:github'} = "git\@github.com:#1/#2.git";
-$CONFIG{'_git:gitorious'} = "git\@gitorious.org:#1/#2.git";
+$CONFIG{'git:gitorious'} = "git\@gitorious.org:#1/#2.git";
 $CONFIG{authors} = 'authors';
 my %MACRO;
 
@@ -51,19 +51,17 @@ sub parse_project {
             $MACRO{$name} = $value;
             next;
         }
-        elsif(m/^\s*#/) {
-            next;
-        }
         my @data = (split(/\s*\|\s*/,$_),'','','','','','','');
         foreach(@data) {
             s/^\s+|\s+$//;
         }
         next unless($data[0]);
-        if($data[3] =~ m/.+\/.+/) {
-            $project{$data[0]} = [@data[1,2,3,4]];
+        my $name = shift @data;
+        if($data[0] =~ m/.+\/.+/) {
+            $sub_project{$name} = \@data;
         }
         else {
-            $sub_project{$data[0]} = [@data[1,2,3,4]];
+            $project{$name} = \@data;
         }
     }
 }
@@ -85,8 +83,52 @@ sub translate_url {
     return $url;
 }
 
-
 sub get_repo {
+    my ($name,$target,$user,@repo_data) = @_;
+    my %r;
+    $r{name} = $name;
+    $r{target} = $target ? $target : $name;
+    $r{user} = $user ? $user : $CONFIG{user};
+    @repo_data = ("svn/$name","git/$name") unless(@repo_data);
+    foreach my $url (@repo_data) {
+        next unless($url);
+        if($url =~ m/^(svn|git):([^\/]+)\/(.*)$/i) {
+            my $template = $CONFIG{"$1:$2"} ? $CONFIG{"$1:$2"} : "$2/$3";
+            $url = translate_url($template,$3 ? $3 : $name);
+            push @{$r{$1}},$url;
+        }
+        elsif($url =~ m/^(svn|git)\/(.*)$/){
+            my $template = $CONFIG{$1} ? $CONFIG{$1} : "$2";
+            $url = translate_url($template,$2 ? $2 : $name);
+            push @{$r{$1}},$url;
+        }
+        elsif($url =~ m/^(svn|git):([^\/]+)$/i) {
+            push @{$r{$1}},$2;
+        }
+        else {
+            push @{$r{svn}},$url;
+        }
+    }
+    if($r{user} and $r{user} =~ m/(.+)\s+<([^\@]+\@[^\@]+)>\s*$/) {
+        $r{username} = $1;
+        $r{email} = $2;
+    }
+    $r{username} = $CONFIG{username} unless($r{username});
+    $r{email}   = $CONFIG{email} unless($r{email});
+    if($r{svn} and @{$r{svn}}) {
+        my @svns = @{$r{svn}};
+        $r{svn_main} = shift @svns;
+        $r{svn} = \@svns;
+    }
+    elsif($r{git} and @{$r{git}}) {
+        my @gits = @{$r{git}};
+        $r{git_main} = shift @gits;
+        $r{git} = \@gits;
+    }
+    return \%r;
+}
+
+sub get_repo_old {
     my ($name,$svn_name,$git_name,$target,$user,$username,$email) = @_;
     $svn_name = $name unless($svn_name);
     $git_name = $name unless($git_name);
@@ -114,19 +156,29 @@ sub get_repo {
 
 sub clone_repo {
     my $repo = shift;
-    my $user_file = $CONFIG{authors} . ".txt";
-    if(! -f $user_file) {
-        open FO,">",$user_file;
-        print FO "$repo->{user} = $repo->{username} <$repo->{email}>\n";
-        close FO;
+    my @cmd;
+    if($repo->{svn_main}) {
+        my $user_file = $CONFIG{authors} . ".txt";
+        if(! -f $user_file) {
+            open FO,">",$user_file;
+            print FO "$repo->{user} = $repo->{username} <$repo->{email}>\n";
+            close FO;
+        }
+        @cmd = qw/git svn clone/;
+        push @cmd,'-A',$user_file if(-f $user_file);
+        push @cmd,'-s',$repo->{svn_main};
     }
-    my @cmd = qw/git svn clone/;
-    push @cmd,'-A',$user_file if(-f $user_file);
-    #push @cmd,"--username",$repo->{user} if($repo->{user});
-
-    unless(run(@cmd,"-s",$repo->{svn},$repo->{target})) {
+    elsif($repo->{git_main}) {
+        @cmd = qw/git clone/;
+        push @cmd,$repo->{git_main};
+    }
+    else {
+        die("fatal: no main subversion or git repository found!\n");
+    }
+    unless(run(@cmd,$repo->{target})) {
         die "fatal: while pulling $repo->{name}, ABORT!\n";
     }
+    return 1;
 }
 
 sub init_svn_repo {
@@ -164,18 +216,16 @@ sub update_repo {
     if($repo->{email}) {
         run(qw/git config user.email/,$repo->{email}) or die("fatal: while git config\n");
     }
-    foreach my $host (keys %{$repo}) {
-        if($host =~ m/^svn:\s*(.+?)\s*$/) {
-            init_svn_repo($1,$repo->{$host})
-            or die("fatal: while init svn repo [$1] $repo->{$host}\n");
+    if($repo->{svn} and @{$repo->{svn}}) {
+        foreach my $host (@{$repo->{svn}}) {
+            init_svn_repo($1,$host)
+            or die("fatal: while init svn repo [$host]\n");
         }
-        elsif($host eq 'git') {
-            init_git_repo(undef,$repo->{$host})
-            or die("fatal: while init git repo $repo->{$host}\n");
-        }
-        if($host =~ m/^git:\s*(.+?)\s*$/) {
-            init_git_repo($1,$repo->{$host})
-            or die("fatal: while init git repo [$1] $repo->{$host}\n");
+    }
+    if($repo->{git} and @{$repo->{git}}) {
+        foreach my $host (@{$repo->{git}}) {
+            init_git_repo($1,$host)
+            or die("fatal: while init git repo [$host]\n");
         }
     }
     run(qw/git branch -av/) or die("fatal: while git branch\n");
