@@ -1,3 +1,1 @@
-eotect = Nahn Eoetct <eotect@gmail.com>
-xiaoranzzz = xiaoranzzz <xiaoranzzz@gmail.com>
-(no author) = Nahn Eotect <eotect@gmail.com>
+xiaoranzzz.txt
