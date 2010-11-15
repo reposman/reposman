@@ -192,8 +192,13 @@ sub init_svn_repo {
 sub init_git_repo {
     my ($name,$url) = @_;
     if(!$name) {
-        if($url =~ m/^git\@([^.]+)/) {
+        if($url =~ m/^\//) {
+            $name = "local";
+        }
+        elsif($url =~ m/^git\@([^:\/]+)/) {
             $name = $1;
+            $name =~ s/[^\.]+\.([^.]+\.[^\.]+)/$1/;
+            $name =~ s/\.(?:com|org|net)$//;
         }
         elsif($url =~ m/([^\/:]+)[\/:]/) {
             $name = $1;
@@ -273,12 +278,20 @@ if(not (@ARGV or $PROJECT_FILE)) {
     parse_project(<STDIN>);
 }
 if(@ARGV) {
-    my @pdata = (@ARGV,'','','','','','');
-    if($pdata[2] =~ m/[\/\\]/) {
-        $sub_project{$QUERY_NAME} = [@pdata];
+    if($sub_project{$QUERY_NAME} or $project{$QUERY_NAME}) {
+        my $pref = $sub_project{$QUERY_NAME} ? 
+                  \%sub_project : 
+                  \%project;
+        my @pdata = @{$pref->{$QUERY_NAME}};
+        while(@ARGV) {
+            my $new = shift @ARGV;
+            shift @pdata;
+            unshift @pdata,$new;
+        }
+        $pref->{$QUERY_NAME} = [@pdata];
     }
     else {
-        $project{$QUERY_NAME} = [@pdata];
+        $project{$QUERY_NAME} = [@ARGV];
     }
 }
 
