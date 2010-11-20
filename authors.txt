@@ -3,3 +3,4 @@ xiaoranzzz = Nahn Eotect <eotect@gmail.com>
 eotect = Nahn Eoetct <eotect@gmail.com>
 www-data = www-data <www-data@email.com>
 nahncm  = Coding Machine <nahncm@gmail.com>
+nahncm@gmail.com  = Coding Machine <nahncm@gmail.com>
