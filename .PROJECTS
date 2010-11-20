@@ -42,5 +42,5 @@ www	        |	                |	| svn/#p#/www 	            | git/www 	          
 utils	        |	                |	| svn/zutils 	            | git/utils 	        | git:gtr/utils 	        | git:local/ 
 gm-scripts	|firefox/gm_scripts	|#u_n#	| svn:pl/gm_scripts         | git:asm/                  | git:ufd/ 	        | git:local/
 babebase        |perl/urlrule           |#u_n#  | svn:pl/                  | git:asm/                  | git:ufd/                 | git:local/
-gsbridge        |                       |#u_n#  | svn:pl/                  | git:asm/                  | git:ufd/                 | git:local/
+gsbridge        |.                       |#u_n#  | svn:pl/                  | git:asm/                  | git:ufd/                 | git:local/
 
