@@ -159,11 +159,11 @@ sub clone_repo {
     my @cmd;
     if($repo->{svn_main}) {
         my $user_file = $CONFIG{authors} . ".txt";
-        if(! -f $user_file) {
-            open FO,">",$user_file;
-            print FO "$repo->{user} = $repo->{username} <$repo->{email}>\n";
-            close FO;
-        }
+#        if(! -f $user_file) {
+#            open FO,">",$user_file;
+#            print FO "$repo->{user} = $repo->{username} <$repo->{email}>\n";
+#            close FO;
+#        }
         @cmd = qw/git svn clone/;
         push @cmd,'-A',$user_file if(-f $user_file);
         push @cmd,'-s',$repo->{svn_main};

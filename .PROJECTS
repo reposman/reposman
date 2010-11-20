@@ -1,36 +1,46 @@
 #authors#=authors
 #user#=eotect
 #username#=Nahn Eotect
-#email#=#user#@gmail.com
+#mail#=@gmail.com
+#email#=#user##mail#
+#u_e#=Nahn Eotect <eotect#mail#>
+#u_n#=Coding Machine <nahncm#mail#>
 #u#=eotect
+#n#=nahncm
 #svn#=https://#1.googlecode.com/svn/#2
 #svn:gc#=https://#1.googlecode.com/svn/#2
+#svn:asm#=https://subversion.assembla.com/svn/#1/
+#svn:pl#=https://pl3.projectlocker.com/#n#/#1/svn
+#git:asm#=git@git.assembla.com:#1.git
 #git#=git@github.com:#u#/#1.git
-#git:github#=git@github.com:#u#/#1.git
-#git:gitorious#=git@gitorious.org:#u#/#1.git
-#git:unfuddle#=git@#u#.unfuddle.com:#u#/#1.git
-#svn:unfuddle#=http://#u#.unfuddle.com/svn/#u#_#1
+#git:ghb#=#git#
+#git:gtr#=git@gitorious.org:#u#/#1.git
+#git:ufd#=git@#n#.unfuddle.com:#n#/#1.git
+#svn:ufd#=http://#n#.unfuddle.com/svn/#n#_#1
 #git:local#=/myplace/repos/#1.git
+#svn:local#=file://myplace/repos/#1.svn
 #p#=xrzworkspace
 #name	|googlecode	|github	|target	|user
 #name	|target	|user	|repos1	|repos2                     
-perl	        |	                |	| svn/xrzperl 	            | git/perl 	                | git:gitorious/perl 	        | git:local/perl 
-shellscript	|	                |	| svn/xrzshellscript 	    | git/shellscript 	        | git:gitorious/shellscript 	| git:local/ 
-text	        |	                |	| svn/ztext 	            | git/text 	                | git:gitorious/text 	        | git:local/ 
-usys    	|	                |	| svn/zusys 	            | git/usys 	                | git:gitorious/usys 	        | git:local/ 
-vb6     	|	                |	| svn/xrzvb6 	            | git/vb6 	                | git:gitorious/vb6 	        | git:local/ 
-freebasic   	|	                |	| svn/zfreebasic 	    | git/freebasic 	        | git:gitorious/freebasic 	| git:local/ 
-ebook   	|	                |	| svn/zebook 	            | git/ebook 	        | git:gitorious/ebook 	        | git:local/ 
-firefox 	|	                |	| svn/#p#/firefox 	    | git/firefox 	        | git:gitorious/firefox 	| git:local/ 
-batch	        |	                |	| svn/#p#/batch 	    | git/batch 	        | git:gitorious/batch 	        | git:local/ 
-c	        |	                |	| svn/#p#/c 	            | git/c 	                | git:gitorious/c 	        | git:local/ 
-cpp	        |	                |	| svn/#p#/cpp 	            | git/cpp 	                | git:gitorious/cpp 	        | git:local/ 
-drawing	        |	                |	| svn/#p#/drawing 	    | git/drawing 	        | git:gitorious/drawing 	| git:local/ 
-badluck	        |perl/badluck           |	| svn/badluck 	            | git/badluck 	        | git:gitorious/badluck 	| git:local/ 
-nightgun	|perl/nightgun          |	| svn/nightgun 	            | git/nightgun 	        | git:gitorious/nightgun 	| git:local/ 
-websaver2	|firefox/websaver2      |	| svn/websaver2 	    | git/websaver2 	        | git:gitorious/websaver2 	| git:local/ 
-libmyplace-perl	|perl/modules/MyPlace   |	| svn/libmyplace-perl       | git/libmyplace-perl 	| git:gitorious/libmyplace-perl | git:local/libmyplace-perl 
-www	        |	                |	| svn/#p#/www 	            | git/www 	                | git:gitorious/www 	        | git:local/ 
-utils	        |	                |	| svn/zutils 	            | git/utils 	        | git:gitorious/utils 	        | git:local/ 
-gm_scripts	|firefox/gm_scripts	|	| svn:unfuddle/geasemonkey  | git:unfuddle/gmscripts 	| git:local/
+perl	        |	                |	| svn/xrzperl 	            | git/perl 	                | git:gtr/perl 	        | git:local/perl 
+shellscript	|	                |	| svn/xrzshellscript 	    | git/shellscript 	        | git:gtr/shellscript 	| git:local/ 
+text	        |	                |	| svn/ztext 	            | git/text 	                | git:gtr/text 	        | git:local/ 
+usys    	|	                |	| svn/zusys 	            | git/usys 	                | git:gtr/usys 	        | git:local/ 
+vb6     	|	                |	| svn/xrzvb6 	            | git/vb6 	                | git:gtr/vb6 	        | git:local/ 
+freebasic   	|	                |	| svn/zfreebasic 	    | git/freebasic 	        | git:gtr/freebasic 	| git:local/ 
+ebook   	|	                |	| svn/zebook 	            | git/ebook 	        | git:gtr/ebook 	        | git:local/ 
+firefox 	|	                |	| svn/ffprofile 	    | git/ffprofile 	        | git:gtr/ffprofile 	| git:local/ 
+batch	        |	                |	| svn/#p#/batch 	    | git/batch 	        | git:gtr/batch 	        | git:local/ 
+c	        |	                |	| svn/#p#/c 	            | git/c 	                | git:gtr/c 	        | git:local/ 
+cpp	        |	                |	| svn/#p#/cpp 	            | git/cpp 	                | git:gtr/cpp 	        | git:local/ 
+drawing	        |	                |	| svn/#p#/drawing 	    | git/drawing 	        | git:gtr/drawing 	| git:local/ 
+badluck	        |perl/badluck           |	| svn/badluck 	            | git/badluck 	        | git:gtr/badluck 	| git:local/ 
+nightgun	|perl/nightgun          |	| svn/nightgun 	            | git/nightgun 	        | git:gtr/nightgun 	| git:local/ 
+websaver2	|firefox/extensions/websaver2@myplace.hell      |	| svn/websaver2 	    | git/websaver2 	        | git:gtr/websaver2 	| git:local/ 
+libmyplace-perl	|perl/modules/MyPlace   |	| svn/                      | git/                   	| git:gtr/                 | git:local/
+www	        |	                |	| svn/#p#/www 	            | git/www 	                | git:gtr/www 	        | git:local/ 
+utils	        |	                |	| svn/zutils 	            | git/utils 	        | git:gtr/utils 	        | git:local/ 
+gm-scripts	|firefox/gm_scripts	|#u_n#	| svn:pl/gm_scripts         | git:asm/                  | git:ufd/ 	        | git:local/
+babebase        |perl/urlrule           |#u_n#  | svn:pl/                  | git:asm/                  | git:ufd/                 | git:local/
+gsbridge        |                       |#u_n#  | svn:pl/                  | git:asm/                  | git:ufd/                 | git:local/
 
