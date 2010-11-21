@@ -52,5 +52,6 @@ nahncm          |nahncm                 |#u_n#  | svn/nahncm                | gi
 r_babebase      |repos/babebase         |       | svn:repos/babebase        | git:repos1/babebase            | git:repos2/babebase
 r_gm_scripts      |repos/gm_scripts         |       | svn:repos/gm-scripts        | git:repos1/gm-scripts            | git:repos2/gm-scripts
 r_gsbridge      |repos/gsbridge         |       | svn:repos/gsbridge        | git:repos1/gsbridge            | git:repos2/gsbridge
-
+_empty          |repos/_empty  |     | svn:repos/_empty  |git:repos1/_empty |git:repos2_empty
+root          |repos/       |   | svn:repos/root  |git:repos1/root |git:repos2/root
 
