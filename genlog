@@ -11,8 +11,10 @@ $ENV{GIT_DIR}=$git_dir;
 my $name = $cwd;
 $name =~ s/\/+$//;
 $name =~ s/^.*\///;
+$name = uc($name);
+
 sub gen_log {
-    open FO,'>repo.log';
+    open FO,'>info';
     open FS,'>status';
     print FO "$name:\n\n";
     my %svn;
@@ -58,15 +60,17 @@ sub gen_log {
 
     chomp($svn{comment}) if($svn{comment});
     chomp($git{comment}) if($git{comment});
-    print FS "$name:\n";
-    print FS "SVN: r$svn{rev}, $svn{author}, $svn{comment}";
-    print FS "\n";
-    print FS "GIT: commit $git{commit}, $git{author}, $git{comment}";
+	if($svn{comment} eq $git{comment}) {
+	    print FS "$name [SVN] r$svn{rev} [GIT] commit $git{commit}: $git{comment}";
+	}
+	else {
+	    print FS "$name [SVN] r$svn{rev}: $svn{comment} [GIT] commit $git{commit}: $git{comment}";
+	}
     close FS;
     close FO;
 }
 
 gen_log();
-system('cat','repo.log');
+system('cat','info');
 system('cat','status');
 print "\n";
