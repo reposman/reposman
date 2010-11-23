@@ -25,33 +25,34 @@
 #git:local#=/myplace/repos/#1/git
 #svn:local#=file://myplace/repos/#1.svn
 #p#=xrzworkspace
+#d_websaver2#=firefox/extensions/websaver2@myplace.hell|
 #name	|googlecode	|github	|target	|user
 #name	|target	|user	|repos1	|repos2                     
-perl	        |	                |	| svn/xrzperl 	            | git/perl 	                | git:gtr/perl 	        | git:local/perl 
-shellscript	|	                |	| svn/xrzshellscript 	    | git/shellscript 	        | git:gtr/shellscript 	| git:local/ 
-text	        |	                |	| svn/ztext 	            | git/text 	                | git:gtr/text 	        | git:local/ 
-usys    	|	                |	| svn/zusys 	            | git/usys 	                | git:gtr/usys 	        | git:local/ 
-vb6     	|	                |	| svn/xrzvb6 	            | git/vb6 	                | git:gtr/vb6 	        | git:local/ 
-freebasic   	|	                |	| svn/zfreebasic 	    | git/freebasic 	        | git:gtr/freebasic 	| git:local/ 
-ebook   	|	                |	| svn/zebook 	            | git/ebook 	        | git:gtr/ebook 	        | git:local/ 
-ffprofile	|firfox	                |	| svn/ffprofile 	    | git/ffprofile 	        | git:gtr/ffprofile 	| git:local/ 
-batch	        |	                |	| svn/#p#/batch 	    | git/batch 	        | git:gtr/batch 	        | git:local/ 
-c	        |	                |	| svn/#p#/c 	            | git/c 	                | git:gtr/c 	        | git:local/ 
-cpp	        |	                |	| svn/#p#/cpp 	            | git/cpp 	                | git:gtr/cpp 	        | git:local/ 
-drawing	        |	                |	| svn/#p#/drawing 	    | git/drawing 	        | git:gtr/drawing 	| git:local/ 
-badluck	        |perl/badluck           |	| svn/badluck 	            | git/badluck 	        | git:gtr/badluck 	| git:local/ 
-nightgun	|perl/nightgun          |	| svn/nightgun 	            | git/nightgun 	        | git:gtr/nightgun 	| git:local/ 
-websaver2	|firefox/extensions/websaver2@myplace.hell      |	| svn/websaver2 	    | git/websaver2 	        | git:gtr/websaver2 	| git:local/ 
-libmyplace-perl	|perl/modules/MyPlace   |	| svn/                      | git/                   	| git:gtr/                 | git:local/
-www	        |	                |	| svn/#p#/www 	            | git/www 	                | git:gtr/www 	        | git:local/ 
-utils	        |	                |	| svn/zutils 	            | git/utils 	        | git:gtr/utils 	        | git:local/ 
-gm-scripts	|firefox/gm_scripts	|#u_n#	| svn:pl/gm_scripts         | git:asm/                  | git:ufd/ 	        | git:local/
-babebase        |perl/urlrule           |#u_n#  | svn:pl/                  | git:asm/                  | git:ufd/                 | git:local/
-gsbridge        |.                       |#u_n#  | svn:pl/                  | git:asm/                  | git:ufd/                 | git:local/
-nahncm          |nahncm                 |#u_n#  | svn/nahncm                | git:gh2/nahncm            | git:gt2/nahncm            | git:local/
-repos/babebase      |repos/babebase         |       | svn:repos/babebase        | git:repos1/babebase            | git:repos2/babebase
-repos/gm_scripts      |repos/gm_scripts         |       | svn:repos/gm_scripts        | git:repos1/gm-scripts            | git:repos2/gm-scripts
-repos/gsbridge      |repos/gsbridge         |       | svn:repos/gsbridge        | git:repos1/gsbridge            | git:repos2/gsbridge
-repos/empty          |repos/_empty  |     | svn:repos/_empty  |git:repos1/_empty |git:repos2_empty
-repos/root          |repos/       |   | svn:repos/root  |git:repos1/root |git:repos2/root
+perl				|						|		|svn/xrzperl			|git/perl				|git:gtr/perl			|git:local/perl
+shellscript			|						|		|svn/xrzshellscript		|git/shellscript		|git:gtr/shellscript	|git:local/
+text				|						|		|svn/ztext				|git/text				|git:gtr/text			|git:local/
+usys				|						|		|svn/zusys				|git/usys				|git:gtr/usys			|git:local/
+vb6					|						|		|svn/xrzvb6				|git/vb6				|git:gtr/vb6			|git:local/
+freebasic			|						|		|svn/zfreebasic			|git/freebasic			|git:gtr/freebasic		|git:local/
+ebook				|						|		|svn/zebook				|git/ebook				|git:gtr/ebook			|git:local/
+ffprofile			|firefox				|		|svn/ffprofile			|git/ffprofile			|git:gtr/ffprofile		|git:local/
+batch				|						|		|svn/#p#/batch			|git/batch				|git:gtr/batch			|git:local/
+c					|						|		|svn/#p#/c				|git/c					|git:gtr/c				|git:local/
+cpp					|						|		|svn/#p#/cpp			|git/cpp				|git:gtr/cpp			|git:local/
+drawing				|						|		|svn/#p#/drawing		|git/drawing			|git:gtr/drawing		|git:local/
+badluck				|perl/badluck			|		|svn/badluck			|git/badluck			|git:gtr/badluck		|git:local/
+nightgun			|perl/nightgun			|		|svn/nightgun			|git/nightgun			|git:gtr/nightgun		|git:local/
+websaver2			|#d_websaver2#			|		|svn/websaver2			|git/websaver2			|git:gtr/websaver2		|git:local/
+libmyplace-perl		|perl/modules/MyPlace	|		|svn/					|git/					|git:gtr/				|git:local/
+www					|						|		|svn/#p#/www			|git/www				|git:gtr/www			|git:local/
+utils				|						|		|svn/zutils				|git/utils				|git:gtr/utils			|git:local/
+gm-scripts			|firefox/gm_scripts		|#u_n#	|svn:pl/gm_scripts		|git:asm/				|git:ufd/				|git:local/
+babebase			|perl/urlrule			|#u_n#	|svn:pl/				|git:asm/				|git:ufd/				|git:local/
+gsbridge			|.						|#u_n#	|svn:pl/				|git:asm/				|git:ufd/				|git:local/
+nahncm				|nahncm					|#u_n#	|svn/nahncm				|git:gh2/nahncm			|git:gt2/nahncm			|git:local/
+repos/babebase		|repos/babebase			|		|svn:repos/babebase		|git:repos1/babebase	|git:repos2/babebase
+repos/gmscripts		|repos/gmscripts		|		|svn:repos/gmscripts	|git:repos1/gmscripts	|git:repos2/gmscripts
+repos/gsbridge		|repos/gsbridge			|		|svn:repos/gsbridge		|git:repos1/gsbridge	|git:repos2/gsbridge
+repos/empty			|repos/_empty			|		|svn:repos/empty		|git:repos1/empty		|git:repos2/empty
+repos/root			|repos/					|		|svn:repos/root			|git:repos1/root		|git:repos2/root
 
