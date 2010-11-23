@@ -5,12 +5,16 @@ require v5.10.0;
 our $VERSION = 'v0.1';
 
 my %OPTS;
-my @OPTIONS = qw/help|h|? manual|m test|t get|g dump|d dump-config|dc dump-data|dd/;
+my @OPTIONS = qw/help|h|? manual|m test|t project|p dump|d dump-config|dc dump-data|dd check|c list|l pull/;
 if(@ARGV)
 {
     require Getopt::Long;
     Getopt::Long::GetOptions(\%OPTS,@OPTIONS);
 }
+else {
+    $OPTS{help} = 1;
+}
+
 if($OPTS{help}) {
     require Pod::Usage;
     Pod::Usage::pod2usage(-exitval=>0,-verbose => 1);
@@ -22,6 +26,9 @@ elsif($OPTS{manual}) {
     exit 0;
 }
 
+use Cwd qw/getcwd/;
+
+my $F_TEST = $OPTS{test};
 
 my %CONFIG;
 $CONFIG{svn} = "https://#1.googlecode.com/svn/#2";
@@ -39,20 +46,21 @@ sub error {
 }
 
 sub parse_project {
-    foreach(@_) {
+    foreach my $line (@_) {
+        $_ = $line;
         chomp;
-        #print "[1]",$_,"\n";
+        #print STDERR "[1]",$_,"\n";
         foreach my $v_name (keys %MACRO) {
             s/#$v_name#/$MACRO{$v_name}/g;
         }
-        #print "[2]",$_,"\n";
+        #print STDERR "[2]",$_,"\n";
         if(m/^\s*#([^#]+)#\s*=\s*(.+?)\s*$/) {
             my $name = $1;
             my $value = $2;
             next unless($value);
             if($name =~ m/^(?:authors|user|username|email|svn|svn:.+|git|git:.+)$/) {
                 $CONFIG{$name} = $value;
-                print STDERR "config: $name = $value\n";
+        #        print STDERR "config: $name = $value\n";
             }
             $MACRO{$name} = $value;
             next;
@@ -134,31 +142,12 @@ sub get_repo {
     return \%r;
 }
 
-sub get_repo_old {
-    my ($name,$svn_name,$git_name,$target,$user,$username,$email) = @_;
-    $svn_name = $name unless($svn_name);
-    $git_name = $name unless($git_name);
-    $target = $name unless($target);
-    $username = $CONFIG{username} unless($username);
-    $email = $CONFIG{email} unless($email);
-    my %r;
-    $r{name} = $name;
-    
-    foreach (keys %CONFIG) {
-        if(m/git|git:.+/) {
-            $r{$_} = translate_url($CONFIG{$_},$git_name);
-        }
-        elsif(m/svn|svn:.+/) {
-            $r{$_} = translate_url($CONFIG{$_},$svn_name);
-        }
-    }
-    $r{target} = $target;
-    $r{user} = $user ? $user : $CONFIG{user};
-    $r{username} = $username;
-    $r{email} = $email;
-    return \%r;
+sub check_repo {
+    run('git','status') or return undef;
+    run('git','branch','-av') or return undef;
+    run('git','remote','-v') or return undef;
+    return 1;
 }
-
 
 sub clone_repo {
     my $repo = shift;
@@ -243,7 +232,8 @@ sub update_repo {
     return 1;
 }
 
-my $F_TEST = $OPTS{test};
+
+
 
 sub run {
     print join(" ",@_),"\n";
@@ -252,12 +242,9 @@ sub run {
 }
 
 
-use Cwd qw/getcwd/;
 
 my $PROGRAM_DIR = $0;
 $PROGRAM_DIR =~ s/[^\/\\]+$//;
-
-
 my $cwd = getcwd();
 my $PROJECT_FILE;
 
@@ -269,7 +256,7 @@ foreach my $fn (".PROJECTS","$PROGRAM_DIR/.PROJECTS","~/git-svn/.PROJECTS") {
 }
 if($PROJECT_FILE) {
     if(-f $PROJECT_FILE) {
-        print STDERR "read: \"$PROJECT_FILE\"\n";
+        print STDERR "reading \"$PROJECT_FILE\"... ";
         open FI,"<".$PROJECT_FILE;
         parse_project(<FI>);
         close FI;
@@ -283,7 +270,7 @@ if(not (@ARGV or $PROJECT_FILE)) {
     print STDERR "----|--------|--------|----------|--------\n";
     parse_project(<STDIN>);
 }
-if($OPTS{get}) {
+if($OPTS{project}) {
 	my $name = shift;
 	parse_project(join('|',@ARGV),"\n");
 	push @ARGV,$name;
@@ -291,13 +278,17 @@ if($OPTS{get}) {
 
 
 my $total = scalar(keys %project) + scalar(keys %sub_project);
-print STDERR "read: $total", $total > 1 ? " projects" : " project", "\n";
+print STDERR "$total", $total > 1 ? " projects" : " project", ".\n";
 
 #my $QUERY_NAME=shift;
 #my @query = $QUERY_NAME ? ($QUERY_NAME) : (keys %project,keys %sub_project);
 #my $count = $QUERY_NAME ? 1 : $total;
-my @query = @ARGV;
+my @query = @ARGV ? @ARGV : (keys %project,keys %sub_project);
 
+
+if($OPTS{'list'}) {
+    $OPTS{'dump-data'} = 1;
+}
 
 if($OPTS{'dump'}) {
     $OPTS{'dump-config'} = 1;
@@ -324,43 +315,80 @@ if($OPTS{'dump-config'} or $OPTS{'dump-data'}) {
 
 my $idx = 0;
 my $count = scalar(@query);
-print STDERR "pulling $count ", $count > 1 ? "projects" : "project", " ...\n";
-foreach my $name (@query) {
-    $idx++;
-    print "[$idx/$count] pulling project [$name]...\n";
-    my $pdata = $project{$name} ? $project{$name} : $sub_project{$name};
-	if((!$pdata) or (!ref $pdata)) {
-		print "[$idx/$count] project $name not defined.\n";
-		next;
-	}
-    my $repo = get_repo($name,@{$pdata});
-    unless($F_TEST or -d $repo->{target}) {
-        if(system("mkdir","-p",$repo->{target}) != 0) {
-            error("fatal: while create directory " . $repo->{target});
+
+if($OPTS{check}) {
+    print STDERR "ready to check $count ", $count > 1 ? "projects" : "project", " ...\n";
+    foreach my $name (@query) {
+        $idx++;
+        print STDERR "[$idx/$count] checking project $name...\n";
+        my $pdata = $project{$name} ? $project{$name} : $sub_project{$name};
+    	if((!$pdata) or (!ref $pdata)) {
+    		print STDERR "[$idx/$count] project $name not defined.\n";
+    		next;
+    	}
+        my $repo = get_repo($name,@{$pdata});
+        unless($F_TEST or -d $repo->{target}) {
+            error("[$idx/$count] target not exists: $repo->{target}\n");
+            next;
+            }
+        unless($F_TEST) {
+            unless(chdir($repo->{target})) {
+                error("[$idx/$count] error while chdir to $repo->{target}\n");
+                next;
+            }
+        }
+        unless(check_repo($repo)) {
+            error("[$idx/$count] error while checking $name\n");
             next;
         }
+        unless($F_TEST) {
+            unless(chdir($cwd)) {
+                die ("$!\n");
+            }
+        }        
+        print STDERR "\n";
     }
-    unless(clone_repo($repo)) {
-        error("fatal: while clone repo\n");
-        next
-    }
-    unless($F_TEST) {
-        unless(chdir($repo->{target})) {
-            error("$!\n");
+}
+else {
+    print STDERR "pulling $count ", $count > 1 ? "projects" : "project", " ...\n";
+    foreach my $name (@query) {
+        $idx++;
+        print STDERR "[$idx/$count] pulling project [$name]...\n";
+        my $pdata = $project{$name} ? $project{$name} : $sub_project{$name};
+    	if((!$pdata) or (!ref $pdata)) {
+    		print STDERR "[$idx/$count] project $name not defined.\n";
+    		next;
+    	}
+        my $repo = get_repo($name,@{$pdata});
+        unless($F_TEST or -d $repo->{target}) {
+            if(system("mkdir","-p",$repo->{target}) != 0) {
+                error("fatal: while create directory " . $repo->{target});
+                next;
+            }
+        }
+        unless(clone_repo($repo)) {
+            error("fatal: while clone repo\n");
+            next
+        }
+        unless($F_TEST) {
+            unless(chdir($repo->{target})) {
+                error("$!\n");
+                next;
+            }
+        }
+        unless(update_repo($repo)) {
+            error("fatal: while update repo\n");
             next;
         }
+        unless($F_TEST) {
+            unless(chdir($cwd)) {
+                return error("$!\n");
+                next;
+            }
+        }        
+        print STDERR "\n";
     }
-    unless(update_repo($repo)) {
-        error("fatal: while update repo\n");
-        next;
-    }
-    unless($F_TEST) {
-        unless(chdir($cwd)) {
-            return error("$!\n");
-            next;
-        }
-    }        
-    print "\n";
+
 }
 
 exit 0;
@@ -383,9 +411,17 @@ git-svn-pull-projects [options] [project_name] [svn_name] [git_name] [target_dir
 
 =over 12
 
+=item B<-c>,B<--check>
+
+Check projects status
+
+=item B<-p>,B<--project>
+
+Target and define project from command line
+
 =item B<-t>,B<--test>
 
-Testing mode.
+Testing mode
 
 =item B<--dump>
 
@@ -398,6 +434,10 @@ Dump CONFIG
 =item B<--dump-data>
 
 Dump DATA
+
+=item B<-l>,B<--list>
+
+List projects
 
 =item B<-h>,B<--help>
 
