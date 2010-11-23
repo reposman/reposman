@@ -22,7 +22,7 @@
 #svn:repos#=https://zrepos.googlecode.com/svn/#1/
 #git:repos1#=git@github.com:zrepos/#1.git
 #git:repos2#=git@gitorious.com:zrepos/#1.git
-#git:local#=/myplace/repos/#1.git
+#git:local#=/myplace/repos/#1/git
 #svn:local#=file://myplace/repos/#1.svn
 #p#=xrzworkspace
 #name	|googlecode	|github	|target	|user
@@ -34,7 +34,7 @@ usys    	|	                |	| svn/zusys 	            | git/usys 	              
 vb6     	|	                |	| svn/xrzvb6 	            | git/vb6 	                | git:gtr/vb6 	        | git:local/ 
 freebasic   	|	                |	| svn/zfreebasic 	    | git/freebasic 	        | git:gtr/freebasic 	| git:local/ 
 ebook   	|	                |	| svn/zebook 	            | git/ebook 	        | git:gtr/ebook 	        | git:local/ 
-firefox 	|	                |	| svn/ffprofile 	    | git/ffprofile 	        | git:gtr/ffprofile 	| git:local/ 
+ffprofile	|firfox	                |	| svn/ffprofile 	    | git/ffprofile 	        | git:gtr/ffprofile 	| git:local/ 
 batch	        |	                |	| svn/#p#/batch 	    | git/batch 	        | git:gtr/batch 	        | git:local/ 
 c	        |	                |	| svn/#p#/c 	            | git/c 	                | git:gtr/c 	        | git:local/ 
 cpp	        |	                |	| svn/#p#/cpp 	            | git/cpp 	                | git:gtr/cpp 	        | git:local/ 
@@ -49,9 +49,9 @@ gm-scripts	|firefox/gm_scripts	|#u_n#	| svn:pl/gm_scripts         | git:asm/    
 babebase        |perl/urlrule           |#u_n#  | svn:pl/                  | git:asm/                  | git:ufd/                 | git:local/
 gsbridge        |.                       |#u_n#  | svn:pl/                  | git:asm/                  | git:ufd/                 | git:local/
 nahncm          |nahncm                 |#u_n#  | svn/nahncm                | git:gh2/nahncm            | git:gt2/nahncm            | git:local/
-r_babebase      |repos/babebase         |       | svn:repos/babebase        | git:repos1/babebase            | git:repos2/babebase
-r_gm_scripts      |repos/gm_scripts         |       | svn:repos/gm-scripts        | git:repos1/gm-scripts            | git:repos2/gm-scripts
-r_gsbridge      |repos/gsbridge         |       | svn:repos/gsbridge        | git:repos1/gsbridge            | git:repos2/gsbridge
-_empty          |repos/_empty  |     | svn:repos/_empty  |git:repos1/_empty |git:repos2_empty
-root          |repos/       |   | svn:repos/root  |git:repos1/root |git:repos2/root
+repos/babebase      |repos/babebase         |       | svn:repos/babebase        | git:repos1/babebase            | git:repos2/babebase
+repos/gm_scripts      |repos/gm_scripts         |       | svn:repos/gm_scripts        | git:repos1/gm-scripts            | git:repos2/gm-scripts
+repos/gsbridge      |repos/gsbridge         |       | svn:repos/gsbridge        | git:repos1/gsbridge            | git:repos2/gsbridge
+repos/empty          |repos/_empty  |     | svn:repos/_empty  |git:repos1/_empty |git:repos2_empty
+repos/root          |repos/       |   | svn:repos/root  |git:repos1/root |git:repos2/root
 

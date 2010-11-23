@@ -5,7 +5,7 @@ require v5.10.0;
 our $VERSION = 'v0.1';
 
 my %OPTS;
-my @OPTIONS = qw/help|h|? manual|m test|t dump dump-config dump-data/;
+my @OPTIONS = qw/help|h|? manual|m test|t get|g dump|d dump-config|dc dump-data|dd/;
 if(@ARGV)
 {
     require Getopt::Long;
@@ -252,7 +252,6 @@ $PROGRAM_DIR =~ s/[^\/\\]+$//;
 
 
 my $cwd = getcwd();
-my $QUERY_NAME=shift;
 my $PROJECT_FILE;
 
 foreach my $fn (".PROJECTS","$PROGRAM_DIR/.PROJECTS","~/git-svn/.PROJECTS") {
@@ -277,27 +276,20 @@ if(not (@ARGV or $PROJECT_FILE)) {
     print STDERR "----|--------|--------|----------|--------\n";
     parse_project(<STDIN>);
 }
-if(@ARGV) {
-    if($sub_project{$QUERY_NAME} or $project{$QUERY_NAME}) {
-        my $pref = $sub_project{$QUERY_NAME} ? 
-                  \%sub_project : 
-                  \%project;
-        my @pdata = @{$pref->{$QUERY_NAME}};
-        while(@ARGV) {
-            my $new = shift @ARGV;
-            shift @pdata;
-            unshift @pdata,$new;
-        }
-        $pref->{$QUERY_NAME} = [@pdata];
-    }
-    else {
-        $project{$QUERY_NAME} = [@ARGV];
-    }
+if($OPTS{get}) {
+	my $name = shift;
+	parse_project(join('|',@ARGV),"\n");
+	push @ARGV,$name;
 }
 
 
 my $total = scalar(keys %project) + scalar(keys %sub_project);
 print STDERR "read: $total", $total > 1 ? " projects" : " project", "\n";
+
+#my $QUERY_NAME=shift;
+#my @query = $QUERY_NAME ? ($QUERY_NAME) : (keys %project,keys %sub_project);
+#my $count = $QUERY_NAME ? 1 : $total;
+my @query = @ARGV;
 
 
 if($OPTS{'dump'}) {
@@ -312,7 +304,7 @@ if($OPTS{'dump-config'}) {
 
 if($OPTS{'dump-data'}) {
     use Data::Dumper;
-    my @query = $QUERY_NAME ? ($QUERY_NAME) : (keys %project,keys %sub_project);
+#    my @query = $QUERY_NAME ? ($QUERY_NAME) : (keys %project,keys %sub_project);
     foreach my $name (@query) {
         my $pdata = $project{$name} ? $project{$name} : $sub_project{$name};
         my $repo = get_repo($name,@{$pdata});
@@ -323,15 +315,9 @@ if($OPTS{'dump-config'} or $OPTS{'dump-data'}) {
     exit 0;
 }
 
-
 my $idx = 0;
-my @query = $QUERY_NAME ? ($QUERY_NAME) : (keys %project,keys %sub_project);
-my $count = $QUERY_NAME ? 1 : $total;
+my $count = scalar(@query);
 print STDERR "pulling $count ", $count > 1 ? "projects" : "project", " ...\n";
-
-
-
-
 foreach my $name (@query) {
     $idx++;
     print "[$idx/$count] pulling project [$name]...\n";
