@@ -32,6 +32,12 @@ my %MACRO;
 
 my %project;
 my %sub_project;
+
+sub error {
+    print STDERR @_;
+    return undef;
+}
+
 sub parse_project {
     foreach(@_) {
         chomp;
@@ -173,10 +179,10 @@ sub clone_repo {
         push @cmd,$repo->{git_main};
     }
     else {
-        die("fatal: no main subversion or git repository found!\n");
+        return error("fatal: no main subversion or git repository found!\n");
     }
     unless(run(@cmd,$repo->{target})) {
-        die "fatal: while pulling $repo->{name}, ABORT!\n";
+        return error("fatal: while pulling $repo->{name}, ABORT!\n");
     }
     return 1;
 }
@@ -184,9 +190,9 @@ sub clone_repo {
 sub init_svn_repo {
     my ($name,$url) = @_;
     run(qw/git svn -R/,$name,qw/init -s/,$url) 
-        or die("fatal: while git svn init [$name] $url\n");
+        or return error("fatal: while git svn init [$name] $url\n");
     run(qw/git svn -R/,$name,"fetch")
-        or die("fatal: while git svn fetch $name\n");
+        or return error("fatal: while git svn fetch $name\n");
     return 1;
 }
 sub init_git_repo {
@@ -208,32 +214,33 @@ sub init_git_repo {
         }
     }
     run(qw/git remote add/,$name,$url); 
-#        or die("fatal: while git remote add [$name] $url\n");
+#        or return error("fatal: while git remote add [$name] $url\n");
     run(qw/git fetch/,$name) 
-        or die("fatal: while git fetch $name\n");
+        or return error("fatal: while git fetch $name\n");
     return 1;    
 }
 sub update_repo {
     my $repo = shift;
     if($repo->{username}) {
-        run(qw/git config user.name/,$repo->{username}) or die("fatal: while git config\n");
+        run(qw/git config user.name/,$repo->{username}) or return error("fatal: while git config\n");
     }
     if($repo->{email}) {
-        run(qw/git config user.email/,$repo->{email}) or die("fatal: while git config\n");
+        run(qw/git config user.email/,$repo->{email}) or return error("fatal: while git config\n");
     }
     if($repo->{svn} and @{$repo->{svn}}) {
         foreach my $host (@{$repo->{svn}}) {
             init_svn_repo($1,$host)
-            or die("fatal: while init svn repo [$host]\n");
+            or return error("fatal: while init svn repo [$host]\n");
         }
     }
     if($repo->{git} and @{$repo->{git}}) {
         foreach my $host (@{$repo->{git}}) {
             init_git_repo($1,$host)
-            or die("fatal: while init git repo [$host]\n");
+            or return error("fatal: while init git repo [$host]\n");
         }
     }
-    run(qw/git branch -av/) or die("fatal: while git branch\n");
+    run(qw/git branch -av/) or return error("fatal: while git branch\n");
+    return 1;
 }
 
 my $F_TEST = $OPTS{test};
@@ -329,16 +336,29 @@ foreach my $name (@query) {
     my $repo = get_repo($name,@{$pdata});
     unless($F_TEST or -d $repo->{target}) {
         if(system("mkdir","-p",$repo->{target}) != 0) {
-            die("fatal: while create directory " . $repo->{target});
+            error("fatal: while create directory " . $repo->{target});
+            next;
         }
     }
-    clone_repo($repo) or die("fatal: while clone repo\n");
-    unless($F_TEST) {
-        chdir($repo->{target}) or die("$!\n");
+    unless(clone_repo($repo)) {
+        error("fatal: while clone repo\n");
+        next
     }
-    update_repo($repo) or die("fatal: while update repo\n");
     unless($F_TEST) {
-        chdir($cwd) or die("$!\n");
+        unless(chdir($repo->{target})) {
+            error("$!\n");
+            next;
+        }
+    }
+    unless(update_repo($repo)) {
+        error("fatal: while update repo\n");
+        next;
+    }
+    unless($F_TEST) {
+        unless(chdir($cwd)) {
+            return error("$!\n");
+            next;
+        }
     }        
     print "\n";
 }
