@@ -322,6 +322,10 @@ foreach my $name (@query) {
     $idx++;
     print "[$idx/$count] pulling project [$name]...\n";
     my $pdata = $project{$name} ? $project{$name} : $sub_project{$name};
+	if((!$pdata) or (!ref $pdata)) {
+		print "[$idx/$count] project $name not defined.\n";
+		next;
+	}
     my $repo = get_repo($name,@{$pdata});
     unless($F_TEST or -d $repo->{target}) {
         if(system("mkdir","-p",$repo->{target}) != 0) {
