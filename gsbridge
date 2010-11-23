@@ -218,14 +218,18 @@ sub update_repo {
     }
     if($repo->{svn} and @{$repo->{svn}}) {
         foreach my $host (@{$repo->{svn}}) {
-            init_svn_repo($1,$host)
-            or return error("fatal: while init svn repo [$host]\n");
+            unless(init_svn_repo($1,$host)) {
+				error("fatal: while init svn repo [$host]\n");
+				next;
+			}
         }
     }
     if($repo->{git} and @{$repo->{git}}) {
         foreach my $host (@{$repo->{git}}) {
-            init_git_repo($1,$host)
-            or return error("fatal: while init git repo [$host]\n");
+            unless(init_git_repo($1,$host)) {
+				error("fatal: while init git repo [$host]\n");
+				next;
+			}
         }
     }
     run(qw/git branch -av/) or return error("fatal: while git branch\n");
@@ -327,6 +331,7 @@ if($OPTS{check}) {
     		next;
     	}
         my $repo = get_repo($name,@{$pdata});
+		print STDERR "[$idx/$count] $name -> $repo->{target}\n";
         unless($F_TEST or -d $repo->{target}) {
             error("[$idx/$count] target not exists: $repo->{target}\n");
             next;
@@ -368,7 +373,6 @@ else {
         }
         unless(clone_repo($repo)) {
             error("fatal: while clone repo\n");
-            next
         }
         unless($F_TEST) {
             unless(chdir($repo->{target})) {
