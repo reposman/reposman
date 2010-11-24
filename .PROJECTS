@@ -23,7 +23,7 @@
 #git:repos2#=git@gitorious.com:zrepos/#1.git
 #git:local#=/myplace/repos/#1/git
 #svn:local#=file://myplace/repos/#1.svn
-#p#=xrzworkspace
+#p#=zcodebase
 #d_websaver2#=firefox/extensions/websaver2@myplace.hell|
 #d_repos#=/myplace/repos
 #name	|googlecode	|github	|target	|user
@@ -39,12 +39,12 @@ ffprofile			|firefox				|		|svn/ffprofile			|git/ffprofile			|git:gtr/ffprofile	
 batch				|						|		|svn/#p#/batch			|git/batch				|git:gtr/batch			|git:local/
 c					|						|		|svn/#p#/c				|git/c					|git:gtr/c				|git:local/
 cpp					|						|		|svn/#p#/cpp			|git/cpp				|git:gtr/cpp			|git:local/
-drawing				|						|		|svn/#p#/drawing		|git/drawing			|git:gtr/drawing		|git:local/
+drawing				|						|		|svn/zdrawing			|git/drawing			|git:gtr/drawing		|git:local/
 badluck				|perl/badluck			|		|svn/badluck			|git/badluck			|git:gtr/badluck		|git:local/
 nightgun			|perl/nightgun			|		|svn/nightgun			|git/nightgun			|git:gtr/nightgun		|git:local/
 websaver2			|#d_websaver2#			|		|svn/websaver2			|git/websaver2			|git:gtr/websaver2		|git:local/
 libmyplace-perl		|perl/modules/MyPlace	|		|svn/					|git/					|git:gtr/				|git:local/
-www					|						|		|svn/#p#/www			|git/www				|git:gtr/www			|git:local/
+www					|						|		|svn/zwww				|git/www				|git:gtr/www			|git:local/
 utils				|						|		|svn/zutils				|git/utils				|git:gtr/utils			|git:local/
 gmscripts			|firefox/gm_scripts		|		|svn:pl/				|git:asm/gm-scripts		|git:ufd/				|git:local/
 babebase			|perl/urlrule			|		|svn:pl/				|git:asm/				|git:ufd/				|git:local/
