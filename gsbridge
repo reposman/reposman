@@ -5,7 +5,7 @@ require v5.10.0;
 our $VERSION = 'v0.1';
 
 my %OPTS;
-my @OPTIONS = qw/help|h|? manual|m test|t project|p dump|d dump-config|dc dump-data|dd check|c list|l pull/;
+my @OPTIONS = qw/help|h|? manual|m test|t project|p dump|d dump-config|dc dump-data|dd check|c list|l pull reset|r/;
 if(@ARGV)
 {
     require Getopt::Long;
@@ -14,6 +14,27 @@ if(@ARGV)
 else {
     $OPTS{help} = 1;
 }
+
+
+#START	//map options to actions
+my $have_opts;
+foreach(keys %OPTS) {
+	if($OPTS{$_}) {
+		$have_opts = 1;
+		last;
+	}
+}
+unless($have_opts) {
+	my $first_arg = shift;
+	if($first_arg and $first_arg =~ m/^(help|manual|test|project|dump|dump-config|dump-data|check|list|pull|reset)$/) {
+		$OPTS{$first_arg} = 1;
+	}
+	else {
+		unshift @ARGV,$first_arg;
+		$OPTS{pull} = 1;
+	}
+}
+#END	//map options to actions
 
 if($OPTS{help}) {
     require Pod::Usage;
@@ -40,12 +61,32 @@ my %MACRO;
 my %project;
 my %sub_project;
 
+sub run {
+    print join(" ",@_),"\n";
+    return 1 if($F_TEST);
+    return system(@_) == 0;
+}
 sub error {
     print STDERR @_;
     return undef;
 }
 
-sub parse_project {
+sub parse_query {
+	my $query = shift;
+	if($query =~ m/^([^:]+):(.*)$/) {
+		return $1,$2;
+	}
+	else {
+		return $query;
+	}
+}
+
+sub get_project_data {
+	my ($name,undef) = parse_query(@_);
+	return $name,($project{$name} ? $project{$name} : $sub_project{$name});
+}
+
+sub parse_project_data {
     foreach my $line (@_) {
         $_ = $line;
         chomp;
@@ -60,7 +101,6 @@ sub parse_project {
             next unless($value);
             if($name =~ m/^(?:authors|user|username|email|svn|svn:.+|git|git:.+)$/) {
                 $CONFIG{$name} = $value;
-        #        print STDERR "config: $name = $value\n";
             }
             $MACRO{$name} = $value;
             next;
@@ -98,10 +138,17 @@ sub translate_url {
 }
 
 sub get_repo {
-    my ($name,$target,$user,@repo_data) = @_;
+    my ($query_name,$target,$user,@repo_data) = @_;
     my %r;
+	my ($name,$new_target) = parse_query($query_name);
     $r{name} = $name;
-    $r{target} = $target ? $target : $name;
+	if($new_target) {
+		$r{_target} = $target ? $target : $name;
+		$r{target} = $new_target;
+	}
+	else {
+	    $r{target} = $target ? $target : $name;
+	}
     $r{user} = $user ? $user : $CONFIG{user};
     @repo_data = ("svn/$name","git/$name") unless(@repo_data);
     foreach my $url (@repo_data) {
@@ -142,13 +189,23 @@ sub get_repo {
     return \%r;
 }
 
+
 sub check_repo {
     run('git','status') or return undef;
     run('git','branch','-av') or return undef;
     run('git','remote','-v') or return undef;
     return 1;
 }
-
+sub reset_repo {
+	my $repo = shift;
+	if($repo->{svn_main}) {
+		init_svn_repo('svn',$repo->{svn_main});	
+	}
+	if($repo->{git_main}) {
+		init_git_repo(undef,$repo->{git_main});		
+	}
+	update_repo($repo);
+}
 sub clone_repo {
     my $repo = shift;
     my @cmd;
@@ -218,7 +275,7 @@ sub update_repo {
     }
     if($repo->{svn} and @{$repo->{svn}}) {
         foreach my $host (@{$repo->{svn}}) {
-            unless(init_svn_repo($1,$host)) {
+            unless(init_svn_repo(undef,$host)) {
 				error("fatal: while init svn repo [$host]\n");
 				next;
 			}
@@ -226,7 +283,7 @@ sub update_repo {
     }
     if($repo->{git} and @{$repo->{git}}) {
         foreach my $host (@{$repo->{git}}) {
-            unless(init_git_repo($1,$host)) {
+            unless(init_git_repo(undef,$host)) {
 				error("fatal: while init git repo [$host]\n");
 				next;
 			}
@@ -235,16 +292,6 @@ sub update_repo {
     run(qw/git branch -av/) or return error("fatal: while git branch\n");
     return 1;
 }
-
-
-
-
-sub run {
-    print join(" ",@_),"\n";
-    return 1 if($F_TEST);
-    return system(@_) == 0;
-}
-
 
 
 my $PROGRAM_DIR = $0;
@@ -262,7 +309,7 @@ if($PROJECT_FILE) {
     if(-f $PROJECT_FILE) {
         print STDERR "reading \"$PROJECT_FILE\"... ";
         open FI,"<".$PROJECT_FILE;
-        parse_project(<FI>);
+        parse_project_data(<FI>);
         close FI;
     }
 }
@@ -272,11 +319,11 @@ if(not (@ARGV or $PROJECT_FILE)) {
     print STDERR "separate fields by \"|\".\n";
     print STDERR "name|svn_name|git_name|target_dir|username\n";
     print STDERR "----|--------|--------|----------|--------\n";
-    parse_project(<STDIN>);
+    parse_project_data(<STDIN>);
 }
 if($OPTS{project}) {
 	my $name = shift;
-	parse_project(join('|',@ARGV),"\n");
+	parse_project_data(join('|',@ARGV),"\n");
 	push @ARGV,$name;
 }
 
@@ -307,9 +354,9 @@ if($OPTS{'dump-config'}) {
 if($OPTS{'dump-data'}) {
     use Data::Dumper;
 #    my @query = $QUERY_NAME ? ($QUERY_NAME) : (keys %project,keys %sub_project);
-    foreach my $name (@query) {
-        my $pdata = $project{$name} ? $project{$name} : $sub_project{$name};
-        my $repo = get_repo($name,@{$pdata});
+    foreach my $query_text (@query) {
+        my ($name,$pdata) = get_project_data($query_text);
+        my $repo = get_repo($query_text,@{$pdata});
         print Data::Dumper->Dump([$repo],["*$name"]);
     }
 }
@@ -322,15 +369,15 @@ my $count = scalar(@query);
 
 if($OPTS{check}) {
     print STDERR "ready to check $count ", $count > 1 ? "projects" : "project", " ...\n";
-    foreach my $name (@query) {
+    foreach my $query_text (@query) {
         $idx++;
+		my ($name,$pdata) = get_project_data($query_text);
         print STDERR "[$idx/$count] checking project $name...\n";
-        my $pdata = $project{$name} ? $project{$name} : $sub_project{$name};
     	if((!$pdata) or (!ref $pdata)) {
     		print STDERR "[$idx/$count] project $name not defined.\n";
     		next;
     	}
-        my $repo = get_repo($name,@{$pdata});
+        my $repo = get_repo($query_text,@{$pdata});
 		print STDERR "[$idx/$count] $name -> $repo->{target}\n";
         unless($F_TEST or -d $repo->{target}) {
             error("[$idx/$count] target not exists: $repo->{target}\n");
@@ -354,17 +401,51 @@ if($OPTS{check}) {
         print STDERR "\n";
     }
 }
-else {
-    print STDERR "pulling $count ", $count > 1 ? "projects" : "project", " ...\n";
-    foreach my $name (@query) {
+elsif($OPTS{reset}) {
+    print STDERR "ready to reset $count ", $count > 1 ? "projects" : "project", " ...\n";
+    foreach my $query_text (@query) {
         $idx++;
-        print STDERR "[$idx/$count] pulling project [$name]...\n";
-        my $pdata = $project{$name} ? $project{$name} : $sub_project{$name};
+		my ($name,$pdata) = get_project_data($query_text);
+        print STDERR "[$idx/$count] resetting project $name...\n";
     	if((!$pdata) or (!ref $pdata)) {
     		print STDERR "[$idx/$count] project $name not defined.\n";
     		next;
     	}
-        my $repo = get_repo($name,@{$pdata});
+        my $repo = get_repo($query_text,@{$pdata});
+		print STDERR "[$idx/$count] $name -> $repo->{target}\n";
+        unless($F_TEST or -d $repo->{target}) {
+            error("[$idx/$count] target not exists: $repo->{target}\n");
+            next;
+            }
+        unless($F_TEST) {
+            unless(chdir($repo->{target})) {
+                error("[$idx/$count] error while chdir to $repo->{target}\n");
+                next;
+            }
+        }
+        unless(reset_repo($repo)) {
+            error("[$idx/$count] error while resetting $name\n");
+            next;
+        }
+        unless($F_TEST) {
+            unless(chdir($cwd)) {
+                die ("$!\n");
+            }
+        }        
+        print STDERR "\n";
+    }
+}
+else {
+    print STDERR "pulling $count ", $count > 1 ? "projects" : "project", " ...\n";
+    foreach my $query_text (@query) {
+        $idx++;
+		my ($name,$pdata) = get_project_data($query_text);
+        print STDERR "[$idx/$count] pulling project [$name]...\n";
+    	if((!$pdata) or (!ref $pdata)) {
+    		print STDERR "[$idx/$count] project $name not defined.\n";
+    		next;
+    	}
+        my $repo = get_repo($query_text,@{$pdata});
         unless($F_TEST or -d $repo->{target}) {
             if(system("mkdir","-p",$repo->{target}) != 0) {
                 error("fatal: while create directory " . $repo->{target});
@@ -403,17 +484,23 @@ __END__
 
 =head1  NAME
 
-git-svn-pull-projects - PERL script
+gsbridge - git-svn projects manager
 
 =head1  SYNOPSIS
 
-git-svn-pull-projects [options] [project_name] [svn_name] [git_name] [target_dir] [user]
-    git-svn-pull-projects -t firefox 
-    git-svn-pull-projects -t
+gsbridge [options] [action] [project_name|project_name:target]...
+	gsbridge --pull firefox
+	gsbridge pull firefox
+	gsbirdge pull firefox:test_firefox
+	gsbridge firefox:test_firefox
 
 =head1  OPTIONS
 
 =over 12
+
+=item B<-r>,B<--reset>
+
+Re-configure projects
 
 =item B<-c>,B<--check>
 
@@ -463,8 +550,9 @@ echo field separated by |.
 =back
 
 =head1 PROJECTS FILE FORMAT
-
-name    |svn_name   |git_name   |target |user
+#MACRO1#=....
+#MACRO2#=....
+name	|[target]	|[user]	|repo1	|repo2	|repo3...
 
 =head1  DESCRIPTION
 
@@ -475,6 +563,12 @@ git-svn projects manager
     2010-11-01  xiaoranzzz  <xiaoranzzz@myplace.hell>
         
         * file created.
+	
+	2010-11-25	xiaoranzzz	<xiaoranzzz@myplace.hell>
+		
+		* updated projects definition format
+		* added two actions: checking and resetting
+		* version 1.0
 
 =head1  AUTHOR
 
