@@ -2,7 +2,7 @@
 # $Id$
 use strict;
 require v5.10.0;
-our $VERSION = 'v0.1';
+our $VERSION = 'v1.0';
 
 my %OPTS;
 my @OPTIONS = qw/help|h|? manual|m test|t project|p dump|d dump-config|dc dump-data|dd check|c list|l pull reset|r/;
