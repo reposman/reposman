@@ -6,6 +6,8 @@
 #u_e#=Nahn Eotect <eotect#mail#>
 #u#=eotect
 #n#=nahncm
+#x#=xiaoranzzz
+#u_x#=xiaoranzzz <xiaoranzzz#mail#>
 #svn#=https://#1.googlecode.com/svn/#2
 #svn:gc#=https://#1.googlecode.com/svn/#2
 #svn:asm#=https://subversion.assembla.com/svn/#1/
@@ -14,8 +16,10 @@
 #git#=git@github.com:#u#/#1.git
 #git:ghb#=git@github.com:#u#/#1.git
 #git:gh2#=git@github.com:#n#/#1.git
+#git:ghx#=git@github.com:#x#/#1.git
 #git:gtr#=git@gitorious.org:#u#/#1.git
 #git:gt2#=git@gitorious.org:#n#/#1.git
+#git:gtx#=git@gitorious.org:#x#/#1.git
 #git:ufd#=git@#u#.unfuddle.com:#u#/#1.git
 #svn:ufd#=http://#u#.unfuddle.com/svn/#u#_#1
 #svn:repos#=https://zrepos.googlecode.com/svn/#1/
@@ -55,4 +59,6 @@ repos/babebase		|#d_repos#/babebase		|		|svn:repos/babebase		|git:repos1/babebas
 repos/gmscripts		|#d_repos#/gmscripts	|		|svn:repos/gmscripts	|git:repos1/gmscripts	|git:repos2/gmscripts
 repos/gsbridge		|#d_repos#/gsbridge		|		|svn:repos/gsbridge		|git:repos1/gsbridge	|git:repos2/gsbridge
 repos/empty			|#d_repos#/_empty		|		|svn:repos/empty		|git:repos1/empty		|git:repos2/empty
+repos/workspace		|#d_repos#/workspace	|		|svn:repos/workspace	|git:repos1/workspace	|git:repos2/workspace
+webpages			|webpages				|#u_x#	|svn/xiaoranzzz			|git/webpages				|git:ghx/xiaoranzzz.github.com	|git:gtr/webpages
 

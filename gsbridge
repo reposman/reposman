@@ -198,11 +198,13 @@ sub check_repo {
 }
 sub reset_repo {
 	my $repo = shift;
+	system('rm',"-v",".git/config");
+	system("rm","-fvr",".git/refs/remotes");
 	if($repo->{svn_main}) {
 		init_svn_repo('svn',$repo->{svn_main});	
 	}
 	if($repo->{git_main}) {
-		init_git_repo(undef,$repo->{git_main});		
+		init_git_repo($repo->{git_main});		
 	}
 	update_repo($repo);
 }
@@ -235,19 +237,33 @@ sub clone_repo {
 
 sub init_svn_repo {
     my ($name,$url) = @_;
+	return 1;
     run(qw/git svn -R/,$name,qw/init -s/,$url) 
         or return error("fatal: while git svn init [$name] $url\n");
     run(qw/git svn -R/,$name,"fetch")
         or return error("fatal: while git svn fetch $name\n");
     return 1;
 }
+
+sub unique_name {
+	my ($base,$pool) = @_;
+	my $idx = 2;
+	my $result = $base;
+	while($pool->{$result}) {
+		$result = $base . $idx;
+		$idx++;
+	}
+	return $result;
+}
+
 sub init_git_repo {
-    my ($name,$url) = @_;
-    if(!$name) {
+	my %remotes;
+	foreach my $url (@_) {
+		my $name;
         if($url =~ m/^\//) {
             $name = "local";
         }
-        elsif($url =~ m/^git\@([^:\/]+)/) {
+        elsif($url =~ m/^git\@([^:\/]+)[:\/](.+)$/) {
             $name = $1;
             $name =~ s/[^\.]+\.([^.]+\.[^\.]+)/$1/;
             $name =~ s/\.(?:com|org|net)$//;
@@ -258,12 +274,16 @@ sub init_git_repo {
         else {
             $name = $url;
         }
+		$name = unique_name($name,\%remotes);
+		$remotes{$name} = $url;
     }
-	run(qw/git remote rm/,$name);
-    run(qw/git remote add/,$name,$url); 
-#        or return error("fatal: while git remote add [$name] $url\n");
-    run(qw/git fetch/,$name) 
-        or return error("fatal: while git fetch $name\n");
+	foreach my $name (keys %remotes) {
+		my $url = $remotes{$name};
+		run(qw/git remote rm/,$name);
+		run(qw/git remote add/,$name,$url); 
+	    run(qw/git fetch/,$name)  
+			or error("fatal: while git fetch $name\n");
+	}
     return 1;    
 }
 sub update_repo {
@@ -283,12 +303,10 @@ sub update_repo {
         }
     }
     if($repo->{git} and @{$repo->{git}}) {
-        foreach my $host (@{$repo->{git}}) {
-            unless(init_git_repo(undef,$host)) {
-				error("fatal: while init git repo [$host]\n");
-				next;
-			}
-        }
+        unless(init_git_repo(@{$repo->{git}})) {
+			error("fatal: while init git repo\n");
+			next;
+		}
     }
     run(qw/git branch -av/) or return error("fatal: while git branch\n");
     return 1;
