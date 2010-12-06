@@ -12,53 +12,54 @@
 #svn:gc#=https://#1.googlecode.com/svn/#2
 #svn:asm#=https://subversion.assembla.com/svn/#1/
 #svn:pl#=https://pl3.projectlocker.com/#u#/#1/svn
-#git:asm#=git@git.assembla.com:#1.git
-#git#=git@github.com:#u#/#1.git
-#git:ghb#=git@github.com:#u#/#1.git
-#git:gh2#=git@github.com:#n#/#1.git
-#git:ghx#=git@github.com:#x#/#1.git
-#git:gtr#=git@gitorious.org:#u#/#1.git
-#git:gt2#=git@gitorious.org:#n#/#1.git
-#git:gtx#=git@gitorious.org:#x#/#1.git
-#git:ufd#=git@#u#.unfuddle.com:#u#/#1.git
 #svn:ufd#=http://#u#.unfuddle.com/svn/#u#_#1
 #svn:repos#=https://zrepos.googlecode.com/svn/#1/
-#git:repos1#=git@github.com:zrepos/#1.git
-#git:repos2#=git@gitorious.com:zrepos/#1.git
-#git:local#=/myplace/repos/#1/git
 #svn:local#=file://myplace/repos/#1.svn
+#git:1#=git@github:eotect/#1.git
+#git:2#=git@gitorious:eotect/#1.git
+#git:3#=git@git.assembla.com:#1.git
+#git:4#=git@eotect.unfuddle.com:eotect/#1.git
+#git:local#=/myplace/repos/#1/git
+#git#=git@github.com:#u#/#1.git
+#git:github#=git@github.com:#1/#2.git
+#git:gitorious#=git@gitorious.com:#1/#2.git
+#git:assembla#=git@git.assembla.com:#1.git
+#git:unfuddle#=git@#1.unfuddle.com:#1/#2.git
+#github#=git:github/
+#gitorious#=git:gitorious/
 #p#=zcodebase
 #d_websaver2#=firefox/extensions/websaver2@myplace.hell|
 #d_repos#=/myplace/repos
 #name	|googlecode	|github	|target	|user
 #name	|target	|user	|repos1	|repos2                     
-perl				|						|		|svn/xrzperl			|git/perl				|git:gtr/perl			|git:local/perl
-shellscript			|						|		|svn/xrzshellscript		|git/shellscript		|git:gtr/shellscript	|git:local/
-text				|						|		|svn/ztext				|git/text				|git:gtr/text			|git:local/
-usys				|						|		|svn/zusys				|git/usys				|git:gtr/usys			|git:local/
-vb6					|						|		|svn/xrzvb6				|git/vb6				|git:gtr/vb6			|git:local/
-freebasic			|						|		|svn/zfreebasic			|git/freebasic			|git:gtr/freebasic		|git:local/
-ebook				|						|		|svn/zebook				|git/ebook				|git:gtr/ebook			|git:local/
-ffprofile			|firefox				|		|svn/ffprofile			|git/ffprofile			|git:gtr/ffprofile		|git:local/
-batch				|						|		|svn/#p#/batch			|git/batch				|git:gtr/batch			|git:local/
-c					|						|		|svn/#p#/c				|git/c					|git:gtr/c				|git:local/
-cpp					|						|		|svn/#p#/cpp			|git/cpp				|git:gtr/cpp			|git:local/
-drawing				|						|		|svn/zdrawing			|git/drawing			|git:gtr/drawing		|git:local/
-badluck				|perl/badluck			|		|svn/badluck			|git/badluck			|git:gtr/badluck		|git:local/
-nightgun			|perl/nightgun			|		|svn/nightgun			|git/nightgun			|git:gtr/nightgun		|git:local/
-websaver2			|#d_websaver2#			|		|svn/websaver2			|git/websaver2			|git:gtr/websaver2		|git:local/
-libmyplace-perl		|perl/modules/MyPlace	|		|svn/					|git/					|git:gtr/				|git:local/
-www					|						|		|svn/zwww				|git/www				|git:gtr/www			|git:local/
-utils				|						|		|svn/zutils				|git/utils				|git:gtr/utils			|git:local/
-gmscripts			|firefox/gm_scripts		|		|svn:pl/				|git:asm/gm-scripts		|git:ufd/				|git:local/
-babebase			|perl/urlrule			|		|svn:pl/				|git:asm/				|git:ufd/				|git:local/
-gsbridge			|.						|		|svn:pl/				|git:asm/				|git:ufd/				|git:local/
-repos				|#d_repos#				|		|svn:repos/trunk		|git:repos1/root		|git:repos2/root
-repos/root			|#d_repos#				|		|svn:repos/trunk		|git:repos1/root		|git:repos2/root
-repos/babebase		|#d_repos#/babebase		|		|svn:repos/babebase		|git:repos1/babebase	|git:repos2/babebase
-repos/gmscripts		|#d_repos#/gmscripts	|		|svn:repos/gmscripts	|git:repos1/gmscripts	|git:repos2/gmscripts
-repos/gsbridge		|#d_repos#/gsbridge		|		|svn:repos/gsbridge		|git:repos1/gsbridge	|git:repos2/gsbridge
-repos/empty			|#d_repos#/_empty		|		|svn:repos/empty		|git:repos1/empty		|git:repos2/empty
-repos/workspace		|#d_repos#/workspace	|		|svn:repos/workspace	|git:repos1/workspace	|git:repos2/workspace
-webpages			|webpages				|#u_x#	|svn/xiaoranzzz			|git/webpages				|git:ghx/xiaoranzzz.github.com	|git:gtr/webpages
-
+vb6					|						|		|svn/xrzvb6				|git:1/					|git:2/		|git:local/
+ebook				|						|		|svn/zebook				|git:1/					|git:2/		|git:local/
+ffprofile			|firefox				|		|svn/ffprofile			|git:1/					|git:2/		|git:local/
+drawing				|						|		|svn/zdrawing			|git:1/					|git:2/		|git:local/
+badluck				|perl/badluck			|		|svn/badluck			|git:1/					|git:2/		|git:local/
+nightgun			|perl/nightgun			|		|svn/nightgun			|git:1/					|git:2/		|git:local/
+websaver2			|#d_websaver2#			|		|svn/websaver2			|git:1/					|git:2/		|git:local/
+www					|						|		|svn/zwww				|git:1/					|git:2/		|git:local/
+utils				|						|		|svn/zutils				|git:1/					|git:2/		|git:local/
+text				|						|		|svn/ztext				|git:1/					|git:2/		|git:local/
+usys				|						|		|svn/zusys				|git:1/					|git:2/		|git:local/
+webpages			|webpages				|#u_x#	|svn/xiaoranzzz			|git:1/					|git:2/		|#github#xiaoranzzz/xiaoranzzz.github.com	
+perl				|						|		|svn/xrzperl			|#github#zscripts/			|#gitorious#zscripts/			|git:local/
+shellscript			|						|		|svn/xrzshellscript		|#github#zscripts/sh		|#gitorious#zscripts/sh			|git:local/
+libmyplace-perl		|perl/modules/MyPlace	|		|svn/					|#github#zscripts/			|#gitorious#zscripts/			|git:local/
+batch				|						|		|svn/#p#/batch			|#github#zscripts/			|#github#zscripts/				|git:local/
+c					|						|		|svn/#p#/				|#github#zcodebase/			|#gitorious#zcodebase/			|git:local/
+cpp					|						|		|svn/#p#/				|#github#zcodebase/			|#gitorious#zcodebase/			|git:local/
+freebasic			|						|		|svn/zfreebasic			|#github#zcodebase/			|#gitorious#zcodebase/			|git:local/
+gmscripts			|firefox/gm_scripts		|		|svn:pl/				|git:3/gm-scripts			|git:4/					|git:local/
+babebase			|perl/urlrule			|		|svn:pl/				|git:3/						|git:4/					|git:local/
+gsbridge			|.						|		|svn:pl/				|git:3/						|git:4/					|git:local/
+repos				|#d_repos#				|		|svn/zrepos/trunk		|#github#zrepos/root		|#gitorious#zrepos/root
+repos/root			|#d_repos#				|		|svn/zrepos/trunk		|#github#zrepos/root		|#gitorious#zrepos/root
+repos/babebase		|#d_repos#/babebase		|		|svn/zrepos/babebase	|#github#zrepos/babebase	|#gitorious#zrepos/babebase
+repos/gmscripts		|#d_repos#/gmscripts	|		|svn/zrepos/gmscripts	|#github#zrepos/gmscripts	|#gitorious#zrepos/gmscripts
+repos/gsbridge		|#d_repos#/gsbridge		|		|svn/zrepos/gsbridge	|#github#zrepos/gsbridge	|#gitorious#zrepos/gsbridge
+repos/empty			|#d_repos#/_empty		|		|svn/zrepos/empty		|#github#zrepos/empty		|#gitorious#zrepos/empty
+repos/workspace		|#d_repos#/workspace	|		|svn/zrepos/workspace	|#github#zrepos/workspace	|#gitorious#zrepos/workspace
+myplace             |/myplace               |       |svn/zmyplace/windows   |#github#zmyplace/windows   |#gitorious#zmyplace/windows
+miniplace           |miniplace            	|       |svn/zmyplace/miniplace	|#github#zmyplace/mini      |#gitorious#zmyplace/mini
