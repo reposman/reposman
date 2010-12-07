@@ -56,6 +56,7 @@ $CONFIG{svn} = "https://#1.googlecode.com/svn/#2";
 $CONFIG{'git:github'} = "git\@github.com:#1/#2.git";
 $CONFIG{'git:gitorious'} = "git\@gitorious.org:#1/#2.git";
 $CONFIG{authors} = 'authors';
+$CONFIG{GS_DIR} = getcwd();
 my %MACRO;
 
 my %project;
@@ -155,8 +156,13 @@ sub get_repo {
         next unless($url);
         if($url =~ m/^(svn|git):([^\/]+)\/(.*)$/i) {
             my $template = $CONFIG{"$1:$2"} ? $CONFIG{"$1:$2"} : "$2/$3";
-            $url = translate_url($template,$3 ? $3 : $name);
-            push @{$r{$1}},$url;
+			my $subname = $3;
+			my $type = $1;
+			if($subname and $subname =~ m/\/$/) {
+				$subname = $subname . $name;
+			}
+			$url = translate_url($template,$subname ? $subname : $name);
+            push @{$r{$type}},$url;
         }
         elsif($url =~ m/^(svn|git)\/(.*)$/){
             my $template = $CONFIG{$1} ? $CONFIG{$1} : "$2";
@@ -208,36 +214,27 @@ sub reset_repo {
 	}
 	update_repo($repo);
 }
-sub clone_repo {
+sub init_repo {
     my $repo = shift;
-    my @cmd;
     if($repo->{svn_main}) {
-        my $user_file = $CONFIG{authors} . ".txt";
-#        if(! -f $user_file) {
-#            open FO,">",$user_file;
-#            print FO "$repo->{user} = $repo->{username} <$repo->{email}>\n";
-#            close FO;
-#        }
-        @cmd = qw/git svn clone/;
-        push @cmd,'-A',$user_file if(-f $user_file);
-        push @cmd,'-s',$repo->{svn_main};
+        my $user_file = $CONFIG{GS_DIR} . "/" . $CONFIG{authors} . ".txt";
+		$user_file = undef unless(-f $user_file);
+		init_svn_repo('svn',$repo->{svn_main},$user_file) 
+			or return error("fatal: while initializing $repo->{svn_main}\n");
     }
     elsif($repo->{git_main}) {
-        @cmd = qw/git clone/;
-        push @cmd,$repo->{git_main};
-    }
-    else {
-        return error("fatal: no main subversion or git repository found!\n");
-    }
-    unless(run(@cmd,$repo->{target})) {
-        return error("fatal: while pulling $repo->{name}, ABORT!\n");
-    }
+		init_git_repo($repo->{git_main}) 
+			or return error("fatal: while initializing $repo->{git_main}\n");
+	}
     return 1;
 }
 
 sub init_svn_repo {
-    my ($name,$url) = @_;
-	return 1;
+    my ($name,$url,$authors_file) = @_;
+	run(qw/git config --remove-section/,"svn-remote." . $name);
+	if($authors_file) {
+		run(qw/git config svn.authorsfile/,$authors_file);
+	}
     run(qw/git svn -R/,$name,qw/init -s/,$url) 
         or return error("fatal: while git svn init [$name] $url\n");
     run(qw/git svn -R/,$name,"fetch")
@@ -466,19 +463,20 @@ else {
     	}
         my $repo = get_repo($query_text,@{$pdata});
         unless($F_TEST or -d $repo->{target}) {
-            if(system("mkdir","-p",$repo->{target}) != 0) {
-                error("fatal: while create directory " . $repo->{target});
-                next;
-            }
+			run(qw/git init/,$repo->{target});
+            #if(system("mkdir","-p",$repo->{target}) != 0) {
+            #    error("fatal: while create directory " . $repo->{target});
+            #    next;
+            #}
         }
-        unless(clone_repo($repo)) {
-            error("fatal: while clone repo\n");
-        }
-        unless($F_TEST) {
+		unless($F_TEST) {
             unless(chdir($repo->{target})) {
                 error("$!\n");
                 next;
             }
+        }
+        unless(init_repo($repo)) {
+            error("fatal: while clone repo\n");
         }
         unless(update_repo($repo)) {
             error("fatal: while update repo\n");
