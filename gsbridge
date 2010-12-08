@@ -219,8 +219,11 @@ sub init_repo {
     if($repo->{svn_main}) {
         my $user_file = $CONFIG{GS_DIR} . "/" . $CONFIG{authors} . ".txt";
 		$user_file = undef unless(-f $user_file);
-		init_svn_repo('svn',$repo->{svn_main},$user_file) 
+		run(qw/git config --remove-section/,"svn-remote.svn");
+		run(qw/git svn clone/, ($user_file ? ('-A',$user_file) : "--verbose"),'-s',$repo->{svn_main},".")
 			or return error("fatal: while initializing $repo->{svn_main}\n");
+		#init_svn_repo('svn',$repo->{svn_main},$user_file) 
+			#or return error("fatal: while initializing $repo->{svn_main}\n");
     }
     elsif($repo->{git_main}) {
 		init_git_repo($repo->{git_main}) 
