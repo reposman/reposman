@@ -2,13 +2,13 @@
 msg="$*"
 d=`dirname "$0"`
 
-svnadmin pack svn
-git --bare --git-dir=git gc
+#svnadmin pack svn
+#git --bare --git-dir=git gc
 
 git add git
 git add svn
 
-"$d/genlog"
+perl "$d/genlog.pl"
 
 if [ -f "repo.log.bak" ] ; then
 	cp -av "repo.log.bak" "repo.log"
