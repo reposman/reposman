@@ -1,16 +1,36 @@
 #id:e#=eotect
-#svn:gc:pull#=http://#1.googlecode.com/svn/#2
-#svn:gc:push#=https://#1.googlecode.com/svn/#2
-#svn:pl:pull#=http://pl3.projectlocker.com/#1/#2/svn
-#svn:pl:push#=https://pl3.projectlocker.com/#1/#2/svn
+#id:x#=xiaoranzzz
+#em:e#=#id:e#@gmail.com
+#em:x#=#id:x#@gmail.com
 #svn:asm:pull#=http://subversion.assembla.com/svn/#1
 #svn:asm:push#=https://subversion.assembla.com/svn/#1
-#svn:ufd:pull#=http://#1.unfuddle.com/svn/#1_#2
-#svn:ufd:push#=http://#1.unfuddle.com/svn/#1_#2
+#svn:gc:pull#=http://#1.googlecode.com/svn/#2
+#svn:gc:push#=https://#1.googlecode.com/svn/#2
 #svn:local:pull#=/myplace/repos/#1/svn/#2
 #svn:local:push#=/myplace/repos/#1/svn/#2
-
-perl			|svn:local/perl			|#id:e#	|svn:gc/xrzperl			|#id:e#
-shellscript		|svn:local/sh			|#id:e#	|svn:gc/xrzshellscript	|#id:e#
-
-
+#svn:pl:pull#=http://pl3.projectlocker.com/#1/#2/svn
+#svn:pl:push#=https://pl3.projectlocker.com/#1/#2/svn
+#svn:ufd:pull#=http://#1.unfuddle.com/svn/#1_#2
+#svn:ufd:push#=http://#1.unfuddle.com/svn/#1_#2
+badluck			|svn:local/				|#id:e#	|svn:gc/				|#id:e#
+ffprofile		|svn:local/				|#id:e# |svn:gc/				|#id:e#
+libmyplace-perl	|svn:local/				|#id:e#	|svn:gc/				|#id:e#
+nightgun		|svn:local/				|#id:e# |svn:gc/				|#id:e#
+websaver2		|svn:local/				|#id:e# |svn:gc/				|#id:e#
+perl			|svn:local/				|#id:e#	|svn:gc/xrzperl			|#id:e#
+shellscript		|svn:local/				|#id:e#	|svn:gc/xrzshellscript	|#id:e#
+vb6				|svn:local/				|#id:e#	|svn:gc/xrzvb6			|#id:e#
+drawing			|svn:local/				|#id:e#	|svn:gc/zdrawing		|#id:e#
+ebook			|svn:local/				|#id:e#	|svn:gc/zebook			|#id:e#
+freebasic		|svn:local/				|#id:e#	|svn:gc/zfreebasic		|#id:e#
+text			|svn:local/				|#id:e#	|svn:gc/ztext			|#id:e#
+usys			|svn:local/				|#id:e#	|svn:gc/zusys			|#id:e#
+utils			|svn:local/				|#id:e#	|svn:gc/zutils			|#id:e#
+www				|svn:local/				|#id:e#	|svn:gc/zwww			|#id:e#
+codebase		|svn:local/				|#id:e# |svn:gc/zcodebase		|#id:e#
+myplace			|svn:local/				|#id:e# |svn:gc/zmyplace		|#id:e#
+repos			|svn:local/				|#id:e# |svn:gc/zrepos			|#id:e#
+webpages		|svn:local/				|#id:x#	|svn:gc/xiaoranzzz		|#id:x#
+babebase		|svn:local/				|#em:e# |svn:pl/#id:e#/			|#em:e#
+gmscripts		|svn:local/				|#em:e# |svn:pl/#id:e#/			|#em:e#
+gsbridge		|svn:local/				|#em:e# |svn:pl/#id:e#/			|#em:e#
