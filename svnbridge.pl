@@ -5,7 +5,7 @@ require v5.10.0;
 our $VERSION = 'v1.0';
 
 my %OPTS;
-my @OPTIONS = qw/help|h|? manual|m test|t project|p dump|d dump-config|dc dump-data|dd check|c pull push/;
+my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-config|dc dump-data|dd check|c pull push/;
 if(@ARGV)
 {
     require Getopt::Long;
@@ -31,7 +31,7 @@ unless($have_opts) {
 	}
 	else {
 		unshift @ARGV,$first_arg;
-		$OPTS{push} = 1;
+		$OPTS{pull} = 1;
 	}
 }
 #END	//map options to actions
@@ -90,11 +90,11 @@ sub parse_project_data {
     foreach my $line (@_) {
         $_ = $line;
         chomp;
-        #print STDERR "[1]",$_,"\n";
+        print STDERR "debug::parse_project_data>[1]",$_,"\n" if($OPTS{debug});
         foreach my $v_name (keys %MACRO) {
             s/#$v_name#/$MACRO{$v_name}/g;
         }
-        #print STDERR "[2]",$_,"\n";
+        print STDERR "debug::parse_project_data>[2]",$_,"\n" if($OPTS{debug});
         if(m/^\s*#([^#]+)#\s*=\s*(.+?)\s*$/) {
             my $name = $1;
             my $value = $2;
@@ -105,7 +105,8 @@ sub parse_project_data {
             $MACRO{$name} = $value;
             next;
         }
-        my @data = (split(/\s*\|\s*/,$_),'','','','','','','');
+        #my @data = (split(/\s*\|\s*/,$_),'','','','','','','');
+        my @data = split(/\s*\|\s*/,$_);
         foreach(@data) {
             s/^\s+|\s+$//;
         }
@@ -143,6 +144,9 @@ sub get_repo {
 	my ($name,$new_target) = parse_query($query_name);
     $r{name} = $name;
     @repo_data = ("svn:local/$name",'id',"svn:remote/$name",'id') unless(@repo_data);
+	if($OPTS{debug}) {
+		print STDERR "debug::get_repo> $name -  ",join("  |",@repo_data),"\n";
+	}
 	while(@repo_data) {
 		my $push = shift @repo_data;
 		next unless($push);
@@ -151,15 +155,15 @@ sub get_repo {
 		}
 		my $pull = $push;
 		my $id = shift @repo_data;
-		if($push =~ m/\s*([^:]+):([^:]+)\/(.*?)\s*$/) {
+		if($push =~ m/\s*([^:]+):([^:\/]+)\/(.*?)\s*$/) {
 			$push = translate_url($CONFIG{"$1:$2:push"},$3) if($CONFIG{"$1:$2:push"});
 		}
-		if($pull =~ m/\s*([^:]+):([^:]+)\/(.*?)\s*$/) {
+		if($pull =~ m/\s*([^:]+):([^:\/]+)\/(.*?)\s*$/) {
 			$pull = translate_url($CONFIG{"$1:$2:pull"},$3) if($CONFIG{"$1:$2:pull"});
 		}
 		push @{$r{url}},[$push,$pull,$id];
 	}
-	if(@{$r{url}}) {
+	if($r{url} and @{$r{url}}) {
 		$r{main} = shift @{$r{url}};
 	}
     return \%r;
@@ -281,7 +285,7 @@ sub push_repo {
 	my (undef,$src,$src_id) = @{$main};
 	foreach(@remotes) {
 		my ($dst,undef,$dst_id) = @{$_};
-		svnsync($src,$dst.$src_id,$dst_id);
+		svnsync($src,$dst,$src_id,$dst_id);
 	}
 }
 
