@@ -41,6 +41,7 @@ else
 	if [ -f "repo.log.bak" ] ; then
 		cp -av "repo.log.bak" "repo.log"
 	fi
+	exit 1
 fi
 
 if git svn dcommit ; then
@@ -48,6 +49,7 @@ if git svn dcommit ; then
 	rm status info repo.log.bak
 else
 	echo "git svn dcommit failed"
+	git reset HEAD^
 	if [ -f "repo.log.bak" ] ; then
 		cp -av "repo.log.bak" "repo.log"
 	fi
