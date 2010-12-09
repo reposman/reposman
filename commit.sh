@@ -1,10 +1,12 @@
 #!/bin/sh
-
+msg="$*"
 d=`dirname "$0"`
 
 svnadmin pack svn
 git --bare --git-dir=git gc
 
+git add git
+git add svn
 
 "$d/genlog"
 
@@ -17,17 +19,21 @@ else
 	touch repo.log.bak
 fi
 
-if [ -f "info" ] ; then
-	cat info >>repo.log
-fi
 
 gc="git commit"
-if [ -f "status" ] ; then
-	gc="$gc -aF status"
+if [ -n "$msg" ] ; then
+	gc="$gc -am "${msg}""
 else
-	gc="$gc -a"
+	if [ -f "info" ] ; then
+		cat info >>repo.log
+	fi
+	if [ -f "status" ] ; then
+		gc="$gc -aF status"
+	else
+		gc="$gc -a"
+	fi
 fi
-
+echo $gc
 if $gc ; then
 	echo "git commit OK"
 else
