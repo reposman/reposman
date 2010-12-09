@@ -1,0 +1,16 @@
+#id:e#=eotect
+#svn:gc:pull#=http://#1.googlecode.com/svn/#2
+#svn:gc:push#=https://#1.googlecode.com/svn/#2
+#svn:pl:pull#=http://pl3.projectlocker.com/#1/#2/svn
+#svn:pl:push#=https://pl3.projectlocker.com/#1/#2/svn
+#svn:asm:pull#=http://subversion.assembla.com/svn/#1
+#svn:asm:push#=https://subversion.assembla.com/svn/#1
+#svn:ufd:pull#=http://#1.unfuddle.com/svn/#1_#2
+#svn:ufd:push#=http://#1.unfuddle.com/svn/#1_#2
+#svn:local:pull#=/myplace/repos/#1/svn/#2
+#svn:local:push#=/myplace/repos/#1/svn/#2
+
+perl			|svn:local/perl			|#id:e#	|svn:gc/xrzperl			|#id:e#
+shellscript		|svn:local/sh			|#id:e#	|svn:gc/xrzshellscript	|#id:e#
+
+
