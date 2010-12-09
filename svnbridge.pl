@@ -236,7 +236,8 @@ sub svnsync {
 	print STDERR "to  \t$DEST_URL\n";
 	run(@svnsync,'init',$DEST_URL,$SOURCE_URL);
 	print STDERR "start syncing...\n";
-	run(@svnsync,'sync',$DEST_URL);
+	 run(@svnsync,'sync',$DEST_URL)	
+		or return error("fatal: while syncing $DEST_URL\n");
 	return 1;
 }
 sub unique_name {
@@ -388,7 +389,7 @@ foreach my $query_text (@query) {
     		next;
     	}
         my $repo = get_repo($query_text,@{$pdata});
-		&$action_sub($repo);
+		&$action_sub($repo) or die("\n");
         print STDERR "\n";
 }
 
