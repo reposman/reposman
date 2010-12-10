@@ -5,7 +5,7 @@ require v5.10.0;
 our $VERSION = 'v1.0';
 
 my %OPTS;
-my @OPTIONS = qw/help|h|? manual|m test|t project|p dump|d dump-config|dc dump-data|dd check|c list|l pull reset|r no-git|ng no-svn|ns/;
+my @OPTIONS = qw/help|h|? manual|m test|t project|p dump|d dump-config|dc dump-data|dd check|c list|l pull reset|r no-git|ng no-svn|ns push/;
 if(@ARGV)
 {
     require Getopt::Long;
@@ -26,7 +26,7 @@ foreach(keys %OPTS) {
 }
 unless($have_opts) {
 	my $first_arg = shift;
-	if($first_arg and $first_arg =~ m/^(help|manual|test|project|dump|dump-config|dump-data|check|list|pull|reset)$/) {
+	if($first_arg and $first_arg =~ m/^(help|manual|test|project|dump|dump-config|dump-data|check|list|pull|reset|push)$/) {
 		$OPTS{$first_arg} = 1;
 	}
 	else {
@@ -138,6 +138,34 @@ sub translate_url {
     return $url;
 }
 
+sub push_remote {
+    my @remotes;
+    open FI,"-|",qw/git remote/;
+    while(<FI>) {
+        chomp;
+        push @remotes,$_ if($_);
+    }
+    close FI;
+    if(@remotes) {
+        my $idx=0;
+        my $count=@remotes;
+        foreach(@remotes) {
+            $idx++;
+            my $url = `git config --get "remote.$_.url"`;
+            chomp($url);
+            print "[$idx/$count]pushing to [$_] $url ...\n";
+            if(system(qw/git push/,$_,@_)!=0) {
+                print "[$idx/$count]pushing to [$_] failed\n";
+                return undef;
+            }
+        }
+    }
+    else {
+       print "NO remotes found, stop pushing\n";
+       return undef;
+    }
+    return 1;
+}
 sub get_repo {
     my ($query_name,$target,$user,@repo_data) = @_;
     my %r;
@@ -475,6 +503,31 @@ elsif($OPTS{reset}) {
         }        
         print STDERR "\n";
     }
+}
+elsif($OPTS{push}) {
+    print STDERR "pushing $count ", $count > 1 ? "projects" : "project", " ...\n";
+    foreach my $query_text (@query) {
+        $idx++;
+		my ($name,$pdata) = get_project_data($query_text);
+        print STDERR "[$idx/$count] push project [$name]...\n";
+    	if((!$pdata) or (!ref $pdata)) {
+    		print STDERR "[$idx/$count] project $name not defined.\n";
+    		next;
+    	}
+        my $repo = get_repo($query_text,@{$pdata});
+		if(! -d $repo->{target}) {
+			print STDERR "[$idx/$count] project $name target not exists\n";
+			next;
+		}
+		chdir($repo->{target}) or die("$!\n");
+		if(!$OPTS{test}) {
+			push_remote('--all','--force');
+		}
+		else {
+			push_remote('--all','--force','--dry-run');
+		}
+		chdir($cwd) or die("$!\n");
+	}
 }
 else {
     print STDERR "pulling $count ", $count > 1 ? "projects" : "project", " ...\n";

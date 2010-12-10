@@ -24,3 +24,5 @@ cmd/
 repos/
 gsvn/
 webpages/
+miniplace/
+.*.swp
