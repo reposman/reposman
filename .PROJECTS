@@ -15,8 +15,8 @@
 #svn:ufd#=http://#u#.unfuddle.com/svn/#u#_#1
 #svn:repos#=https://zrepos.googlecode.com/svn/#1/
 #svn:local#=file:///myplace/repos/#1/svn/#2
-#git:1#=git@github:eotect/#1.git
-#git:2#=git@gitorious:eotect/#1.git
+#git:1#=git@github.com:eotect/#1.git
+#git:2#=git@gitorious.org:eotect/#1.git
 #git:3#=git@git.assembla.com:#1.git
 #git:4#=git@eotect.unfuddle.com:eotect/#1.git
 #git:local#=/myplace/repos/#1/git
@@ -63,3 +63,4 @@ repos/workspace		|#d_repos#/workspace	|		|svn/zrepos/workspace	|#github#zrepos/w
 myplace             |/myplace               |       |svn/zmyplace/windows   |#github#zmyplace/windows   |#gitorious#zmyplace/windows
 miniplace           |miniplace            	|       |svn/zmyplace/miniplace	|#github#zmyplace/mini      |#gitorious#zmyplace/mini
 webpages			|webpages				|#u_x#	|svn/xiaoranzzz			|git:1/						|git:2/		|#github#xiaoranzzz/xiaoranzzz.github.com	
+gsvn-bundle			|						|		|svn/					|git:1/						|git:2/	

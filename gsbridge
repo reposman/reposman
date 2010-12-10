@@ -5,7 +5,7 @@ require v5.10.0;
 our $VERSION = 'v1.0';
 
 my %OPTS;
-my @OPTIONS = qw/help|h|? manual|m test|t project|p dump|d dump-config|dc dump-data|dd check|c list|l pull reset|r/;
+my @OPTIONS = qw/help|h|? manual|m test|t project|p dump|d dump-config|dc dump-data|dd check|c list|l pull reset|r no-git|ng no-svn|ns/;
 if(@ARGV)
 {
     require Getopt::Long;
@@ -187,14 +187,26 @@ sub get_repo {
         $r{svn_main} = shift @svns;
         $r{svn} = \@svns;
     }
-    elsif($r{git} and @{$r{git}}) {
+    if($r{git} and @{$r{git}}) {
         my @gits = @{$r{git}};
         $r{git_main} = shift @gits;
         $r{git} = \@gits;
     }
     return \%r;
 }
-
+sub config_repo {
+	my $repo = shift;
+    if($repo->{username}) {
+        run(qw/git config user.name/,$repo->{username}) or return error("fatal: while git config\n");
+    }
+    if($repo->{email}) {
+        run(qw/git config user.email/,$repo->{email}) or return error("fatal: while git config\n");
+    }
+    my $user_file = $CONFIG{GS_DIR} . "/" . $CONFIG{authors} . ".txt";
+	if(-f $user_file) {
+		run(qw/git config svn.authorsfile/,$user_file);
+	}
+}
 
 sub check_repo {
     run('git','status') or return undef;
@@ -204,19 +216,29 @@ sub check_repo {
 }
 sub reset_repo {
 	my $repo = shift;
-	system('rm',"-v",".git/config");
+#	system('rm',"-v",".git/config");
 	system("rm","-fvr",".git/refs/remotes");
-	if($repo->{svn_main}) {
+	system("rm","-fvr",".git/svn");
+	config_repo($repo);
+	if($repo->{svn_main} and !$OPTS{'no-svn'}) {
+		unshift @{$repo->{git}},$repo->{git_main} if($repo->{git_main});
+		$repo->{git_main} = undef;
 		init_svn_repo('svn',$repo->{svn_main});	
 	}
-	if($repo->{git_main}) {
+	if($repo->{git_main} and !$OPTS{'no-git'}) {
+		unshift @{$repo->{svn}},$repo->{svn_main} if($repo->{svn_main});
+		$repo->{svn_main}=undef;
 		init_git_repo($repo->{git_main});		
 	}
 	update_repo($repo);
 }
 sub init_repo {
     my $repo = shift;
-    if($repo->{svn_main}) {
+	config_repo($repo);
+
+    if($repo->{svn_main} and !$OPTS{'no-svn'}) {
+		unshift @{$repo->{git}},$repo->{git_main} if($repo->{git_main});
+		$repo->{git_main} = undef;
         my $user_file = $CONFIG{GS_DIR} . "/" . $CONFIG{authors} . ".txt";
 		$user_file = undef unless(-f $user_file);
 		run(qw/git config --remove-section/,"svn-remote.svn");
@@ -225,9 +247,15 @@ sub init_repo {
 		#init_svn_repo('svn',$repo->{svn_main},$user_file) 
 			#or return error("fatal: while initializing $repo->{svn_main}\n");
     }
-    elsif($repo->{git_main}) {
-		init_git_repo($repo->{git_main}) 
-			or return error("fatal: while initializing $repo->{git_main}\n");
+    if($repo->{git_main} and !$OPTS{'no-git'}) {
+		unshift @{$repo->{svn}},$repo->{svn_main} if($repo->{svn_main});
+		$repo->{svn_main}=undef;
+		run(qw/git remote rm origin/);
+		run(qw/git remote add origin/,$repo->{git_main});
+		run(qw/git config branch.master.remote origin/);
+		run(qw/git config branch.master.merge/,"refs/heads/master");
+		run(qw/git pull/) or
+			return error("fatal: while initializing $repo->{git_main}\n");
 	}
     return 1;
 }
@@ -288,13 +316,7 @@ sub init_git_repo {
 }
 sub update_repo {
     my $repo = shift;
-    if($repo->{username}) {
-        run(qw/git config user.name/,$repo->{username}) or return error("fatal: while git config\n");
-    }
-    if($repo->{email}) {
-        run(qw/git config user.email/,$repo->{email}) or return error("fatal: while git config\n");
-    }
-    if($repo->{svn} and @{$repo->{svn}}) {
+    if($repo->{svn} and @{$repo->{svn}} and !$OPTS{'no-svn'}) {
         foreach my $host (@{$repo->{svn}}) {
             unless(init_svn_repo(undef,$host)) {
 				error("fatal: while init svn repo [$host]\n");
@@ -302,7 +324,7 @@ sub update_repo {
 			}
         }
     }
-    if($repo->{git} and @{$repo->{git}}) {
+    if($repo->{git} and @{$repo->{git}} and !$OPTS{'no-git'}) {
         unless(init_git_repo(@{$repo->{git}})) {
 			error("fatal: while init git repo\n");
 			next;
@@ -517,6 +539,14 @@ gsbridge [options] [action] [project_name|project_name:target]...
 =head1  OPTIONS
 
 =over 12
+
+=item B<-ng>,B<--no-git>
+
+Disable git repositories
+
+=item B<-ns>,B<--no-svn>
+
+Disable subversion repositories
 
 =item B<-r>,B<--reset>
 
