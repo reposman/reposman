@@ -12,6 +12,7 @@
 #svn:pl:push#=https://pl3.projectlocker.com/#1/#2/svn
 #svn:ufd:pull#=http://#1.unfuddle.com/svn/#1_#2
 #svn:ufd:push#=http://#1.unfuddle.com/svn/#1_#2
+gsvn-bundle		|svn:local/				|#id:e#	|svn:gc/				|#id:e#
 badluck			|svn:local/				|#id:e#	|svn:gc/				|#id:e#
 ffprofile		|svn:local/				|#id:e# |svn:gc/				|#id:e#
 libmyplace-perl	|svn:local/				|#id:e#	|svn:gc/				|#id:e#
