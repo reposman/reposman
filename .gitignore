@@ -19,3 +19,15 @@ websaver2/
 www/
 xiaoranzzz/
 gmscripts/
+*.svndump.*
+codebase/
+drawing/
+ebook/
+freebasic/
+gsvn-bundle/
+myplace/
+repos/
+usys/
+vb6/
+webpages/
+workspace/

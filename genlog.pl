@@ -14,17 +14,16 @@ $name =~ s/^.*\///;
 $name = uc($name);
 
 sub gen_log {
-    open FO,'>info';
-    open FS,'>status';
-    print FO "$name:\n\n";
+	my @full_log;
+	my @short_log;
     my %svn;
     my %git;
     open FI,'-|','svn','info',$svn_url;
-    print FO <FI>;
+	push @full_log,<FI>;
     close FI;
     open FI,'-|','svn','log','-r','HEAD',$svn_url;
     foreach(<FI>) {
-        print FO $_;
+        push @full_log,$_;
         chomp;
         next unless($_);
         if(m/^-------------+/) {
@@ -38,13 +37,12 @@ sub gen_log {
             $svn{comment} .= $_;
         }
     }
-    print FO <FI>;
+	push @full_log,<FI>;
     close FI;
-    print FO "\n";
-    print FO "Path  : git\n";
+    push @full_log,"\nPath  : git\n";
     open FI,'-|','git','--bare','log','-1','--stat','--pretty=Date  : %ci%nAuthor: %an%nCommit: %H%n%n    %s%n%n%b';
     foreach(<FI>) {
-        print FO $_;
+        push @full_log,$_;
         if(m/^Author:(.+)/) {
             $git{author} = $1;
         }
@@ -55,19 +53,25 @@ sub gen_log {
             $git{comment} = $1;
         }
     }
-    print FO <FI>;
+	push @full_log,<FI>;
     close FI;
 
     chomp($svn{comment}) if($svn{comment});
     chomp($git{comment}) if($git{comment});
 	if($svn{comment} eq $git{comment}) {
-	    print FS "$name [SVN] r$svn{rev} [GIT] commit $git{commit}: $git{comment}";
+	    push @short_log,"$name [SVN] r$svn{rev} [GIT] commit $git{commit}: $git{comment}";
 	}
 	else {
-	    print FS "$name [SVN] r$svn{rev}: $svn{comment} [GIT] commit $git{commit}: $git{comment}";
+		push @short_log,"$name [SVN] r$svn{rev}: $svn{comment} [GIT] commit $git{commit}: $git{comment}";
 	}
-    close FS;
+    open FO,'>info';
+	print FO @short_log,"\n\n";
+	print FO @full_log,"\n";
+	print FO "="x80,"\n\n";
     close FO;
+    open FS,'>status';
+	print FS @short_log;
+    close FS;
 }
 
 gen_log();
