@@ -54,7 +54,7 @@ gmscripts			|firefox/gm_scripts		|		|svn:pl/				|git:3/gm-scripts			|git:4/					
 babebase			|perl/urlrule			|		|svn:pl/				|git:3/						|git:4/							|git:local/
 gsbridge			|.						|		|svn:pl/				|git:3/						|git:4/							|git:local/
 repos				|#d_repos#				|		|svn/zrepos/root		|#github#zrepos/root		|#gitorious#zrepos/root
-repos/root			|#d_repos#				|		|svn/zrepos/root		|#github#zrepos/root		|#gitorious#zrepos/root
+#repos/root			|#d_repos#				|		|svn/zrepos/root		|#github#zrepos/root		|#gitorious#zrepos/root
 repos/babebase		|#d_repos#/babebase		|		|svn/zrepos/babebase	|#github#zrepos/babebase	|#gitorious#zrepos/babebase
 repos/gmscripts		|#d_repos#/gmscripts	|		|svn/zrepos/gmscripts	|#github#zrepos/gmscripts	|#gitorious#zrepos/gmscripts
 repos/gsbridge		|#d_repos#/gsbridge		|		|svn/zrepos/gsbridge	|#github#zrepos/gsbridge	|#gitorious#zrepos/gsbridge
