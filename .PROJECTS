@@ -60,7 +60,7 @@ repos/gmscripts		|#d_repos#/gmscripts	|		|svn/zrepos/gmscripts	|#github#zrepos/g
 repos/gsbridge		|#d_repos#/gsbridge		|		|svn/zrepos/gsbridge	|#github#zrepos/gsbridge	|#gitorious#zrepos/gsbridge
 repos/empty			|#d_repos#/_empty		|		|svn/zrepos/empty		|#github#zrepos/empty		|#gitorious#zrepos/empty
 repos/workspace		|#d_repos#/workspace	|		|svn/zrepos/workspace	|#github#zrepos/workspace	|#gitorious#zrepos/workspace
-myplace             |/myplace               |       |svn/zmyplace/windows   |#github#zmyplace/windows   |#gitorious#zmyplace/windows
-miniplace           |miniplace            	|       |svn/zmyplace/miniplace	|#github#zmyplace/mini      |#gitorious#zmyplace/mini
+myplace             |/myplace/windows       |       |svn/zmyplace/windows   |#github#zmyplace/windows   |#gitorious#zmyplace/windows
+miniplace           |/myplace/miniplace     |	    |svn/zmyplace/miniplace	|#github#zmyplace/mini      |#gitorious#zmyplace/mini
 webpages			|webpages				|#u_x#	|svn/xiaoranzzz			|git:1/						|git:2/		|#github#xiaoranzzz/xiaoranzzz.github.com	
 gsvn-bundle			|						|		|svn/					|git:1/						|git:2/	
