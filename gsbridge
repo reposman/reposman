@@ -106,6 +106,9 @@ sub parse_project_data {
             $MACRO{$name} = $value;
             next;
         }
+		elsif(m/^\s*#/) {
+			next;
+		}
         my @data = (split(/\s*\|\s*/,$_),'','','','','','','');
         foreach(@data) {
             s/^\s+|\s+$//;
