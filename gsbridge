@@ -145,6 +145,9 @@ sub translate_url {
     else {
         $url =~ s{#1}{$path}g;
     }
+	$url =~ s/#\d//g;
+	$url =~ s/\/{2,}/\//g;
+	$url =~ s/:\/([^\/])/:\/\/$1/;
     $url =~ s/\/+$//;
 	print STDERR "translate_url>=$url\n" if($OPTS{debug});
     return $url;
