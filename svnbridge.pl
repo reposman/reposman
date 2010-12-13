@@ -105,6 +105,9 @@ sub parse_project_data {
             $MACRO{$name} = $value;
             next;
         }
+		elsif(m/^\s*#/) {
+			next;
+		}
         #my @data = (split(/\s*\|\s*/,$_),'','','','','','','');
         my @data = split(/\s*\|\s*/,$_);
         foreach(@data) {
@@ -124,7 +127,7 @@ sub parse_project_data {
 sub translate_url {
     my $url = shift;
     my $path = shift;
-    if($path =~ m/^([^\/]+)\/(.+)$/) {
+    if($url =~ m/#2/ and $path =~ m/^([^\/]+)\/(.+)$/) {
         my $a = $1;
         my $b = $2;
         $url =~ s/#1/$a/g;
