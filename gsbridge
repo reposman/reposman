@@ -5,7 +5,7 @@ require v5.10.0;
 our $VERSION = 'v1.0';
 
 my %OPTS;
-my @OPTIONS = qw/help|h|? manual|m debug test|t project|p dump|d dump-config|dc dump-data|dd check|c list|l pull reset|r no-git|ng no-svn|ns push/;
+my @OPTIONS = qw/help|h|? manual|m debug test|t project|p dump|d dump-config|dc dump-data|dd check|c list|l pull reset|r no-git|ng no-svn|ns push execute|x=s/;
 if(@ARGV)
 {
     require Getopt::Long;
@@ -385,7 +385,28 @@ sub update_repo {
     return 1;
 }
 
+sub push_repo {
+	my $repo = shift;
+	if($OPTS{test}) {
+		push_remote('--all','--force');
+	}
+	else {
+		push_remote('--all','--force','--dry-run');
+	}
+}
 
+sub pull_repo {
+	my $repo = shift;
+	init_repo($repo) or
+		return error("Error while initializing repo\n");
+	update_repo($repo) or
+		return error("Error while updating repo\n");
+	return 1;
+}
+sub execute_repo {
+	my $repo = shift;
+	run($OPTS{execute});
+}
 my $PROGRAM_DIR = $0;
 $PROGRAM_DIR =~ s/[^\/\\]+$//;
 my $cwd = getcwd();
@@ -408,9 +429,6 @@ if($PROJECT_FILE) {
 
 if(not (@ARGV or $PROJECT_FILE)) {
     print STDERR "input projects data line by line\n";
-    print STDERR "separate fields by \"|\".\n";
-    print STDERR "name|svn_name|git_name|target_dir|username\n";
-    print STDERR "----|--------|--------|----------|--------\n";
     parse_project_data(<STDIN>);
 }
 if($OPTS{project}) {
@@ -430,7 +448,8 @@ my @query = @ARGV ? @ARGV : (keys %project,keys %sub_project);
 
 
 if($OPTS{'list'}) {
-    $OPTS{'dump-data'} = 1;
+	print STDERR join("\n",sort(@query)),"\n";
+	exit 0;
 }
 
 if($OPTS{'dump'}) {
@@ -459,142 +478,41 @@ if($OPTS{'dump-config'} or $OPTS{'dump-data'}) {
 my $idx = 0;
 my $count = scalar(@query);
 
-if($OPTS{check}) {
-    print STDERR "ready to check $count ", $count > 1 ? "projects" : "project", " ...\n";
-    foreach my $query_text (@query) {
-        $idx++;
-		my ($name,$pdata) = get_project_data($query_text);
-        print STDERR "[$idx/$count] checking project $name...\n";
-    	if((!$pdata) or (!ref $pdata)) {
-    		print STDERR "[$idx/$count] project $name not defined.\n";
-    		next;
-    	}
-        my $repo = get_repo($query_text,@{$pdata});
-		print STDERR "[$idx/$count] $name -> $repo->{target}\n";
-        unless($F_TEST or -d $repo->{target}) {
-            error("[$idx/$count] target not exists: $repo->{target}\n");
-            next;
-            }
-        unless($F_TEST) {
-            unless(chdir($repo->{target})) {
-                error("[$idx/$count] error while chdir to $repo->{target}\n");
-                next;
-            }
-        }
-        unless(check_repo($repo)) {
-            error("[$idx/$count] error while checking $name\n");
-            next;
-        }
-        unless($F_TEST) {
-            unless(chdir($cwd)) {
-                die ("$!\n");
-            }
-        }        
-        print STDERR "\n";
-    }
-}
-elsif($OPTS{reset}) {
-    print STDERR "ready to reset $count ", $count > 1 ? "projects" : "project", " ...\n";
-    foreach my $query_text (@query) {
-        $idx++;
-		my ($name,$pdata) = get_project_data($query_text);
-        print STDERR "[$idx/$count] resetting project $name...\n";
-    	if((!$pdata) or (!ref $pdata)) {
-    		print STDERR "[$idx/$count] project $name not defined.\n";
-    		next;
-    	}
-        my $repo = get_repo($query_text,@{$pdata});
-		print STDERR "[$idx/$count] $name -> $repo->{target}\n";
-        unless($F_TEST or -d $repo->{target}) {
-            error("[$idx/$count] target not exists: $repo->{target}\n");
-            next;
-            }
-        unless($F_TEST) {
-            unless(chdir($repo->{target})) {
-                error("[$idx/$count] error while chdir to $repo->{target}\n");
-                next;
-            }
-        }
-        unless(reset_repo($repo)) {
-            error("[$idx/$count] error while resetting $name\n");
-            next;
-        }
-        unless($F_TEST) {
-            unless(chdir($cwd)) {
-                die ("$!\n");
-            }
-        }        
-        print STDERR "\n";
-    }
-}
-elsif($OPTS{push}) {
-    print STDERR "pushing $count ", $count > 1 ? "projects" : "project", " ...\n";
-    foreach my $query_text (@query) {
-        $idx++;
-		my ($name,$pdata) = get_project_data($query_text);
-        print STDERR "[$idx/$count] push project [$name]...\n";
-    	if((!$pdata) or (!ref $pdata)) {
-    		print STDERR "[$idx/$count] project $name not defined.\n";
-    		next;
-    	}
-        my $repo = get_repo($query_text,@{$pdata});
-		if(! -d $repo->{target}) {
-			print STDERR "[$idx/$count] project $name target not exists\n";
-			next;
+foreach my $action (qw/execute check reset push pull update/) {
+	if($OPTS{$action}) {
+		print STDERR "ready to $action $count ", $count > 1 ? "projects" : "project", " ...\n";
+	    foreach my $query_text (@query) {
+	        chdir($cwd) or die("$!\n");
+	        $idx++;
+			my ($name,$pdata) = get_project_data($query_text);
+	        print STDERR "[$idx/$count] project $name...\n";
+	    	if((!$pdata) or (!ref $pdata)) {
+	    		print STDERR "[$idx/$count] project $name not defined.\n";
+	    		next;
+	    	}
+	        my $repo = get_repo($query_text,@{$pdata});
+			print STDERR "[$idx/$count] $name -> $repo->{target}\n";
+			print STDERR "[$idx/$count] changing to target directory\n";
+	        unless(-d $repo->{target}) {
+	            error("[$idx/$count] target not exists: $repo->{target}\n\n");
+	            next;
+	        }
+	        unless(chdir($repo->{target})) {
+	            error("[$idx/$count] error while chdir to $repo->{target}\n\n");
+	            next;
+	        }
+	        unless(eval($action . "_repo(\$repo)")) {
+	            error("[$idx/$count] error while to $action $name\n\n");
+	            next;
+	        }
+	        print STDERR "\n";
 		}
-		chdir($repo->{target}) or die("$!\n");
-		if(!$OPTS{test}) {
-			push_remote('--all','--force');
-		}
-		else {
-			push_remote('--all','--force','--dry-run');
-		}
-		chdir($cwd) or die("$!\n");
-	}
-}
-else {
-    print STDERR "pulling $count ", $count > 1 ? "projects" : "project", " ...\n";
-    foreach my $query_text (@query) {
-        $idx++;
-		my ($name,$pdata) = get_project_data($query_text);
-        print STDERR "[$idx/$count] pulling project [$name]...\n";
-    	if((!$pdata) or (!ref $pdata)) {
-    		print STDERR "[$idx/$count] project $name not defined.\n";
-    		next;
-    	}
-        my $repo = get_repo($query_text,@{$pdata});
-        unless($F_TEST or -d $repo->{target}) {
-			run(qw/git init/,$repo->{target});
-            #if(system("mkdir","-p",$repo->{target}) != 0) {
-            #    error("fatal: while create directory " . $repo->{target});
-            #    next;
-            #}
-        }
-		unless($F_TEST) {
-            unless(chdir($repo->{target})) {
-                error("$!\n");
-                next;
-            }
-        }
-        unless(init_repo($repo)) {
-            error("fatal: while clone repo\n");
-        }
-        unless(update_repo($repo)) {
-            error("fatal: while update repo\n");
-            next;
-        }
-        unless($F_TEST) {
-            unless(chdir($cwd)) {
-                return error("$!\n");
-                next;
-            }
-        }        
-        print STDERR "\n";
-    }
-
+		exit 0;
+	}		
 }
 
-exit 0;
+print STDERR "Unknown action or no action specified\n";
+exit 1;
 
 __END__
 

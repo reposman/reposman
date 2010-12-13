@@ -49,7 +49,7 @@ c					|						|		|svn/zcodebase/			|#github#zcodebase/			|#gitorious#zcodebase/		
 cpp					|						|		|svn/zcodebase/			|#github#zcodebase/			|#gitorious#zcodebase/			|git:local/zcodebase/
 freebasic			|						|		|svn/zfreebasic			|#github#zcodebase/			|#gitorious#zcodebase/			|git:local/zcodebase/
 vb6					|						|		|svn/xrzvb6				|#github#zcodebase/			|#gitorious#zcodebase/			|git:local/zcodebase/
-gmscripts			|firefox/gm_scripts		|		|svn:pl/				|git:3/gm-scripts			|git:4/							|git:local/
+gmscripts			|ffprofile/gm_scripts		|		|svn:pl/				|git:3/gm-scripts			|git:4/							|git:local/
 babebase			|perl/urlrule			|		|svn:pl/				|git:3/						|git:4/							|git:local/
 gsbridge			|.						|		|svn:pl/				|git:3/						|git:4/							|git:local/
 repos				|#d_repos#				|		|svn/zrepos/root		|#github#zrepos/root		|#gitorious#zrepos/root
@@ -59,8 +59,8 @@ repos/gmscripts		|#d_repos#/gmscripts	|		|svn/zrepos/gmscripts	|#github#zrepos/g
 repos/gsbridge		|#d_repos#/gsbridge		|		|svn/zrepos/gsbridge	|#github#zrepos/gsbridge	|#gitorious#zrepos/gsbridge
 repos/empty			|#d_repos#/_empty		|		|svn/zrepos/empty		|#github#zrepos/empty		|#gitorious#zrepos/empty
 repos/workspace		|#d_repos#/workspace	|		|svn/zrepos/workspace	|#github#zrepos/workspace	|#gitorious#zrepos/workspace
-webpages			|webpages				|#u_x#	|svn/xiaoranzzz			|git:1/						|git:2/		|#github#xiaoranzzz/xiaoranzzz.github.com	
-gsvn-bundle			|						|		|svn/					|git:1/						|git:2/	
+webpages			|webpages				|#u_x#	|svn/xiaoranzzz			|git:1/						|git:2/		|#github#xiaoranzzz/xiaoranzzz.github.com |git:local/	
+gsvn-bundle			|						|		|svn/					|git:1/						|git:2/							|git:local/
 loseplace			|						|		|svn/					|git:1/						|git:2/							|git:local/
 losebox				|						|		|svn/					|git:1/						|git:2/							|git:local/
 
