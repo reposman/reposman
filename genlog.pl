@@ -33,8 +33,8 @@ sub gen_log {
             $svn{rev}=$1;
             $svn{author}=$2;
         }
-        else {
-            $svn{comment} .= $_;
+        elsif(!$svn{comment}) {
+            $svn{comment} = $_;
         }
     }
 	push @full_log,<FI>;
