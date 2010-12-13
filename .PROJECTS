@@ -19,6 +19,7 @@
 #git:2#=git@gitorious.org:eotect/#1.git
 #git:3#=git@git.assembla.com:#1.git
 #git:4#=git@eotect.unfuddle.com:eotect/#1.git
+#git:5#=/myplace/repos/#1/git
 #git:local#=/myplace/repos/#1/git
 #git#=git@github.com:#u#/#1.git
 #git:github#=git@github.com:#1/#2.git
@@ -28,39 +29,38 @@
 #github#=git:github/
 #gitorious#=git:gitorious/
 #p#=zcodebase
-#d_websaver2#=firefox/extensions/websaver2@myplace.hell|
+#d_websaver2#=ffprofile/extensions/websaver2@myplace.hell|
 #d_repos#=/myplace/repos
-#name	|googlecode	|github	|target	|user
-#name	|target	|user	|repos1	|repos2                     
-vb6					|						|		|svn/xrzvb6				|git:1/						|git:2/							|git:local/
 ebook				|						|		|svn/zebook				|git:1/						|git:2/							|git:local/
-ffprofile			|firefox				|		|svn/ffprofile			|git:1/						|git:2/							|git:local/
+ffprofile			|ffprofile				|		|svn/					|git:1/						|git:2/							|git:local/
 drawing				|						|		|svn/zdrawing			|git:1/						|git:2/							|git:local/
-badluck				|perl/badluck			|		|svn/badluck			|git:1/						|git:2/							|git:local/
-nightgun			|perl/nightgun			|		|svn/nightgun			|git:1/						|git:2/							|git:local/
-websaver2			|#d_websaver2#			|		|svn/websaver2			|git:1/						|git:2/							|git:local/
+badluck				|perl/badluck			|		|svn/					|git:1/						|git:2/							|git:local/
+nightgun			|perl/nightgun			|		|svn/					|git:1/						|git:2/							|git:local/
+websaver2			|#d_websaver2#			|		|svn/					|git:1/						|git:2/							|git:local/
 www					|						|		|svn/zwww				|git:1/						|git:2/							|git:local/
 utils				|						|		|svn/zutils				|git:1/						|git:2/							|git:local/
 text				|						|		|svn/ztext				|git:1/						|git:2/							|git:local/
 usys				|						|		|svn/zusys				|git:1/						|git:2/							|git:local/
-perl				|						|		|svn/xrzperl			|#github#zscripts/			|#gitorious#zscripts/			|git:local/
-shellscript			|						|		|svn/xrzshellscript		|#github#zscripts/sh		|#gitorious#zscripts/sh			|git:local/
-libmyplace-perl		|perl/modules/MyPlace	|		|svn/					|#github#zscripts/			|#gitorious#zscripts/			|git:local/
-batch				|						|		|svn/#p#/batch			|#github#zscripts/			|#github#zscripts/				|git:local/
-c					|						|		|svn/#p#/				|#github#zcodebase/			|#gitorious#zcodebase/			|git:local/
-cpp					|						|		|svn/#p#/				|#github#zcodebase/			|#gitorious#zcodebase/			|git:local/
-freebasic			|						|		|svn/zfreebasic			|#github#zcodebase/			|#gitorious#zcodebase/			|git:local/
+perl				|						|		|svn/xrzperl			|#github#zscripts/			|#gitorious#zscripts/			|git:local/zscripts/
+sh					|shellscript			|		|svn/xrzshellscript		|#github#zscripts/			|#gitorious#zscripts/			|git:local/zscripts/
+libmyplace-perl		|perl/modules/MyPlace	|		|svn/					|#github#zscripts/			|#gitorious#zscripts/			|git:local/zscripts/
+batch				|						|		|svn/zscripts/			|#github#zscripts/			|#gitorious#zscripts/			|git:local/zscripts/
+c					|						|		|svn/zcodebase/			|#github#zcodebase/			|#gitorious#zcodebase/			|git:local/zcodebase/
+cpp					|						|		|svn/zcodebase/			|#github#zcodebase/			|#gitorious#zcodebase/			|git:local/zcodebase/
+freebasic			|						|		|svn/zfreebasic			|#github#zcodebase/			|#gitorious#zcodebase/			|git:local/zcodebase/
+vb6					|						|		|svn/xrzvb6				|#github#zcodebase/			|#gitorious#zcodebase/			|git:local/zcodebase/
 gmscripts			|firefox/gm_scripts		|		|svn:pl/				|git:3/gm-scripts			|git:4/							|git:local/
 babebase			|perl/urlrule			|		|svn:pl/				|git:3/						|git:4/							|git:local/
 gsbridge			|.						|		|svn:pl/				|git:3/						|git:4/							|git:local/
 repos				|#d_repos#				|		|svn/zrepos/root		|#github#zrepos/root		|#gitorious#zrepos/root
 #repos/root			|#d_repos#				|		|svn/zrepos/root		|#github#zrepos/root		|#gitorious#zrepos/root
-repos/babebase		|#d_repos#/babebase		|		|svn/zrepos/babebase	|#github#zrepos/babebase	|#gitorious#zrepos/babebase
+repos/babebase		|#d_repos#/babebase		|		|svn/zrepos/babebase	|#github#zrepos/babebase	|#gitorious#zrepos/babebase		
 repos/gmscripts		|#d_repos#/gmscripts	|		|svn/zrepos/gmscripts	|#github#zrepos/gmscripts	|#gitorious#zrepos/gmscripts
 repos/gsbridge		|#d_repos#/gsbridge		|		|svn/zrepos/gsbridge	|#github#zrepos/gsbridge	|#gitorious#zrepos/gsbridge
 repos/empty			|#d_repos#/_empty		|		|svn/zrepos/empty		|#github#zrepos/empty		|#gitorious#zrepos/empty
 repos/workspace		|#d_repos#/workspace	|		|svn/zrepos/workspace	|#github#zrepos/workspace	|#gitorious#zrepos/workspace
-myplace             |/myplace/windows       |       |svn/zmyplace/windows   |#github#zmyplace/windows   |#gitorious#zmyplace/windows
-miniplace           |/myplace/miniplace     |	    |svn/zmyplace/miniplace	|#github#zmyplace/mini      |#gitorious#zmyplace/mini
 webpages			|webpages				|#u_x#	|svn/xiaoranzzz			|git:1/						|git:2/		|#github#xiaoranzzz/xiaoranzzz.github.com	
 gsvn-bundle			|						|		|svn/					|git:1/						|git:2/	
+loseplace			|						|		|svn/					|git:1/						|git:2/							|git:local/
+losebox				|						|		|svn/					|git:1/						|git:2/							|git:local/
+

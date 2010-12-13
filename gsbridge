@@ -5,7 +5,7 @@ require v5.10.0;
 our $VERSION = 'v1.0';
 
 my %OPTS;
-my @OPTIONS = qw/help|h|? manual|m test|t project|p dump|d dump-config|dc dump-data|dd check|c list|l pull reset|r no-git|ng no-svn|ns push/;
+my @OPTIONS = qw/help|h|? manual|m debug test|t project|p dump|d dump-config|dc dump-data|dd check|c list|l pull reset|r no-git|ng no-svn|ns push/;
 if(@ARGV)
 {
     require Getopt::Long;
@@ -63,7 +63,7 @@ my %project;
 my %sub_project;
 
 sub run {
-    print join(" ",@_),"\n";
+    print "[",getcwd(),"] ",join(" ",@_),"\n";
     return 1 if($F_TEST);
     return system(@_) == 0;
 }
@@ -127,17 +127,26 @@ sub parse_project_data {
 sub translate_url {
     my $url = shift;
     my $path = shift;
-    if($path =~ m/^([^\/]+)\/(.+)$/) {
+	print STDERR "translate_url> $url + $path\n" if($OPTS{debug});
+    if($url =~ m/#3/ and $path =~ m/^([^\/]+)\/([^\/]+)\/(.+)$/) {
         my $a = $1;
         my $b = $2;
-        $url =~ s/#1/$a/g;
-        $url =~ s/#2/$b/g;
+		my $c = $3;
+        $url =~ s{#1}{$a}g;
+        $url =~ s{#2}{$b}g;
+		$url =~ s{#3}{$c}g;
+    }
+    elsif($url =~ m/#2/ and $path =~ m/^([^\/]+)\/(.+)$/) {
+        my $a = $1;
+        my $b = $2;
+        $url =~ s{#1}{$a}g;
+        $url =~ s{#2}{$b}g;
     }
     else {
-        $url =~ s/#1/$path/g;
-        $url =~ s/#2//g;
+        $url =~ s{#1}{$path}g;
     }
     $url =~ s/\/+$//;
+	print STDERR "translate_url>=$url\n" if($OPTS{debug});
     return $url;
 }
 
@@ -185,20 +194,27 @@ sub get_repo {
     @repo_data = ("svn/$name","git/$name") unless(@repo_data);
     foreach my $url (@repo_data) {
         next unless($url);
+		print STDERR "get_repo>  $url\n" if($OPTS{debug});
         if($url =~ m/^(svn|git):([^\/]+)\/(.*)$/i) {
             my $template = $CONFIG{"$1:$2"} ? $CONFIG{"$1:$2"} : "$2/$3";
 			my $subname = $3;
 			my $type = $1;
 			if($subname and $subname =~ m/\/$/) {
 				$subname = $subname . $name;
+				print STDERR "get_repo> fixed name to $subname\n" if($OPTS{debug});
 			}
 			$url = translate_url($template,$subname ? $subname : $name);
             push @{$r{$type}},$url;
         }
         elsif($url =~ m/^(svn|git)\/(.*)$/){
             my $template = $CONFIG{$1} ? $CONFIG{$1} : "$2";
-            $url = translate_url($template,$2 ? $2 : $name);
-            push @{$r{$1}},$url;
+			my $subname = $2;
+			my $type = $1;
+			if($subname and $subname =~ m/\/$/) {
+				$subname = $subname . $name;
+			}
+            $url = translate_url($template,$subname ? $subname : $name);
+            push @{$r{$type}},$url;
         }
         elsif($url =~ m/^(svn|git):([^\/]+)$/i) {
             push @{$r{$1}},$2;
@@ -206,6 +222,7 @@ sub get_repo {
         else {
             push @{$r{svn}},$url;
         }
+		print STDERR "get_repo>- $url\n" if($OPTS{debug});
     }
     if($r{user} and $r{user} =~ m/(.+)\s+<([^\@]+\@[^\@]+)>\s*$/) {
         $r{username} = $1;
