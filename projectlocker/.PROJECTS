@@ -1,0 +1,9 @@
+#id:e#=eotect
+#em:e#=#id:e#@gmail.com
+#svn:local:pull#=svn/#1
+#svn:local:push#=svn/#1
+#svn:pl:pull#=http://pl3.projectlocker.com/#1/#2/svn
+#svn:pl:push#=https://pl3.projectlocker.com/#1/#2/svn
+babebase		|svn:local/				|#id:e# |svn:pl/#id:e#/			|#em:e#
+gmscripts		|svn:local/				|#id:e# |svn:pl/#id:e#/			|#em:e#
+gsbridge		|svn:local/				|#id:e# |svn:pl/#id:e#/			|#em:e#
