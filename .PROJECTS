@@ -63,4 +63,6 @@ webpages			|webpages				|#u_x#	|svn/xiaoranzzz			|git:1/						|git:2/		|#github#
 gsvn-bundle			|						|		|svn/					|git:1/						|git:2/							|git:local/
 loseplace			|						|		|svn/					|git:1/						|git:2/							|git:local/
 losebox				|						|		|svn/					|git:1/						|git:2/							|git:local/
+vcsplace			|						|		|svn/
+github-sync			|#d_repos#/backups		|		|svn/vcsplace/	|#github#vcsplace/	|#gitorious#vcsplace/ |git:local/vcsplace/
 
