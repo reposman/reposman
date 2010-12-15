@@ -494,8 +494,16 @@ foreach my $action (qw/execute check reset push pull update/) {
 			print STDERR "[$idx/$count] $name -> $repo->{target}\n";
 			print STDERR "[$idx/$count] changing to target directory\n";
 	        unless(-d $repo->{target}) {
-	            error("[$idx/$count] target not exists: $repo->{target}\n\n");
-	            next;
+				if($action eq 'pull') {
+					if(!run(qw/git init/,$repo->{target}) ) {
+						error("[$idx/$count] init $repo->{target} failed!\n\n");
+						next;
+					}
+				}
+				else {
+		            error("[$idx/$count] target not exists: $repo->{target}\n\n");
+		            next;
+				}					
 	        }
 	        unless(chdir($repo->{target})) {
 	            error("[$idx/$count] error while chdir to $repo->{target}\n\n");
