@@ -59,7 +59,7 @@ zscripts/sh					|h:local/		|h:gc/		|h:sf/
 zscripts/batch				|h:local/		|h:gc/		|h:sf/
 zscripts/libmyplace-perl	|h:local/		|h:gc/		|h:sf/
 zutils					|h:local/		|h:gc/		|h:sf/
-zusys					|h:local/		|h:gc/		|h:sf/
+zusys					|s:local/		|s:gc/		|s:sf/
 gm_scripts					|h:local/		|h:bb/		|h:sf/
 babebase					|h:local/		|h:bb/		|h:sf/
 gsbridge					|h:local/		|h:bb/		|h:sf/
