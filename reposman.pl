@@ -350,6 +350,7 @@ sub checkout_repo {
 			run(@HG,'-R',$target,qw/pull -f -u/,$source->{'pull'});
 		}
 		run(@HG,'-R',$target,'tip');
+		run(@HG,'-R',$target,'summary');
 	}
 	if($repo->{svn} and !$OPTS{'no-svn'}) {
 		my $local = shift @{$repo->{svn}};
@@ -381,10 +382,11 @@ sub sync_repo {
 			#run(@HG,'-R',$target,qw/update -C/);
 			run(@HG,'-R',$target,qw/pull -f/,$source->{'pull'});
 		}
-		run(@HG,'-R',$target,'tip');
 		foreach(@{$repo->{hg}}) {
 			run(@HG,'-R',$target,'push','-f',$_->{'push'});
 		}
+		run(@HG,'-R',$target,'tip');
+		run(@HG,'-R',$target,'summary');
 	}
 	if($repo->{svn} and !$OPTS{'no-svn'}) {
 		my $local = shift @{$repo->{svn}};
