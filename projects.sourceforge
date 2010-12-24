@@ -33,7 +33,7 @@
 #h:zrepos:read#=zrepos/svn/#1/hg
 #h:bb:write#=https://bitbucket.org/#id:e#/#1
 #h:bb:read#=https://bitbucket.org/#id:e#/#1
-badluck				|h:local/		|h:gc/		|h:sf/
+badluck				|h:local/		|h:gc/		|h:sf1/
 eotect/profile		|h:local/		|h:gc/		|h:sf/
 eotect/ffprofile	|h:local/		|h:gc/		|h:sf/
 eotect/drawing		|h:local/		|h:gc/		|h:sf/
@@ -43,12 +43,12 @@ eotect/pages		|h:local/		|h:gc/		|h:sf/
 eotect/ebook		|h:local/		|h:gc/		|h:sf/
 losebox				|s:local/		|s:gc/		|s:sf/
 loseplace			|s:local/		|s:gc/		|s:sf/
-nightgun			|h:local/		|h:gc/		|h:sf/
+nightgun			|h:local/		|h:gc/		|h:sf1/
 vcsplace/github-sync	|h:local/		|h:gc/		|h:sf/
 vcsplace/gsvn-bundle	|h:local/		|h:gc/		|h:sf/
 vcsplace/reposman		|h:local/		|h:gc/		|h:sf/
 vcsplace/sf-sync		|h:local/		|h:gc/		|h:sf/
-websaver2				|h:local/		|h:gc/		|h:sf/
+websaver2				|h:local/		|h:gc/		|h:sf1/
 zcodebase/c				|h:local/		|h:gc/		|h:sf/
 zcodebase/cpp			|h:local/		|h:gc/		|h:sf/
 zcodebase/vb6			|h:local/		|h:gc/		|h:sf/
@@ -58,8 +58,8 @@ zscripts/perl				|h:local/		|h:gc/		|h:sf/
 zscripts/sh					|h:local/		|h:gc/		|h:sf/
 zscripts/batch				|h:local/		|h:gc/		|h:sf/
 zscripts/libmyplace-perl	|h:local/		|h:gc/		|h:sf/
-zutils					|h:local/		|h:gc/		|h:sf/
+zutils					|h:local/		|h:gc/		|h:sf1/
 zusys					|s:local/		|s:gc/		|s:sf/
-gm_scripts					|h:local/		|h:bb/		|h:sf/
-babebase					|h:local/		|h:bb/		|h:sf/
-gsbridge					|h:local/		|h:bb/		|h:sf/
+gm_scripts					|h:local/		|h:bb/		|h:sf1/
+babebase					|h:local/		|h:bb/		|h:sf1/
+gsbridge					|h:local/		|h:bb/		|h:sf1/
