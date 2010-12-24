@@ -35,34 +35,37 @@
 #h:zrepos:read#=zrepos/svn/#1/hg
 #h:bb:write#=https://bitbucket.org/#id:e#/#1
 #h:bb:read#=https://bitbucket.org/#id:e#/#1
-badluck				|h:local/		|h:gc/		|h:sf1/		|h:sf-zrepos/
-eotect/profile		|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-eotect/ffprofile	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-eotect/drawing		|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-eotect/text			|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-eotect/www			|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-eotect/pages		|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-eotect/ebook		|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-losebox				|s:local/		|s:gc/		|s:sf/
-loseplace			|s:local/		|s:gc/		|s:sf/
-nightgun			|h:local/		|h:gc/		|h:sf1/		|h:sf-zrepos/
-vcsplace/github-sync	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-vcsplace/gsvn-bundle	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-vcsplace/gsbridge		|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-vcsplace/reposman		|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-vcsplace/sf-sync		|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-websaver2				|h:local/		|h:gc/		|h:sf1/		|h:sf-zrepos/
-zcodebase/c				|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-zcodebase/cpp			|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-zcodebase/vb6			|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-zcodebase/freebasic		|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-zrepos						|s:local/		|s:gc/		|s:sf/
-zscripts/perl				|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-zscripts/sh					|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-zscripts/batch				|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-zscripts/libmyplace-perl	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-zutils					|h:local/		|h:gc/		|h:sf1/		|h:sf-zrepos/
-zusys					|s:local/		|s:gc/		|s:sf/
-gm_scripts					|h:local/		|h:bb/		|h:sf1/		|h:sf-zrepos/
-babebase					|h:local/		|h:bb/		|h:sf1/		|h:sf-zrepos/
-gsbridge					|h:local/		|h:bb/		|h:sf1/		|h:sf-zrepos/
+#h:checkout:write#=../workspace/#1
+#h:checkout:read#=../workspace/#1
+#s:checkout:write#=../workspace/#1
+#s:checkout:read#=../workspace/#1
+badluck				|h:checkout/	|h:local/		|h:gc/		|h:sf1/		|h:sf-zrepos/
+eotect/profile		|h:checkout/profile	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
+eotect/ffprofile	|h:checkout/ffprofile	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
+eotect/drawing		|h:checkout/drawing	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
+eotect/text			|h:checkout/text	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
+eotect/www			|h:checkout/www	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
+eotect/pages		|h:checkout/pages	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
+eotect/ebook		|h:checkout/ebook	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
+losebox				|s:checkout/	|s:local/		|s:gc/		|s:sf/
+loseplace			|s:checkout/	|s:local/		|s:gc/		|s:sf/
+nightgun			|h:checkout/	|h:local/		|h:gc/		|h:sf1/		|h:sf-zrepos/
+vcsplace/github-sync	|h:checkout/github-sync	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
+vcsplace/gsvn-bundle	|h:checkout/gsvn-bundle	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
+vcsplace/reposman		|h:checkout/reposman	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
+vcsplace/sf-sync		|h:checkout/sf-sync	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
+websaver2				|h:checkout/ffprofile/extensions/websaver2@myplace.hell	|h:local/		|h:gc/		|h:sf1/		|h:sf-zrepos/
+zcodebase/c				|h:checkout/c	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
+zcodebase/cpp			|h:checkout/cpp	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
+zcodebase/vb6			|h:checkout/vb6	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
+zcodebase/freebasic		|h:checkout/freebasic	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
+zrepos						|s:checkout/	|s:local/		|s:gc/		|s:sf/
+zscripts/perl				|h:checkout/perl	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
+zscripts/sh					|h:checkout/shellscript	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
+zscripts/batch				|h:checkout/batch	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
+zscripts/libmyplace-perl	|h:checkout/perl/modules/MyPlace	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
+zutils					|h:checkout/utils	|h:local/		|h:gc/		|h:sf1/		|h:sf-zrepos/
+zusys					|s:checkout/usys	|s:local/		|s:gc/		|s:sf/
+gm_scripts					|h:checkout/ffprofile/gm_scripts	|h:local/		|h:bb/		|h:sf1/		|h:sf-zrepos/
+babebase					|h:checkout/perl/urlrule	|h:local/		|h:bb/		|h:sf1/		|h:sf-zrepos/
+gsbridge					|h:checkout/gsbridge	|h:local/		|h:bb/		|h:sf1/		|h:sf-zrepos/

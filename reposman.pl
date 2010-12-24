@@ -5,7 +5,7 @@ require v5.8.0;
 our $VERSION = 'v1.0';
 
 my %OPTS;
-my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-config|dc dump-data|dd sync/;
+my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-config|dc dump-data|dd sync|s checkout|co|c/;
 if(@ARGV)
 {
     require Getopt::Long;
@@ -26,7 +26,7 @@ foreach(keys %OPTS) {
 }
 unless($have_opts) {
 	my $first_arg = shift;
-	if($first_arg and $first_arg =~ m/^(help|manual|test|project|dump|dump-config|dump-data|check|list|pull|reset|clone|sync)$/) {
+	if($first_arg and $first_arg =~ m/^(help|manual|test|project|dump|dump-config|dump-data|check|list|pull|reset|clone|sync|checkout)$/) {
 		$OPTS{$first_arg} = 1;
 	}
 	else {
@@ -142,7 +142,7 @@ sub translate_url {
     }
     $url =~ s/\/+$//;
 	$url =~ s/\/\.+/\//g;
-	$url =~ s/\.{2,}/\./g;
+	$url =~ s/\.{2,}([^\/]+)/\.$1/g;
 	if($url) {
 		$url =~ s/:\/\//:\/\/$id\@/;
 	}
@@ -334,11 +334,45 @@ sub git_push_remote {
     return 1;
 }
 
-sub sync_repo {
+sub checkout_repo {
 	my $repo = shift;
 	my $target = $repo->{target};
 	my $name = $repo->{name};
 	if($repo->{hg} and !$OPTS{'no-hg'}) {
+		my $local = shift @{$repo->{hg}};
+		my $source = shift @{$repo->{hg}};
+		unless(-d $target) {
+			run(@HG,'clone','-U',$source->{'pull'},$target);
+		}
+		else {
+			#run(@HG,'-R',$target,qw/update -C/);
+			run(@HG,"init",$target);
+			run(@HG,'-R',$target,qw/pull -f -u/,$source->{'pull'});
+		}
+		run(@HG,'-R',$target,'tip');
+	}
+	if($repo->{svn} and !$OPTS{'no-svn'}) {
+		my $local = shift @{$repo->{svn}};
+		my $source = shift @{$repo->{svn}};
+		run(@SVN,'checkout','--force',$source->{'push'},$target);
+	}
+	if($repo->{git} and !$OPTS{'no-git'}) {
+		my $local = shift @{$repo->{git}};
+		my $source = shift @{$repo->{git}};
+		run(@GIT,"init",$target);
+		run(@GIT,"--work-tree",$target,"--git-dir","$target/.git",qw/remote rm origin/);
+		run(@GIT,"--work-tree",$target,"--git-dir","$target/.git",qw/remote add origin/,$source->{'push'});
+		run(@GIT,"--work-tree",$target,"--git-dir","$target/.git","fetch","origin");
+	}
+	return 1;
+}
+sub sync_repo {
+	my $repo = shift;
+#	my $target = $repo->{target}; #ignore this checkout point
+	my $name = $repo->{name};
+	if($repo->{hg} and !$OPTS{'no-hg'}) {
+		my $local = shift @{$repo->{hg}};
+		my $target = $local->{'push'};
 		my $source = shift @{$repo->{hg}};
 		unless(-d $target) {
 			run(@HG,'clone','-U',$source->{'pull'},$target);
@@ -353,14 +387,18 @@ sub sync_repo {
 		}
 	}
 	if($repo->{svn} and !$OPTS{'no-svn'}) {
+		my $local = shift @{$repo->{svn}};
+		my $target = $local->{'push'};
 		my $source = shift @{$repo->{svn}};
 		$repo->{svn_source} = $source;
-		svnsync($source->{'pull'},$target,$source->{id},$source->{id});
+		svnsync($source->{'pull'},$target,$source->{id},$local->{id});
 		foreach(@{$repo->{svn}}) {
 			svnsync($source->{'pull'},$_->{'push'},$source->{'id'},$_->{'id'});
 		}
 	}
 	if($repo->{git} and !$OPTS{'no-git'}) {
+		my $local = shift @{$repo->{git}};
+		my $target = $local->{'push'};
 		my $source = shift @{$repo->{git}};
 		$repo->{git_source} = $source;
 		run(@GIT,'--bare','clone',$source->{'pull'},$target);
@@ -443,21 +481,13 @@ my $idx = 0;
 my $count = scalar(@query);
 my $action;
 my $action_sub;
-if($OPTS{push}) {
-	$action = 'push';
-	$action_sub = \&push_repo;
-}
-elsif($OPTS{pull}) {
-	$action = 'pull';
-	$action_sub = \&pull_repo;
+if($OPTS{checkout}) {
+	$action = 'checkout';
+	$action_sub = \&checkout_repo;
 }
 elsif($OPTS{check}) {
 	$action = 'check';
 	$action_sub = \&check_repo;
-}
-elsif($OPTS{clone}) {
-	$action = 'clone';
-	$action_sub = \&clone_repo;
 }
 elsif($OPTS{sync}) {
 	$action = 'sync';
@@ -467,11 +497,11 @@ else {
 	die("Invalid action specified!\n");
 }
 
-print STDERR $action . "ing $count ", $count > 1 ? "projects" : "project", " ...\n";
+print STDERR "to $action $count ", $count > 1 ? "projects" : "project", " ...\n";
 foreach my $query_text (@query) {
         $idx++;
 		my ($name,$pdata) = get_project_data($query_text);
-        print STDERR "[$idx/$count] $action" . "ing project [$name]...\n";
+        print STDERR "[$idx/$count] $action" . " project [$name]\n";
     	if((!$pdata) or (!ref $pdata)) {
     		print STDERR "[$idx/$count] project $name not defined.\n";
     		next;
