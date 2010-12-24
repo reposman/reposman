@@ -5,7 +5,7 @@ require v5.8.0;
 our $VERSION = 'v1.0';
 
 my %OPTS;
-my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-config|dc dump-data|dd check|c pull push clone sync/;
+my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-config|dc dump-data|dd sync/;
 if(@ARGV)
 {
     require Getopt::Long;
@@ -31,7 +31,7 @@ unless($have_opts) {
 	}
 	else {
 		unshift @ARGV,$first_arg;
-		$OPTS{pull} = 1;
+		$OPTS{sync} = 1;
 	}
 }
 #END	//map options to actions
@@ -50,7 +50,9 @@ elsif($OPTS{manual}) {
 use Cwd qw/getcwd/;
 
 my $F_TEST = $OPTS{test};
-
+my @HG = qw/hg -v/;
+my @GIT = qw/git/;
+my @SVN = qw/svn/;
 my %CONFIG;
 $CONFIG{svn} = "https://#1.googlecode.com/svn/#2";
 $CONFIG{'git:github'} = "git\@github.com:#1/#2.git";
@@ -146,45 +148,77 @@ sub translate_url {
 	}
     return $url;
 }
+sub parse_url {
+	my $name = shift;
+	my $template = shift;
+	next unless($template);
+	my $push = $template;
+	if($push =~ m/\/$/) {
+		$push = $push ."$name"; 
+	}
+	my $id = $CONFIG{id};
+	my $type = $CONFIG{type};
+	if($push =~ m/^([^\@]+)\@(.+)$/) {
+		$push = $2;
+		$id = $1;
+	}
+	if($push =~ m/^(?:h|h:.+|hg|hg:.+)$/) {
+		$type = 'hg';
+	}
+	elsif($push =~ m/^(?:s:|s:.+|svn|svn:.+)$/) {
+		$type = 'svn';
+	}
+	elsif($push =~ m/^(?:g|g:.+|git|git:.+)$/) {
+		$type = 'git';
+	}
+	my $pull = $push;
+	if($push =~ m/\s*([^:]+):([^:\/]+)\/(.*?)\s*$/) {
+		if($CONFIG{"$1:$2:write"} and $CONFIG{"$1:$2:read"}) {
+			$push = translate_url($CONFIG{"$1:$2:write"},$3,$id);
+			$pull = translate_url($CONFIG{"$1:$2:read"},$3,$id);
+		}
+		elsif($CONFIG{"$1:$2:write"}) {
+			$push = translate_url($CONFIG{"$1:$2:write"},$3,$id);
+		}
+		elsif($CONFIG{"$1:$2:read"}) {
+			$pull = translate_url($CONFIG{"$1:$2:read"},$3,$id);
+		}
+		elsif($CONFIG{"$1:$2"}) {
+			$push = translate_url($CONFIG{"$1:$2"},$3,$id);
+			$pull = $push;
+		}
+	}
+	return {'push'=>$push,'pull'=>$pull,'id'=>$id,'type'=>$type};
+}
 
 sub get_repo {
     my ($query_name,@repo_data) = @_;
     my %r;
 	my ($name,$new_target) = parse_query($query_name);
     $r{name} = $name;
+	my $target = shift @repo_data;
+	$target = $name unless($target);
+	if($new_target) {
+		$r{target} = $new_target;
+		$r{_target} = $target;
+	}
+	else {
+		$r{target} = $target;
+	}
+	$target = parse_url($name,$r{target});
+	if($target) {
+		$r{target} = $target->{'push'};
+	}
     @repo_data = ("s:local/$name","s:remote/$name",) unless(@repo_data);
 	if($OPTS{debug}) {
 		print STDERR "debug::get_repo> $name -  ",join("  |",@repo_data),"\n";
 	}
 	while(@repo_data) {
-		my $push = shift @repo_data;
-		next unless($push);
-		if($push =~ m/\/$/) {
-			$push = $push ."$name"; 
+		my $template = shift @repo_data;
+		my $url = parse_url($name,$template);
+		if($url) {
+			push @{$r{$url->{type}}},$url;
 		}
-		my $id = $CONFIG{id};
-		my $type = $CONFIG{type};
-		if($push =~ m/^([^\@]+)\@(.+)$/) {
-			$push = $2;
-			$id = $1;
-		}
-		if($push =~ m/^(?:h|h:.+|hg|hg:.+)$/) {
-			$type = 'hg';
-		}
-		elsif($push =~ m/^(?:s:|s:.+|svn|svn:.+)$/) {
-			$type = 'svn';
-		}
-		elsif($push =~ m/^(?:g|g:.+|git|git:.+)$/) {
-			$type = 'git';
-		}
-		my $pull = $push;
-		if($push =~ m/\s*([^:]+):([^:\/]+)\/(.*?)\s*$/) {
-			$push = translate_url($CONFIG{"$1:$2:write"},$3,$id) if($CONFIG{"$1:$2:write"});
-		}
-		if($pull =~ m/\s*([^:]+):([^:\/]+)\/(.*?)\s*$/) {
-			$pull = translate_url($CONFIG{"$1:$2:read"},$3,$id) if($CONFIG{"$1:$2:read"});
-		}
-		push @{$r{$type}},[$push,$pull,$id,$type];
 	}
     return \%r;
 }
@@ -270,69 +304,68 @@ sub unique_name {
 	}
 	return $result;
 }
-sub check_repo {
-	my $repo = shift;
-	my $main = $repo->{main};
-	my @remotes = @{$repo->{url}};
-	return error("fatal: no main repo specified\n") unless($main);
-	return error("fatal: no mirror repos specified\n") unless(@remotes);
-	foreach($main,@remotes) {
-		my (undef,$url,undef) = @{$_};
-		print STDERR "\nchecking $url\n";
-		if(-d $url) {
-			$url = 'file://' . $url;
-		}
-		run('svn','info',$url);
-		run('svn','log','-l','2',$url);
-		print STDERR "\n";
-	}
-}
-sub pull_repo {
-	my $repo = shift;
-	my $main = $repo->{main};
-	my $remote = shift @{$repo->{url}};
-	return error("fatal: no main repo specified\n") unless($main);
-	return error("fatal: no mirror repos specified\n") unless($remote);
-	my ($dst,undef,$dst_id) = @{$main};
-	my (undef,$src,$src_id) = @{$remote};
-	return svnsync($src,$dst,$src_id,$dst_id);
-}
-sub push_repo {
-	my $repo = shift;
-	my $main = $repo->{main};
-	my @remotes = @{$repo->{url}};
-	return error("fatal: no main repo specified\n") unless($main);
-	return error("fatal: no mirror repos specified\n") unless(@remotes);
-	my (undef,$src,$src_id) = @{$main};
-	foreach(@remotes) {
-		my ($dst,undef,$dst_id) = @{$_};
-		svnsync($src,$dst,$src_id,$dst_id);
-	}
-}
 
-sub clone_repo {
-	my $repo = shift;
-	if($repo->{hg}) {
-		my $main = shift @{$repo->{hg}};
-		my $source = shift @{$repo->{hg}};
-		run('hg','clone',$source->[0],$main->[0]);
-		foreach(@{$repo->{hg}}) {
-			run('hg','-R',$main->[1],'push',$_->[0]);
-		}
-	}
-	return 1;
+sub git_push_remote {
+    my @remotes;
+    open FI,"-|",qw/git remote/;
+    while(<FI>) {
+        chomp;
+        push @remotes,$_ if($_);
+    }
+    close FI;
+    if(@remotes) {
+        my $idx=0;
+        my $count=@remotes;
+        foreach(@remotes) {
+            $idx++;
+            my $url = `git config --get "remote.$_.url"`;
+            chomp($url);
+            print "[$idx/$count]pushing to [$_] $url ...\n";
+            if(system(qw/git push/,$_,@_)!=0) {
+                print "[$idx/$count]pushing to [$_] failed\n";
+                return undef;
+            }
+        }
+    }
+    else {
+       print "NO remotes found, stop pushing\n";
+       return undef;
+    }
+    return 1;
 }
 
 sub sync_repo {
 	my $repo = shift;
-	if($repo->{hg}) {
-		my $main = shift @{$repo->{hg}};
+	my $target = $repo->{target};
+	my $name = $repo->{name};
+	if($repo->{hg} and !$OPTS{'no-hg'}) {
 		my $source = shift @{$repo->{hg}};
-		run('hg','-R',$main->[1],qw/update -C/);
-		run('hg','-R',$main->[1],qw/pull -u/,$source->[1]);
-		run(qw/hg -R/,$main->[1],'tip');
+		unless(-d $target) {
+			run(@HG,'clone','-U',$source->{'pull'},$target);
+		}
+		else {
+			#run(@HG,'-R',$target,qw/update -C/);
+			run(@HG,'-R',$target,qw/pull -f/,$source->{'pull'});
+		}
+		run(@HG,'-R',$target,'tip');
 		foreach(@{$repo->{hg}}) {
-			run('hg','-R',$main->[1],'push',$_->[0]);
+			run(@HG,'-R',$target,'push','-f',$_->{'push'});
+		}
+	}
+	if($repo->{svn} and !$OPTS{'no-svn'}) {
+		my $source = shift @{$repo->{svn}};
+		$repo->{svn_source} = $source;
+		svnsync($source->{'pull'},$target,$source->{id},$source->{id});
+		foreach(@{$repo->{svn}}) {
+			svnsync($source->{'pull'},$_->{'push'},$source->{'id'},$_->{'id'});
+		}
+	}
+	if($repo->{git} and !$OPTS{'no-git'}) {
+		my $source = shift @{$repo->{git}};
+		$repo->{git_source} = $source;
+		run(@GIT,'--bare','clone',$source->{'pull'},$target);
+		foreach(@{$repo->{git}}) {
+			run(@GIT,'--bare','--git-dir',$target,'push',$_->{'push'});
 		}
 	}
 	return 1;
@@ -343,7 +376,7 @@ $PROGRAM_DIR =~ s/[^\/\\]+$//;
 my $cwd = getcwd();
 my $PROJECT_FILE;
 
-foreach my $fn (".PROJECTS","$PROGRAM_DIR/.PROJECTS","~/.reposman/.PROJECTS") {
+foreach my $fn (".PROJECTS","~/.PROJECTS","~/.reposman/PROJECTS","/etc/reposman/PROJECTS") {
     if(-f $fn) {
         $PROJECT_FILE = $fn;
         last;
@@ -456,17 +489,21 @@ __END__
 
 =head1  NAME
 
-svnbridge - svn repositories manager
+reposman - svn,git,mercurial repositories manager
 
 =head1  SYNOPSIS
 
-svnbridge [options] [action] [project_name|project_name:target]...
-	svnbridge --pull firefox
-	svnbridge pull firefox
+reposman [options] [action] [project_name|project_name:target]...
+	reposman --sync ffprofile
+	reposman sync ffprofile
 
 =head1  OPTIONS
 
 =over 12
+
+=item B<-s>,B<--sync>
+
+Sync repositories
 
 =item B<-r>,B<--reset>
 
