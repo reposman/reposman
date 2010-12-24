@@ -1,0 +1,64 @@
+#id#=eotect
+#id:e#=eotect
+#id:x#=xiaoranzzz
+#em:e#=#id:e#@gmail.com
+#em:x#=#id:x#@gmail.com
+#s:local:read#=#1/svn/#2
+#s:local:write#=#1/svn/#2
+#s:local2:read#=#1/svn
+#s:local2:write#=#1/svn
+#h:local:read#=#1/hg
+#h:local:write#=#1/hg
+#g:local:read#=#1/git
+#g:local:write#=#1/git
+#s:asm:read#=http://subversion.assembla.com/svn/#1
+#s:asm:write#=https://subversion.assembla.com/svn/#1
+#s:gc:read#=http://#1.googlecode.com/svn/#2
+#s:gc:write#=https://#1.googlecode.com/svn/#2
+#h:gc:read#=http://#2.#1.googlecode.com/hg
+#h:gc:write#=https://#2.#1.googlecode.com/hg
+#s:sf:read#=http://#1.svn.sourceforge.net/svnroot/#1
+#s:sf:write#=https://#1.svn.sourceforge.net/svnroot/#1
+#g:sf:read#=http://#1.git.sourceforge.net/gitroot/#1/#2
+#g:sf:write#=ssh://#1.git.sourceforge.net/gitroot/#1/#2
+#h:sf:read#=http://#1.hg.sourceforge.net:8000/hgroot/#1/#2
+#h:sf:write#=ssh://#1.hg.sourceforge.net/hgroot/#1/#2
+#s:pl:read#=http://pl3.projectlocker.com/#1/#2/svn
+#s:pl:write#=https://pl3.projectlocker.com/#1/#2/svn
+#s:ufd:read#=http://#1.unfuddle.com/svn/#1_#2
+#s:ufd:write#=http://#1.unfuddle.com/svn/#1_#2
+#h:zrepos:write#=zrepos/svn/#1/hg
+#h:zrepos:read#=zrepos/svn/#1/hg
+#h:bb:write#=https://bitbucket.org/#id:e#/#1
+#h:bb:read#=https://bitbucket.org/#id:e#/#1
+badluck				|h:local/		|h:gc/		|h:sf/
+eotect/profile		|h:local/		|h:gc/		|h:sf/
+eotect/ffprofile	|h:local/		|h:gc/		|h:sf/
+eotect/drawing		|h:local/		|h:gc/		|h:sf/
+eotect/text			|h:local/		|h:gc/		|h:sf/
+eotect/www			|h:local/		|h:gc/		|h:sf/
+eotect/pages		|h:local/		|h:gc/		|h:sf/
+eotect/ebook		|h:local/		|h:gc/		|h:sf/
+losebox				|s:local/		|s:gc/		|s:sf/
+loseplace			|s:local/		|s:gc/		|s:sf/
+nightgun			|h:local/		|h:gc/		|h:sf/
+vcsplace/github-sync	|h:local/		|h:gc/		|h:sf/
+vcsplace/gsvn-bundle	|h:local/		|h:gc/		|h:sf/
+vcsplace/gsbridge		|h:local/		|h:gc/		|h:sf/
+vcsplace/reposman		|h:local/		|h:gc/		|h:sf/
+vcsplace/sf-sync		|h:local/		|h:gc/		|h:sf/
+websaver2				|h:local/		|h:gc/		|h:sf/
+zcodebase/c				|h:local/		|h:gc/		|h:sf/
+zcodebase/cpp			|h:local/		|h:gc/		|h:sf/
+zcodebase/vb6			|h:local/		|h:gc/		|h:sf/
+zcodebase/freebasic		|h:local/		|h:gc/		|h:sf/
+zrepos						|s:local/		|s:gc/		|s:sf/
+zscripts/perl				|h:local/		|h:gc/		|h:sf/
+zscripts/sh					|h:local/		|h:gc/		|h:sf/
+zscripts/batch				|h:local/		|h:gc/		|h:sf/
+zscripts/libmyplace-perl	|h:local/		|h:gc/		|h:sf/
+zutils					|h:local/		|h:gc/		|h:sf/
+zusys					|s:local/		|s:gc/		|s:sf/
+gm_scripts					|h:local/		|h:bb/		|h:sf/
+babebase					|h:local/		|h:bb/		|h:sf/
+gsbridge					|h:local/		|h:bb/		|h:sf/
