@@ -25,7 +25,7 @@
 #h:sf:write#=ssh://#1.hg.sourceforge.net/hgroot/#1/#2
 #h:sf1:read#=http://#1.hg.sourceforge.net:8000/hgroot/#1/#1
 #h:sf1:write#=ssh://#1.hg.sourceforge.net/hgroot/#1/#1
-#h:sf-zrepos:read#=http://zrepos.hg.sourceforge.net:8000/hgroot/zrepos/#2
+#h:sf-zrepos:read#=http://zrepos.hg.sourceforge.net:8000/hgroot/zrepos/#1/#2
 #h:sf-zrepos:write#=ssh://zrepos.hg.sourceforge.net/hgroot/zrepos/#1/#2
 #s:pl:read#=http://pl3.projectlocker.com/#1/#2/svn
 #s:pl:write#=https://pl3.projectlocker.com/#1/#2/svn

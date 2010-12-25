@@ -158,7 +158,7 @@ sub parse_url {
 	}
 	my $id = $CONFIG{id};
 	my $type = $CONFIG{type};
-	if($push =~ m/^([^\@]+)\@(.+)$/) {
+	if($push =~ m/^([^\/\@]+)\@(.+)$/) {
 		$push = $2;
 		$id = $1;
 	}
@@ -172,25 +172,29 @@ sub parse_url {
 		$type = 'git';
 	}
 	my $pull = $push;
+	my $remote_name = 'default';
 	if($push =~ m/\s*([^:]+):([^:\/]+)\/(.*?)\s*$/) {
 		if($CONFIG{"$1:$2:write"} and $CONFIG{"$1:$2:read"}) {
 			$push = translate_url($CONFIG{"$1:$2:write"},$3,$id);
 			$pull = translate_url($CONFIG{"$1:$2:read"},$3,$id);
+			$remote_name = $2;
 		}
 		elsif($CONFIG{"$1:$2:write"}) {
 			$push = translate_url($CONFIG{"$1:$2:write"},$3,$id);
+			$remote_name = $2;
 		}
 		elsif($CONFIG{"$1:$2:read"}) {
 			$pull = translate_url($CONFIG{"$1:$2:read"},$3,$id);
+			$remote_name = $2;
 		}
 		elsif($CONFIG{"$1:$2"}) {
 			$push = translate_url($CONFIG{"$1:$2"},$3,$id);
 			$pull = $push;
+			$remote_name = $2;
 		}
 	}
 	return {'push'=>$push,'pull'=>$pull,'id'=>$id,'type'=>$type};
 }
-
 sub get_repo {
     my ($query_name,@repo_data) = @_;
     my %r;
@@ -334,6 +338,28 @@ sub git_push_remote {
     return 1;
 }
 
+sub hg_add_remote {
+	my ($repo,$target,@remotes) = @_;
+	my %pool;
+	if(-f "$target/.hg/hgrc") {
+		run('cp','-av',"$target/.hg/hgrc","$target/.hg/hgrc.bak");
+	}
+	open FO,">","$target/.hg/hgrc" or return error("$!\n");
+	print FO '[paths]',"\n";
+	foreach(@remotes) {
+		my $name = unique_name('default',\%pool);
+		$pool{$name} = 1;
+		print FO "$name = $_->{'pull'}\n";
+		print FO "$name-push = $_->{'push'}\n";
+	}
+	close FO;
+#	my @HGCONFIG = (@HG,qw/-R/,$target,'--config');
+#	foreach(keys %remotes) {
+#		run(@HGCONFIG,"paths.$_=$remotes{$_}->{'pull'}");
+#		run(@HGCONFIG,"paths.$_-push=$remotes{$_}->{'pull'}");
+#	}
+	run(@HG,'-R',$target,'paths');
+}
 sub checkout_repo {
 	my $repo = shift;
 	my $target = $repo->{target};
@@ -342,20 +368,22 @@ sub checkout_repo {
 		my $local = shift @{$repo->{hg}};
 		my $source = shift @{$repo->{hg}};
 		unless(-d $target) {
-			run(@HG,'clone','-U',$source->{'pull'},$target);
+			run(@HG,'clone',$source->{'pull'},$target);
 		}
 		else {
 			#run(@HG,'-R',$target,qw/update -C/);
 			run(@HG,"init",$target);
-			run(@HG,'-R',$target,qw/pull -f -u/,$source->{'pull'});
+			run(@HG,'-R',$target,qw/pull -f/,$source->{'pull'});
+			run(@HG,'-R',$target,qw/update/);
 		}
+		hg_add_remote($repo,$target,$source,@{$repo->{hg}});
 		run(@HG,'-R',$target,'tip');
 		run(@HG,'-R',$target,'summary');
 	}
 	if($repo->{svn} and !$OPTS{'no-svn'}) {
 		my $local = shift @{$repo->{svn}};
 		my $source = shift @{$repo->{svn}};
-		run(@SVN,'checkout','--force',$source->{'push'},$target);
+		run(@SVN,'checkout','--force',$source->{'push'} . "/trunk",$target);
 	}
 	if($repo->{git} and !$OPTS{'no-git'}) {
 		my $local = shift @{$repo->{git}};

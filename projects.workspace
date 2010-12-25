@@ -25,7 +25,7 @@
 #h:sf:write#=ssh://#1.hg.sourceforge.net/hgroot/#1/#2
 #h:sf1:read#=http://#1.hg.sourceforge.net:8000/hgroot/#1/#1
 #h:sf1:write#=ssh://#1.hg.sourceforge.net/hgroot/#1/#1
-#h:sf-zrepos:read#=http://zrepos.hg.sourceforge.net:8000/hgroot/zrepos/#2
+#h:sf-zrepos:read#=http://zrepos.hg.sourceforge.net:8000/hgroot/zrepos/#1/#2
 #h:sf-zrepos:write#=ssh://zrepos.hg.sourceforge.net/hgroot/zrepos/#1/#2
 #s:pl:read#=http://pl3.projectlocker.com/#1/#2/svn
 #s:pl:write#=https://pl3.projectlocker.com/#1/#2/svn
@@ -35,12 +35,12 @@
 #h:zrepos:read#=zrepos/svn/#1/hg
 #h:bb:write#=https://bitbucket.org/#id:e#/#1
 #h:bb:read#=https://bitbucket.org/#id:e#/#1
-#h:checkout:write#=../workspace/#1
-#h:checkout:read#=../workspace/#1
-#s:checkout:write#=../workspace/#1
-#s:checkout:read#=../workspace/#1
+#h:checkout:write#=#1
+#h:checkout:read#=#1
+#s:checkout:write#=#1
+#s:checkout:read#=#1
 badluck				|h:checkout/	|h:local/		|h:gc/		|h:sf1/		|h:sf-zrepos/
-eotect/profile		|h:checkout/profile	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
+eotect/profile		|h:checkout/../data/app	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
 eotect/ffprofile	|h:checkout/ffprofile	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
 eotect/drawing		|h:checkout/drawing	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
 eotect/text			|h:checkout/text	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
@@ -59,7 +59,7 @@ zcodebase/c				|h:checkout/c	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
 zcodebase/cpp			|h:checkout/cpp	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
 zcodebase/vb6			|h:checkout/vb6	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
 zcodebase/freebasic		|h:checkout/freebasic	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-zrepos						|s:checkout/	|s:local/		|s:gc/		|s:sf/
+#zrepos						|s:checkout/	|s:local/		|s:gc/		|s:sf/
 zscripts/perl				|h:checkout/perl	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
 zscripts/sh					|h:checkout/shellscript	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
 zscripts/batch				|h:checkout/batch	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
