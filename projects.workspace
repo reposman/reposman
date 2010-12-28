@@ -69,3 +69,5 @@ zusys					|s:checkout/usys	|s:local/		|s:gc/		|s:sf/
 gm_scripts					|h:checkout/ffprofile/gm_scripts	|h:local/		|h:bb/		|h:sf1/		|h:sf-zrepos/
 babebase					|h:checkout/perl/urlrule	|h:local/		|h:bb/		|h:sf1/		|h:sf-zrepos/
 gsbridge					|h:checkout/gsbridge	|h:local/		|h:bb/		|h:sf1/		|h:sf-zrepos/
+vcsplace/ws	|h:checkout/.		|h:local/		|h:gc/		|h:sf/
+
