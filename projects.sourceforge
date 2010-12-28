@@ -46,6 +46,7 @@ eotect/ebook		|h:checkout/	|h:local/		|h:gc/		|h:sf/
 losebox				|s:checkout/	|s:local/		|s:gc/		|s:sf/
 loseplace			|s:checkout/	|s:local/		|s:gc/		|s:sf/
 nightgun			|h:checkout/	|h:local/		|h:gc/		|h:sf1/
+vcsplace/ws			|h:checkout/	|h:local/		|h:gc/		|h:sf/		
 vcsplace/github-sync	|h:checkout/	|h:local/		|h:gc/		|h:sf/
 vcsplace/gsvn-bundle	|h:checkout/	|h:local/		|h:gc/		|h:sf/
 vcsplace/reposman		|h:checkout/scripts	|h:local/		|h:gc/		|h:sf/
