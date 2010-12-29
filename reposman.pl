@@ -5,7 +5,7 @@ require v5.8.0;
 our $VERSION = 'v1.0';
 
 my %OPTS;
-my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-config|dc dump-data|dd sync|s checkout|co|c/;
+my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-config|dc dump-data|dd sync|s sync-all|sa checkout|co|c/;
 if(@ARGV)
 {
     require Getopt::Long;
@@ -397,6 +397,7 @@ sub checkout_repo {
 }
 sub sync_repo {
 	my $repo = shift;
+	my $first_only = shift;
 #	my $target = $repo->{target}; #ignore this checkout point
 	my $name = $repo->{name};
 	if($repo->{hg} and !$OPTS{'no-hg'}) {
@@ -410,8 +411,10 @@ sub sync_repo {
 			#run(@HG,'-R',$target,qw/update -C/);
 			run(@HG,'-R',$target,qw/pull -f/,$source->{'pull'});
 		}
-		foreach(@{$repo->{hg}}) {
-			run(@HG,'-R',$target,'push','-f',$_->{'push'});
+		unless($first_only) {
+			foreach(@{$repo->{hg}}) {
+				run(@HG,'-R',$target,'push','-f',$_->{'push'});
+			}
 		}
 		run(@HG,'-R',$target,'tip');
 		run(@HG,'-R',$target,'summary');
@@ -422,8 +425,10 @@ sub sync_repo {
 		my $source = shift @{$repo->{svn}};
 		$repo->{svn_source} = $source;
 		svnsync($source->{'pull'},$target,$source->{id},$local->{id});
-		foreach(@{$repo->{svn}}) {
-			svnsync($source->{'pull'},$_->{'push'},$source->{'id'},$_->{'id'});
+		unless($first_only) {
+			foreach(@{$repo->{svn}}) {
+				svnsync($source->{'pull'},$_->{'push'},$source->{'id'},$_->{'id'});
+			}
 		}
 	}
 	if($repo->{git} and !$OPTS{'no-git'}) {
@@ -432,8 +437,10 @@ sub sync_repo {
 		my $source = shift @{$repo->{git}};
 		$repo->{git_source} = $source;
 		run(@GIT,'--bare','clone',$source->{'pull'},$target);
-		foreach(@{$repo->{git}}) {
-			run(@GIT,'--bare','--git-dir',$target,'push',$_->{'push'});
+		unless($first_only) {
+			foreach(@{$repo->{git}}) {
+				run(@GIT,'--bare','--git-dir',$target,'push',$_->{'push'});
+			}
 		}
 	}
 	return 1;
@@ -521,7 +528,11 @@ elsif($OPTS{check}) {
 }
 elsif($OPTS{sync}) {
 	$action = 'sync';
-	$action_sub = \&sync_repo;
+	$action_sub = sub {&sync_repo(@_,1)};
+}
+elsif($OPTS{'sync-all'}) {
+	$action = 'sync-all';
+	$action_sub = &sync_repo;
 }
 else {
 	die("Invalid action specified!\n");
