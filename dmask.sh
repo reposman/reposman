@@ -20,6 +20,12 @@ elif [ -f /myplace/workspace/mask ] ; then
 	maskfile=/myplace/workspace/mask
 elif [ -f /myplace/mask ] ; then
 	maskfile=/myplace/mask
+elif [ -f ~/myplace/mask ] ; then
+	maskfile=~/myplace/mask
+elif [ -f ~/myplace/workspace/mask ] ; then
+	maskfile=~/myplace/workspace/mask
+elif [ -f ~/workspace/mask ] ; then
+	maskfile=~/workspace/mask
 fi
 
 if [ -n "$maskfile" ] ; then
