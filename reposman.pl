@@ -528,11 +528,11 @@ elsif($OPTS{check}) {
 }
 elsif($OPTS{sync}) {
 	$action = 'sync';
-	$action_sub = sub {&sync_repo(@_,1)};
+	$action_sub = sub {eval 'sync_repo(@_,1)';};
 }
 elsif($OPTS{'sync-all'}) {
 	$action = 'sync-all';
-	$action_sub = &sync_repo;
+	$action_sub = \&sync_repo;
 }
 else {
 	die("Invalid action specified!\n");
