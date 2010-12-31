@@ -35,39 +35,61 @@
 #h:zrepos:read#=zrepos/svn/#1/hg
 #h:bb:write#=https://bitbucket.org/#id:e#/#1
 #h:bb:read#=https://bitbucket.org/#id:e#/#1
-#h:checkout:write#=#1
-#h:checkout:read#=#1
+#g:checkout:write#=#1
+#g:checkout:read#=#1
 #s:checkout:write#=#1
 #s:checkout:read#=#1
-badluck				|h:checkout/	|h:local/		|h:gc/		|h:sf1/		|h:sf-zrepos/
-eotect/profile		|h:checkout/../data/app	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-eotect/ffprofile	|h:checkout/ffprofile	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-eotect/drawing		|h:checkout/drawing	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-eotect/text			|h:checkout/text	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-eotect/www			|h:checkout/www	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-eotect/pages		|h:checkout/pages	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-eotect/ebook		|h:checkout/ebook	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
+#g:gh:read#=http://github.com/#1.git
+#g:gh:write#=git@github.com:#1.git
+#g:gh1:read#=http://github.com/eotect/#1.git
+#g:gh1:write#=git@github.com:eotect/#1.git
+#g:gr:read#=http://gitorious.org/#1.git
+#g:gr:write#=git@gitorious.org:#1.git
+#g:gr1:read#=http://gitorious.org/eotect/#1.git
+#g:gr1:write#=git@gitorious.org:eotect/#1.git
+#g:checkout:read#=#1
+#g:checkout:write#=#1
+#g:sf:read#=http://#1.git.sourceforge.net:8000/gitroot/#1/#2
+#g:sf:write#=ssh://#1.git.sourceforge.net/gitroot/#1/#2
+#g:sf1:read#=http://#1.git.sourceforge.net:8000/gitroot/#1/#1
+#g:sf1:write#=ssh://#1.git.sourceforge.net/gitroot/#1/#1
+#g:sf-zrepos:read#=http://zrepos.git.sourceforge.net:8000/gitroot/zrepos/#1/#2
+#g:sf-zrepos:write#=ssh://zrepos.git.sourceforge.net/gitroot/zrepos/#1/#2
+#g:asm:read#=git@git.assembla.com:#1.git
+#g:asm:write#=git@git.assembla.com:#1.git
+#g:ufd:read#=git@eotect.unfuddle.com:eotect/#1.git
+#g:ufd:write#=git@eotect.unfuddle.com:eotect/#1.git
+zprofile/firefox	|g:checkout/firefox		|g:local/	|g:gh/		|g:gr/		|g:sf/		|g:sf-zrepos/
+zprofile/linux		|g:checkout/../data/app	|g:local/	|g:gh/		|g:gr/		|g:sf/		|g:sf-zrepos/
+badluck				|g:checkout/			|g:local/	|g:gh1/		|g:gr1/		|g:sf1/		|g:sf-zrepos/
+eotect/profile		|g:checkout/../data/app	|g:local/		|g:gh/		|g:gr/	|g:sf/		|g:sf-zrepos/
+eotect/ffprofile	|g:checkout/ffprofile	|g:local/		|g:gh/		|g:gr/	|g:sf/		|g:sf-zrepos/
+eotect/drawing		|g:checkout/drawing		|g:local/		|g:gh/		|g:gr/	|g:sf/		|g:sf-zrepos/
+eotect/text			|g:checkout/text		|g:local/		|g:gh/		|g:gr/	|g:sf/		|g:sf-zrepos/
+eotect/www			|g:checkout/www			|g:local/		|g:gh/		|g:gr/	|g:sf/		|g:sf-zrepos/
+eotect/pages		|g:checkout/pages		|g:local/		|g:gh/		|g:gr/	|g:sf/		|g:sf-zrepos/
+eotect/ebook		|g:checkout/ebook		|g:local/		|g:gh/		|g:gr/	|g:sf/		|g:sf-zrepos/
 losebox				|s:checkout/	|s:local/		|s:gc/		|s:sf/
 loseplace			|s:checkout/	|s:local/		|s:gc/		|s:sf/
-nightgun			|h:checkout/	|h:local/		|h:gc/		|h:sf1/		|h:sf-zrepos/
-vcsplace/github-sync	|h:checkout/github-sync	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-vcsplace/gsvn-bundle	|h:checkout/gsvn-bundle	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-vcsplace/reposman		|h:checkout/reposman	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-vcsplace/sf-sync		|h:checkout/sf-sync	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-websaver2				|h:checkout/ffprofile/extensions/websaver2@myplace.hell	|h:local/		|h:gc/		|h:sf1/		|h:sf-zrepos/
-zcodebase/c				|h:checkout/c	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-zcodebase/cpp			|h:checkout/cpp	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-zcodebase/vb6			|h:checkout/vb6	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-zcodebase/freebasic		|h:checkout/freebasic	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
+nightgun			|g:checkout/	|g:local/		|g:gh/		|g:sf1/		|g:sf-zrepos/
+vcsplace/github-sync	|g:checkout/github-sync	|g:local/		|g:gh/		|g:sf/		|g:sf-zrepos/
+vcsplace/gsvn-bundle	|g:checkout/gsvn-bundle	|g:local/		|g:gh/		|g:sf/		|g:sf-zrepos/
+vcsplace/reposman		|g:checkout/reposman	|g:local/		|g:gh/		|g:sf/		|g:sf-zrepos/
+vcsplace/sf-sync		|g:checkout/sf-sync	|g:local/		|g:gh/		|g:sf/		|g:sf-zrepos/
+vcsplace/ws				|g:checkout/.		|g:local/		|g:gh/		|g:sf/
+websaver2				|g:checkout/ffprofile/extensions/websaver2@myplace.hell	|g:local/		|g:gh/		|g:sf1/		|g:sf-zrepos/
+zcodebase/c				|g:checkout/c	|g:local/		|g:gh/		|g:sf/		|g:sf-zrepos/
+zcodebase/cpp			|g:checkout/cpp	|g:local/		|g:gh/		|g:sf/		|g:sf-zrepos/
+zcodebase/vb6			|g:checkout/vb6	|g:local/		|g:gh/		|g:sf/		|g:sf-zrepos/
+zcodebase/freebasic		|g:checkout/freebasic	|g:local/		|g:gh/		|g:sf/		|g:sf-zrepos/
 #zrepos						|s:checkout/	|s:local/		|s:gc/		|s:sf/
-zscripts/perl				|h:checkout/perl	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-zscripts/sh					|h:checkout/shellscript	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-zscripts/batch				|h:checkout/batch	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-zscripts/libmyplace-perl	|h:checkout/perl/modules/MyPlace	|h:local/		|h:gc/		|h:sf/		|h:sf-zrepos/
-zutils					|h:checkout/utils	|h:local/		|h:gc/		|h:sf1/		|h:sf-zrepos/
+zscripts/perl				|g:checkout/perl	|g:local/		|g:gh/		|g:sf/		|g:sf-zrepos/
+zscripts/sh					|g:checkout/shellscript	|g:local/		|g:gh/		|g:sf/		|g:sf-zrepos/
+zscripts/batch				|g:checkout/batch	|g:local/		|g:gh/		|g:sf/		|g:sf-zrepos/
+zscripts/libmyplace-perl	|g:checkout/perl/modules/MyPlace	|g:local/		|g:gh/		|g:sf/		|g:sf-zrepos/
+zutils					|g:checkout/utils	|g:local/		|g:gh/		|g:sf1/		|g:sf-zrepos/
 zusys					|s:checkout/usys	|s:local/		|s:gc/		|s:sf/
-gm_scripts					|h:checkout/ffprofile/gm_scripts	|h:local/		|h:bb/		|h:sf1/		|h:sf-zrepos/
-babebase					|h:checkout/perl/urlrule	|h:local/		|h:bb/		|h:sf1/		|h:sf-zrepos/
-gsbridge					|h:checkout/gsbridge	|h:local/		|h:bb/		|h:sf1/		|h:sf-zrepos/
-vcsplace/ws	|h:checkout/.		|h:local/		|h:gc/		|h:sf/
+gm_scripts					|g:checkout/ffprofile/gm_scripts	|g:local/		|g:ufd/gmscripts		|g:sf1/		|g:sf-zrepos/
+babebase					|g:checkout/perl/urlrule			|g:local/		|g:ufd/		|g:sf1/		|g:sf-zrepos/
+gsbridge					|g:checkout/gsbridge				|g:local/		|g:ufd/		|g:sf1/		|g:sf-zrepos/
 
