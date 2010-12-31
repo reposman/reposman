@@ -337,7 +337,32 @@ sub git_push_remote {
     }
     return 1;
 }
+sub GIT_R {
+	my $target = shift;
+	return @GIT,'--work-tree',$target,'--git-dir',$target . '/.git';
+}
 
+sub url_get_domain {
+	my $url = shift;
+	if($url =~ m/.*?([^\/\\:@\.]+)\.(?:org|com|net|\.cn)/) {
+		return $1;
+	}
+	else {
+		return 'no_name';
+	}
+}
+
+sub git_add_remote {
+	my ($repo,$target,@remotes) = @_;
+	my %pool;
+	foreach(@remotes) {
+		my $url = $_->{'push'};
+		my $name = unique_name(url_get_domain($url),\%pool);
+		$pool{$name} = 1;
+		run(GIT_R($target),qw/remote rm/,$name);
+		run(GIT_R($target),qw/remote add/,$name,$url);
+	}
+}
 sub hg_add_remote {
 	my ($repo,$target,@remotes) = @_;
 	my %pool;
@@ -388,10 +413,18 @@ sub checkout_repo {
 	if($repo->{git} and !$OPTS{'no-git'}) {
 		my $local = shift @{$repo->{git}};
 		my $source = shift @{$repo->{git}};
-		run(@GIT,"init",$target);
-		run(@GIT,"--work-tree",$target,"--git-dir","$target/.git",qw/remote rm origin/);
-		run(@GIT,"--work-tree",$target,"--git-dir","$target/.git",qw/remote add origin/,$source->{'push'});
-		run(@GIT,"--work-tree",$target,"--git-dir","$target/.git","fetch","origin");
+		unless(-d $target) {
+			run(@GIT,'clone',$source->{'push'},$target);
+		}
+		else {
+			run(@GIT,"init",$target);
+			run(@GIT,"--work-tree",$target,"--git-dir","$target/.git",qw/remote rm origin/);
+			run(@GIT,"--work-tree",$target,"--git-dir","$target/.git",qw/remote add origin/,$source->{'push'});
+		}
+		git_add_remote($repo,$target,@{$repo->{git}});
+		run(GIT_R($target),qw/fetch --all/);
+		run(GIT_R($target),qw/remote -v/);
+		run(GIT_R($target),qw/branch -av/);
 	}
 	return 1;
 }
