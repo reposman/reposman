@@ -115,9 +115,10 @@ sub parse_project_data {
         foreach(@data) {
             s/^\s+|\s+$//;
         }
-        next unless($data[0]);
+		next unless(@data);
         my $name = shift @data;
-        if($data[0] =~ m/.+\/.+/) {
+		next unless($name);
+        if($data[0] and $data[0] =~ m/.+\/.+/) {
             $sub_project{$name} = \@data;
         }
         else {
