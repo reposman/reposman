@@ -53,11 +53,13 @@ my $F_TEST = $OPTS{test};
 my @HG = qw/hg -v/;
 my @GIT = qw/git/;
 my @SVN = qw/svn/;
+my %DATA;
 my %CONFIG;
 $CONFIG{svn} = "https://#1.googlecode.com/svn/#2";
 $CONFIG{'git:github'} = "git\@github.com:#1/#2.git";
 $CONFIG{'git:gitorious'} = "git\@gitorious.org:#1/#2.git";
 $CONFIG{authors} = 'authors';
+my %PROJECTS;
 my %MACRO;
 
 my %project;
@@ -85,11 +87,14 @@ sub parse_query {
 
 sub get_project_data {
 	my ($name,undef) = parse_query(@_);
-	return $name,($project{$name} ? $project{$name} : $sub_project{$name});
+	return $name,$PROJECTS{$name};
 }
 
 sub parse_project_data {
+	my $current_section = 'noname';
     foreach my $line (@_) {
+		my $name = undef;
+		my $value = undef;
         $_ = $line;
         chomp;
         print STDERR "debug::parse_project_data>[1]",$_,"\n" if($OPTS{debug});
@@ -97,33 +102,34 @@ sub parse_project_data {
             s/#$v_name#/$MACRO{$v_name}/g;
         }
         print STDERR "debug::parse_project_data>[2]",$_,"\n" if($OPTS{debug});
-        if(m/^\s*#([^#]+)#\s*=\s*(.+?)\s*$/) {
-            my $name = $1;
-            my $value = $2;
-            next unless($value);
-            if($name =~ m/^(?:id|id:.+|authors|user|username|email|s|s:.+|svn|svn:.+|g|g:.+|git|git:.+|h|h:.+|hg|hg:.+)$/) {
-                $CONFIG{$name} = $value;
-            }
-            $MACRO{$name} = $value;
-            next;
-        }
-		elsif(m/^\s*#/) {
+		if(m/^\s*(?:#|;)/) {
 			next;
 		}
-        #my @data = (split(/\s*\|\s*/,$_),'','','','','','','');
-        my @data = split(/\s*\|\s*/,$_);
-        foreach(@data) {
-            s/^\s+|\s+$//;
-        }
-		next unless(@data);
-        my $name = shift @data;
-		next unless($name);
-        if($data[0] and $data[0] =~ m/.+\/.+/) {
-            $sub_project{$name} = \@data;
-        }
-        else {
-            $project{$name} = \@data;
-        }
+
+		if(m/^\s*\[(.+)\]\s*$/) {
+			$current_section = $1;
+			$DATA{$current_section} = {} unless($DATA{$current_section});
+		}
+		elsif(m/^\s*([^=]+?)\s*=\s*(.+?)\s*$/) {
+			$name = $1;
+			$value = $2;
+		}
+		elsif(m/^\s*(.+?)\s*$/) {
+			$name = $1;
+			$value = undef;
+		}
+		if($name) {
+			$DATA{$current_section}->{$name} = $value;
+			if($current_section eq '#define#') {
+				$MACRO{$name} = $value;
+				if($name =~ m/^(?:id|id:.+|authors|user|user:.+|author|author:.+|username|username:.+|email|email:.+|s|s:.+|svn|svn:.+|g|g:.+|git|git:.+|h|h:.+|hg|hg:.+|checkout)$/) {
+				$CONFIG{$name} = $value;
+				}
+			}
+			else {
+				$PROJECTS{$current_section}->{$name} = $value;
+			}
+		}
     }
 }
 
@@ -152,16 +158,17 @@ sub translate_url {
 sub parse_url {
 	my $name = shift;
 	my $template = shift;
+	my $project = shift;
 	next unless($template);
 	my $push = $template;
 	if($push =~ m/\/$/) {
 		$push = $push ."$name"; 
 	}
-	my $id = $CONFIG{id};
-	my $type = $CONFIG{type};
+	my $user = $project->{user};
+	my $type = $project->{type};
 	if($push =~ m/^([^\/\@]+)\@(.+)$/) {
 		$push = $2;
-		$id = $1;
+		$user = $1;
 	}
 	if($push =~ m/^(?:h|h:.+|hg|hg:.+)$/) {
 		$type = 'hg';
@@ -176,56 +183,64 @@ sub parse_url {
 	my $remote_name = 'default';
 	if($push =~ m/\s*([^:]+):([^:\/]+)\/(.*?)\s*$/) {
 		if($CONFIG{"$1:$2:write"} and $CONFIG{"$1:$2:read"}) {
-			$push = translate_url($CONFIG{"$1:$2:write"},$3,$id);
-			$pull = translate_url($CONFIG{"$1:$2:read"},$3,$id);
+			$push = translate_url($CONFIG{"$1:$2:write"},$3,$user);
+			$pull = translate_url($CONFIG{"$1:$2:read"},$3,$user);
 			$remote_name = $2;
 		}
 		elsif($CONFIG{"$1:$2:write"}) {
-			$push = translate_url($CONFIG{"$1:$2:write"},$3,$id);
+			$push = translate_url($CONFIG{"$1:$2:write"},$3,$user);
 			$remote_name = $2;
 		}
 		elsif($CONFIG{"$1:$2:read"}) {
-			$pull = translate_url($CONFIG{"$1:$2:read"},$3,$id);
+			$pull = translate_url($CONFIG{"$1:$2:read"},$3,$user);
 			$remote_name = $2;
 		}
 		elsif($CONFIG{"$1:$2"}) {
-			$push = translate_url($CONFIG{"$1:$2"},$3,$id);
+			$push = translate_url($CONFIG{"$1:$2"},$3,$user);
 			$pull = $push;
 			$remote_name = $2;
 		}
 	}
-	return {'push'=>$push,'pull'=>$pull,'id'=>$id,'type'=>$type};
+	return {'push'=>$push,'pull'=>$pull,'user'=>$user,'type'=>$type};
 }
 sub get_repo {
-    my ($query_name,@repo_data) = @_;
-    my %r;
+    #my ($query_name,@repo_data) = @_;
+	my $query_name = shift;
+	my $project = shift;
+	$project = {'s:local'=>'s:local/','s:source'=>'s:source/'} unless($project);
 	my ($name,$new_target) = parse_query($query_name);
-    $r{name} = $name;
-	my $target = shift @repo_data;
+    $project->{shortname} = $name;
+	$project->{name} = $project->{shortname} unless($project->{name});
+	$project->{user} = $CONFIG{user} unless($project->{user});
+	$project->{email} = $CONFIG{email} unless($project->{email});
+	$project->{author} = $CONFIG{author} unless($project->{author});
+	$project->{username} = $CONFIG{username} unless($project->{username});
+	$project->{type} = $CONFIG{type} unless($project->{type});
+	$project->{checkout} = $CONFIG{checkout} unless($project->{checkout});
+
+	my $target = $project->{checkout};
 	$target = $name unless($target);
 	if($new_target) {
-		$r{target} = $new_target;
-		$r{_target} = $target;
+		$project->{target} = $new_target;
+		$project->{_target} = $target;
 	}
 	else {
-		$r{target} = $target;
+		$project->{target} = $target;
 	}
-	$target = parse_url($name,$r{target});
+	$target = parse_url($name,$project->{target},$project);
 	if($target) {
-		$r{target} = $target->{'push'};
+		$project->{target} = $target->{'push'};
 	}
-    @repo_data = ("s:local/$name","s:remote/$name",) unless(@repo_data);
-	if($OPTS{debug}) {
-		print STDERR "debug::get_repo> $name -  ",join("  |",@repo_data),"\n";
-	}
-	while(@repo_data) {
-		my $template = shift @repo_data;
-		my $url = parse_url($name,$template);
-		if($url) {
-			push @{$r{$url->{type}}},$url;
+	foreach my $repos_type (qw/s svn g git h hg/) {
+		foreach my $url_type (qw/local source mirror mirrors mirrors_1 mirrors_2 mirrors_3 mirrors_4 mirrors_5 mirrors_6/) {
+			my $key = "$repos_type:$url_type";
+			if($project->{$key}) {
+				my $url = parse_url($project->{name},$project->{$key},$project);
+				push @{$project->{$url->{type}}},$url;
+			}
 		}
 	}
-    return \%r;
+    return $project;
 }
 
 sub svnsync {
@@ -512,39 +527,37 @@ if($OPTS{project}) {
 }
 
 
-my $total = scalar(keys %project) + scalar(keys %sub_project);
+my $total = scalar(keys %PROJECTS);
 print STDERR "$total", $total > 1 ? " projects" : " project", ".\n";
 
-#my $QUERY_NAME=shift;
-#my @query = $QUERY_NAME ? ($QUERY_NAME) : (keys %project,keys %sub_project);
-#my $count = $QUERY_NAME ? 1 : $total;
-my @query = @ARGV ? @ARGV : (keys %project,keys %sub_project);
+my @query = @ARGV ? @ARGV : (keys %PROJECTS);
 
 
 if($OPTS{'list'}) {
-    $OPTS{'dump-data'} = 1;
+    $OPTS{'dump-projects'} = 1;
 }
 
 if($OPTS{'dump'}) {
+	$OPTS{'dump-data'} = 1;
     $OPTS{'dump-config'} = 1;
-    $OPTS{'dump-data'} = 1;
+    $OPTS{'dump-projects'} = 1;
 }
 
-if($OPTS{'dump-config'}) {
-    use Data::Dumper;
-    print Data::Dumper->Dump([\%CONFIG],["*CONFIG"]);
-}
+use Data::Dumper;
+print Data::Dumper->Dump([\%DATA],["*DATA"]) if($OPTS{'dump-data'});
+print Data::Dumper->Dump([\%CONFIG],["*CONFIG"]) if($OPTS{'dump-config'});
+print Data::Dumper->Dump([\%PROJECTS],["*PROJECTS"]) if($OPTS{'dump-projects'});
 
 if($OPTS{'dump-data'}) {
     use Data::Dumper;
 #    my @query = $QUERY_NAME ? ($QUERY_NAME) : (keys %project,keys %sub_project);
     foreach my $query_text (@query) {
         my ($name,$pdata) = get_project_data($query_text);
-        my $repo = get_repo($query_text,@{$pdata});
+        my $repo = get_repo($query_text,$pdata);
         print Data::Dumper->Dump([$repo],["*$name"]);
     }
 }
-if($OPTS{'dump-config'} or $OPTS{'dump-data'}) {
+if($OPTS{'dump'} or $OPTS{'dump-config'} or $OPTS{'dump-data'}) {
     exit 0;
 }
 
@@ -581,7 +594,7 @@ foreach my $query_text (@query) {
     		print STDERR "[$idx/$count] project $name not defined.\n";
     		next;
     	}
-        my $repo = get_repo($query_text,@{$pdata});
+        my $repo = get_repo($query_text,$pdata);
 		&$action_sub($repo) or die("\n");
         print STDERR "\n";
 }
