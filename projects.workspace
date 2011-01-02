@@ -1,94 +1,267 @@
-#id#=eotect
-#id:e#=eotect
-#id:x#=xiaoranzzz
-#em:e#=#id:e#@gmail.com
-#em:x#=#id:x#@gmail.com
-#s:local:read#=#1/svn/#2
-#s:local:write#=#1/svn/#2
-#s:local2:read#=#1/svn
-#s:local2:write#=#1/svn
-#h:local:read#=#1/hg
-#h:local:write#=#1/hg
-#g:local:read#=#1/git
-#g:local:write#=#1/git
-#s:asm:read#=http://subversion.assembla.com/svn/#1
-#s:asm:write#=https://subversion.assembla.com/svn/#1
-#s:gc:read#=http://#1.googlecode.com/svn/#2
-#s:gc:write#=https://#1.googlecode.com/svn/#2
-#h:gc:read#=http://#2.#1.googlecode.com/hg
-#h:gc:write#=https://#2.#1.googlecode.com/hg
-#s:sf:read#=http://#1.svn.sourceforge.net/svnroot/#1
-#s:sf:write#=https://#1.svn.sourceforge.net/svnroot/#1
-#g:sf:read#=http://#1.git.sourceforge.net/gitroot/#1/#2
-#g:sf:write#=ssh://#1.git.sourceforge.net/gitroot/#1/#2
-#h:sf:read#=http://#1.hg.sourceforge.net:8000/hgroot/#1/#2
-#h:sf:write#=ssh://#1.hg.sourceforge.net/hgroot/#1/#2
-#h:sf1:read#=http://#1.hg.sourceforge.net:8000/hgroot/#1/#1
-#h:sf1:write#=ssh://#1.hg.sourceforge.net/hgroot/#1/#1
-#h:sf-zrepos:read#=http://zrepos.hg.sourceforge.net:8000/hgroot/zrepos/#1/#2
-#h:sf-zrepos:write#=ssh://zrepos.hg.sourceforge.net/hgroot/zrepos/#1/#2
-#s:pl:read#=http://pl3.projectlocker.com/#1/#2/svn
-#s:pl:write#=https://pl3.projectlocker.com/#1/#2/svn
-#s:ufd:read#=http://#1.unfuddle.com/svn/#1_#2
-#s:ufd:write#=http://#1.unfuddle.com/svn/#1_#2
-#h:zrepos:write#=zrepos/svn/#1/hg
-#h:zrepos:read#=zrepos/svn/#1/hg
-#h:bb:write#=https://bitbucket.org/#id:e#/#1
-#h:bb:read#=https://bitbucket.org/#id:e#/#1
-#g:checkout:write#=#1
-#g:checkout:read#=#1
-#s:checkout:write#=#1
-#s:checkout:read#=#1
-#g:gh:read#=http://github.com/#1.git
-#g:gh:write#=git@github.com:#1.git
-#g:gh1:read#=http://github.com/eotect/#1.git
-#g:gh1:write#=git@github.com:eotect/#1.git
-#g:gr:read#=http://gitorious.org/#1.git
-#g:gr:write#=git@gitorious.org:#1.git
-#g:gr1:read#=http://gitorious.org/eotect/#1.git
-#g:gr1:write#=git@gitorious.org:eotect/#1.git
-#g:checkout:read#=#1
-#g:checkout:write#=#1
-#g:sf:read#=http://#1.git.sourceforge.net:8000/gitroot/#1/#2
-#g:sf:write#=ssh://#1.git.sourceforge.net/gitroot/#1/#2
-#g:sf1:read#=http://#1.git.sourceforge.net:8000/gitroot/#1/#1
-#g:sf1:write#=ssh://#1.git.sourceforge.net/gitroot/#1/#1
-#g:sf-zrepos:read#=http://zrepos.git.sourceforge.net:8000/gitroot/zrepos/#1/#2
-#g:sf-zrepos:write#=ssh://zrepos.git.sourceforge.net/gitroot/zrepos/#1/#2
-#g:asm:read#=git@git.assembla.com:#1.git
-#g:asm:write#=git@git.assembla.com:#1.git
-#g:ufd:read#=git@eotect.unfuddle.com:eotect/#1.git
-#g:ufd:write#=git@eotect.unfuddle.com:eotect/#1.git
+[#define#]
+user:e=eotect
+user:x=xiaoranzzz
+username:e = Eotect Nahn
+username:x = Xiaoranzzz
+email:e=#user:e#@gmail.com
+email:x=#user:x#@gmail.com
+author:e = #username:e# <#email:e#>
+author:x = #username:x# <#email:x#>
+user = #user:e#
+username = #username:e#
+email = #email:e#
+author = #author:e#
+type = git
+s:local:read = #1/svn/#2
+s:local:write = #1/svn/#2
+s:local2:read = #1/svn
+s:local2:write = #1/svn
+h:local:read = #1/hg
+h:local:write = #1/hg
+g:local:read = #1/git
+g:local:write = #1/git
+s:asm:read = http://subversion.assembla.com/svn/#1
+s:asm:write = https://subversion.assembla.com/svn/#1
+s:gc:read = http://#1.googlecode.com/svn/#2
+s:gc:write = https://#1.googlecode.com/svn/#2
+h:gc:read = http://#2.#1.googlecode.com/hg
+h:gc:write = https://#2.#1.googlecode.com/hg
+s:sf:read = http://#1.svn.sourceforge.net/svnroot/#1
+s:sf:write = https://#1.svn.sourceforge.net/svnroot/#1
+g:sf:read = http://#1.git.sourceforge.net/gitroot/#1/#2
+g:sf:write = ssh://#1.git.sourceforge.net/gitroot/#1/#2
+h:sf:read = http://#1.hg.sourceforge.net:8000/hgroot/#1/#2
+h:sf:write = ssh://#1.hg.sourceforge.net/hgroot/#1/#2
+h:sf1:read = http://#1.hg.sourceforge.net:8000/hgroot/#1/#1
+h:sf1:write = ssh://#1.hg.sourceforge.net/hgroot/#1/#1
+h:sf-zrepos:read = http://zrepos.hg.sourceforge.net:8000/hgroot/zrepos/#1/#2
+h:sf-zrepos:write = ssh://zrepos.hg.sourceforge.net/hgroot/zrepos/#1/#2
+s:pl:read = http://pl3.projectlocker.com/#1/#2/svn
+s:pl:write = https://pl3.projectlocker.com/#1/#2/svn
+s:ufd:read = http://#1.unfuddle.com/svn/#1_#2
+s:ufd:write = http://#1.unfuddle.com/svn/#1_#2
+h:zrepos:write = zrepos/svn/#1/hg
+h:zrepos:read = zrepos/svn/#1/hg
+h:bb:write = https://bitbucket.org/#user:e#/#1
+h:bb:read = https://bitbucket.org/#user:e#/#1
+g:checkout:write = #1
+g:checkout:read = #1
+s:checkout:write = #1
+s:checkout:read = #1
+g:gh:read = http://github.com/#1.git
+g:gh:write = git@github.com:#1.git
+g:gh1:read = http://github.com/eotect/#1.git
+g:gh1:write = git@github.com:eotect/#1.git
+g:gr:read = http://gitorious.org/#1.git
+g:gr:write = git@gitorious.org:#1.git
+g:gr1:read = http://gitorious.org/eotect/#1.git
+g:gr1:write = git@gitorious.org:eotect/#1.git
+g:checkout:read = #1
+g:checkout:write = #1
+g:sf:read = http://#1.git.sourceforge.net:8000/gitroot/#1/#2
+g:sf:write = ssh://#1.git.sourceforge.net/gitroot/#1/#2
+g:sf1:read = http://#1.git.sourceforge.net:8000/gitroot/#1/#1
+g:sf1:write = ssh://#1.git.sourceforge.net/gitroot/#1/#1
+g:sf-zrepos:read = http://zrepos.git.sourceforge.net:8000/gitroot/zrepos/#1/#2
+g:sf-zrepos:write = ssh://zrepos.git.sourceforge.net/gitroot/zrepos/#1/#2
+g:asm:read = git@git.assembla.com:#1.git
+g:asm:write = git@git.assembla.com:#1.git
+g:ufd:read = git@eotect.unfuddle.com:eotect/#1.git
+g:ufd:write = git@eotect.unfuddle.com:eotect/#1.git
+g:tmp_gh = tmp/github/#1/git
+g:tmp_gr = tmp/gitorious/#1/git
+g:tmp_sf = tmp/sourceforge/#1/git
+g:tmp_ufd = tmp/unfuddle/#1/git
+g:tmp_local = tmp/local/#1/git
+g:tmp_checkout = tmp/checkout/#1
+s:tmp_local = tmp/local/#1/svn
+s:tmp_checkout = tmp/checkout/#1
+s:tmp_gc = tmp/googlecode/#1/svn
+s:tmp_sf = tmp/sourceforge/#1/svn
+checkout = ./
 
-zprofile/firefox	|g:checkout/firefox		|g:local/		|g:gh/		|g:gr/
-zprofile/linux		|g:checkout/../data/app	|g:local/		|g:gh/		|g:gr/
-eotect/drawing		|g:checkout/drawing		|g:local/		|g:gh/		|g:gr/
-eotect/text			|g:checkout/text		|g:local/		|g:gh/		|g:gr/
-eotect/www			|g:checkout/www			|g:local/		|g:gh/		|g:gr/
-eotect/pages		|g:checkout/pages		|g:local/		|g:gh/		|g:gr/
-eotect/ebook		|g:checkout/ebook		|g:local/		|g:gh/		|g:gr/
-losebox				|s:checkout/			|s:local/		|s:gc/		|s:sf/
-loseplace			|s:checkout/			|s:local/		|s:gc/		|s:sf/
-vcsplace/github-sync	|g:checkout/github-sync		|g:local/		|g:gh/		|g:gr/
-vcsplace/gsvn-bundle	|g:checkout/gsvn-bundle		|g:local/		|g:gh/		|g:gr/
-vcsplace/reposman		|g:checkout/reposman		|g:local/		|g:gh/		|g:gr/
-vcsplace/sf-sync		|g:checkout/sf-sync			|g:local/		|g:gh/		|g:gr/
-vcsplace/ws				|g:checkout/.				|g:local/		|g:gh/		|g:gr/
-zcodebase/c				|g:checkout/c				|g:local/		|g:gh/		|g:gr/
-zcodebase/cpp			|g:checkout/cpp				|g:local/		|g:gh/		|g:gr/
-zcodebase/vb6			|g:checkout/vb6				|g:local/		|g:gh/		|g:gr/
-zcodebase/freebasic		|g:checkout/freebasic		|g:local/		|g:gh/		|g:gr/
-#zrepos					|s:checkout/				|s:local/		|s:gc/		|s:sf/
-zscripts/perl			|g:checkout/perl			|g:local/		|g:gh/		|g:gr/
-zscripts/sh				|g:checkout/shellscript		|g:local/		|g:gh/		|g:gr/
-zscripts/batch			|g:checkout/batch			|g:local/		|g:gh/		|g:gr/
-zscripts/libmyplace-perl|g:checkout/perl/modules/MyPlace			|g:local/	|g:gh/		|g:gr/
-badluck					|g:checkout/			|g:local/		|g:gh1/		|g:gr1/
-nightgun				|g:checkout/			|g:local/		|g:gh1/		|g:gr1/
-zutils					|g:checkout/utils		|g:local/		|g:gh1/		|g:sf1/
-zusys					|s:checkout/usys		|s:local/		|s:gc/		|s:sf/
-websaver2				|g:checkout/firefox/extensions/websaver2@myplace.hell	|g:local/		|g:gh1/		|g:gr1/
-gm_scripts				|g:checkout/firefox/gm_scripts		|g:local/		|g:ufd/gmscripts	|g:sf-zrepos/
-babebase				|g:checkout/perl/urlrule			|g:local/		|g:ufd/		|g:sf-zrepos/
-gsbridge				|g:checkout/gsbridge				|g:local/		|g:ufd/		|g:sf-zrepos/
+[firefox]
+name = zprofile/firefox
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
 
+[zprofile/linux]
+checkout = ../data/app
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[drawing]
+name = eotect/drawing
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[text]
+name = eotect/text
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[www]
+name = eotect/www
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[pages]
+name = eotect/pages
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[ebook]
+name = eotect/ebook
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[losebox]
+s:local = s:local/
+s:source = s:gc/
+s:mirror = s:sf/
+
+[loseplace]
+s:local = s:local/
+s:source = s:gc/
+s:mirror = s:sf/
+
+[zrepos]
+s:local = s:local/
+s:source = s:gc/
+s:mirror = s:sf/
+
+[github-sync]
+name = vcsplace/github-sync
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+
+[gsvn-bundle]
+name = vcsplace/gsvn-bundle
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[reposman]
+name = vcsplace/reposman
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[sf-sync]
+name = vcsplace/sf-sync
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[ws]
+name = vcsplace/ws
+checkout = .
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[c]
+name = zcodebase/c
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[cpp]
+name = zcodebase/cpp
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[vb6]
+name = zcodebase/vb6
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+
+[freebasic]
+name = zcodebase/freebasic
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+
+[perl]
+name = zscripts/perl
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[shellscript]
+name = zscripts/sh
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[batch]
+name = zscripts/batch
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[libmyplace-perl]
+name = zscripts/libmyplace-perl
+checkout = ./perl/modules/MyPlace
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[badluck]
+g:local = g:local/
+g:source = g:gh1/
+g:mirror = g:gr1/
+
+
+[nightgun]
+g:local = g:local/
+g:source = g:gh1/
+g:mirror = g:gr1/
+
+[utils]
+name = zutils
+g:local = g:local/
+g:source = g:gh1/
+g:mirror = g:gr1/
+
+[usys]
+name = zusys
+s:local = s:local/
+s:source = s:gc/
+s:mirror = s:sf/
+
+[websaver2]
+checkout = ./firefox/extensions/websaver2@myplace.hell
+g:local = g:local/
+g:source = g:gh1/
+g:mirror = g:gr1/
+
+[gm_scripts]
+checkout = ./firefox/gm_scripts
+g:local = g:local/
+g:source = g:ufd/gmscripts
+g:mirror = g:sf-zrepos/
+
+[babebase]
+checkout = ./perl/urlrule
+g:local = g:local/
+g:source = g:ufd/
+g:mirror = g:sf-zrepos/
+
+[gsbridge]
+g:local = g:local/
+g:source = g:ufd/
+g:mirror = g:sf-zrepos/
