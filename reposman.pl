@@ -148,7 +148,6 @@ sub translate_url {
         $url =~ s/#2//g;
     }
     $url =~ s/\/+$//;
-	$url =~ s/\/\.+/\//g;
 	$url =~ s/\.{2,}([^\/]+)/\.$1/g;
 	if($url) {
 		$url =~ s/:\/\//:\/\/$id\@/;

@@ -252,15 +252,21 @@ g:mirror = g:gr1/
 checkout = ./firefox/gm_scripts
 g:local = g:local/
 g:source = g:ufd/gmscripts
-g:mirror = g:sf-zrepos/
+g:mirrors_1 = g:sf-zrepos/
+g:mirrors_2 = g:asm/gmscripts
 
 [babebase]
 checkout = ./perl/urlrule
 g:local = g:local/
 g:source = g:ufd/
-g:mirror = g:sf-zrepos/
+g:mirrors_1 = g:sf-zrepos/
+g:mirrors_2 = g:asm/
 
 [gsbridge]
 g:local = g:local/
 g:source = g:ufd/
-g:mirror = g:sf-zrepos/
+g:mirrors_1 = g:sf-zrepos/
+g:mirrors_2 = g:asm/
+
+
+;	vim:filetype=dosini
