@@ -232,7 +232,6 @@ g:source = g:gh1/
 g:mirror = g:gr1/
 
 [utils]
-name = zutils
 g:local = g:local/
 g:source = g:gh1/
 g:mirror = g:gr1/
