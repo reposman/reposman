@@ -81,12 +81,12 @@ s:tmp_sf = tmp/sourceforge/#1/svn
 checkout = ./
 
 [firefox]
-name = zprofile/firefox
+name = zprofiles/firefox
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
 
-[zprofile/linux]
+[zprofiles/linux]
 checkout = ../data/app
 g:local = g:local/
 g:source = g:gh/
@@ -123,14 +123,16 @@ g:source = g:gh/
 g:mirror = g:gr/
 
 [losebox]
-s:local = s:local/
-s:source = s:gc/
-s:mirror = s:sf/
+name = loseplace/losebox
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
 
 [loseplace]
-s:local = s:local/
-s:source = s:gc/
-s:mirror = s:sf/
+name = loseplace/loseplace
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
 
 [zrepos]
 s:local = s:local/
