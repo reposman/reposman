@@ -337,7 +337,7 @@ g:source = g:gh/
 g:mirror = g:gr/
 
 [templates]
-name = zwebdev/tempaltes
+name = zwebdev/templates
 checkout = g:checkout/webdev/
 g:local = g:local/
 g:source = g:gh/
