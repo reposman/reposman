@@ -5,7 +5,7 @@ require v5.8.0;
 our $VERSION = 'v1.0';
 
 my %OPTS;
-my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-config|dc dump-data|dd sync|s sync-all|sa checkout|co|c/;
+my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-projects|dp dump-config|dc dump-data|dd sync|s sync-all|sa checkout|co|c file|f:s/;
 if(@ARGV)
 {
     require Getopt::Long;
@@ -206,40 +206,37 @@ sub get_repo {
     #my ($query_name,@repo_data) = @_;
 	my $query_name = shift;
 	my $project = shift;
+	my %r;
 	$project = {'s:local'=>'s:local/','s:source'=>'s:source/'} unless($project);
 	my ($name,$new_target) = parse_query($query_name);
-    $project->{shortname} = $name;
-	$project->{name} = $project->{shortname} unless($project->{name});
-	$project->{user} = $CONFIG{user} unless($project->{user});
-	$project->{email} = $CONFIG{email} unless($project->{email});
-	$project->{author} = $CONFIG{author} unless($project->{author});
-	$project->{username} = $CONFIG{username} unless($project->{username});
-	$project->{type} = $CONFIG{type} unless($project->{type});
-	$project->{checkout} = $CONFIG{checkout} unless($project->{checkout});
-
-	my $target = $project->{checkout};
+    $r{shortname} = $name;
+	$r{name} = $project->{name} ? $project->{name} : $project->{shortname};
+	foreach(qw/user email author username type checkout/) {
+		$r{$_} = $project->{$_} ? $project->{$_} : $CONFIG{$_};
+	}
+	my $target = $r{checkout};
 	$target = $name unless($target);
 	if($new_target) {
-		$project->{target} = $new_target;
-		$project->{_target} = $target;
+		$r{target} = $new_target;
+		$r{_target} = $target;
 	}
 	else {
-		$project->{target} = $target;
+		$r{target} = $target;
 	}
-	$target = parse_url($name,$project->{target},$project);
+	$target = parse_url($name,$r{target},\%r);
 	if($target) {
-		$project->{target} = $target->{'push'};
+		$r{target} = $target->{'push'};
 	}
 	foreach my $repos_type (qw/s svn g git h hg/) {
 		foreach my $url_type (qw/local source mirror mirrors mirrors_1 mirrors_2 mirrors_3 mirrors_4 mirrors_5 mirrors_6/) {
 			my $key = "$repos_type:$url_type";
 			if($project->{$key}) {
-				my $url = parse_url($project->{name},$project->{$key},$project);
-				push @{$project->{$url->{type}}},$url;
+				my $url = parse_url($r{name},$project->{$key},\%r);
+				push @{$r{$url->{type}}},$url;
 			}
 		}
 	}
-    return $project;
+    return \%r;
 }
 
 sub svnsync {
@@ -498,13 +495,17 @@ my $PROGRAM_DIR = $0;
 $PROGRAM_DIR =~ s/[^\/\\]+$//;
 my $cwd = getcwd();
 my $PROJECT_FILE;
-
-foreach my $fn (".PROJECTS","~/.PROJECTS","~/.reposman/PROJECTS","/etc/reposman/PROJECTS") {
-    if(-f $fn) {
-        $PROJECT_FILE = $fn;
-        last;
-    }
+if($OPTS{file}) {
+	$PROJECT_FILE=$OPTS{file};
 }
+else {
+	foreach my $fn (".PROJECTS","~/.PROJECTS","~/.reposman/PROJECTS","/etc/reposman/PROJECTS") {
+	    if(-f $fn) {
+	        $PROJECT_FILE = $fn;
+	        last;
+	    }
+	}
+}	
 if($PROJECT_FILE) {
     if(-f $PROJECT_FILE) {
         print STDERR "reading \"$PROJECT_FILE\"... ";
@@ -531,23 +532,20 @@ print STDERR "$total", $total > 1 ? " projects" : " project", ".\n";
 
 my @query = @ARGV ? @ARGV : (keys %PROJECTS);
 
-
 if($OPTS{'list'}) {
     $OPTS{'dump-projects'} = 1;
 }
 
 if($OPTS{'dump'}) {
-	$OPTS{'dump-data'} = 1;
-    $OPTS{'dump-config'} = 1;
     $OPTS{'dump-projects'} = 1;
 }
 
 use Data::Dumper;
 print Data::Dumper->Dump([\%DATA],["*DATA"]) if($OPTS{'dump-data'});
 print Data::Dumper->Dump([\%CONFIG],["*CONFIG"]) if($OPTS{'dump-config'});
-print Data::Dumper->Dump([\%PROJECTS],["*PROJECTS"]) if($OPTS{'dump-projects'});
+#print Data::Dumper->Dump([\%PROJECTS],["*PROJECTS"]) if($OPTS{'dump-projects'});
 
-if($OPTS{'dump-data'}) {
+if($OPTS{'dump-projects'}) {
     use Data::Dumper;
 #    my @query = $QUERY_NAME ? ($QUERY_NAME) : (keys %project,keys %sub_project);
     foreach my $query_text (@query) {
@@ -556,7 +554,7 @@ if($OPTS{'dump-data'}) {
         print Data::Dumper->Dump([$repo],["*$name"]);
     }
 }
-if($OPTS{'dump'} or $OPTS{'dump-config'} or $OPTS{'dump-data'}) {
+if($OPTS{'dump'} or $OPTS{'dump-config'} or $OPTS{'dump-data'} or $OPTS{'dump-projects'}) {
     exit 0;
 }
 
@@ -617,6 +615,10 @@ reposman [options] [action] [project_name|project_name:target]...
 =head1  OPTIONS
 
 =over 12
+
+=item B<-f>,B<--file>
+
+Specify projects data file, default is .PROJECTS
 
 =item B<-s>,B<--sync>
 
