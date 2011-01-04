@@ -86,8 +86,9 @@ g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
 
-[zprofiles/linux]
+[homebase]
 checkout = ../data/app
+name = zprofiles/homebase
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
