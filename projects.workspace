@@ -140,6 +140,12 @@ g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
 
+[thinapp]
+name = loseplace/thinapp
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
 [zrepos]
 s:local = s:local/
 s:source = s:gc/
@@ -184,6 +190,11 @@ g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
 
+[vc6]
+name = zcodebase/vc6
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
 
 [freebasic]
 name = zcodebase/freebasic
@@ -233,14 +244,12 @@ g:mirror = g:gr/
 ;zscripts
 [logo]
 name = zscripts/logo
-checkout = g:checkout/codebase/
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
 
 [lua]
 name = zscripts/lua
-checkout = g:checkout/codebase/
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
