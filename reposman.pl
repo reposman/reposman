@@ -5,7 +5,7 @@ require v5.8.0;
 our $VERSION = 'v1.0';
 
 my %OPTS;
-my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-projects|dp dump-config|dc dump-data|dd sync|s sync-all|sa checkout|co|c file|f:s/;
+my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-projects|dp dump-config|dc dump-data|dd sync|s sync-all|sa checkout|co|c file|f:s no-user|nu/;
 if(@ARGV)
 {
     require Getopt::Long;
@@ -149,7 +149,7 @@ sub translate_url {
     }
     $url =~ s/\/+$//;
 	$url =~ s/\.{2,}([^\/]+)/\.$1/g;
-	if($url) {
+	if($url and !$OPTS{'no-user'}) {
 		$url =~ s/:\/\//:\/\/$id\@/;
 	}
     return $url;
