@@ -44,10 +44,6 @@ h:zrepos:write = zrepos/svn/#1/hg
 h:zrepos:read = zrepos/svn/#1/hg
 h:bb:write = https://bitbucket.org/#user:e#/#1
 h:bb:read = https://bitbucket.org/#user:e#/#1
-g:checkout:write = #1
-g:checkout:read = #1
-s:checkout:write = #1
-s:checkout:read = #1
 g:gh:read = http://github.com/#1.git
 g:gh:write = https://github.com/#1.git
 g:gh1:read = http://github.com/eotect/#1.git
@@ -62,35 +58,30 @@ g:sf:read = http://#1.git.sourceforge.net:8000/gitroot/#1/#2
 g:sf:write = ssh://#1.git.sourceforge.net/gitroot/#1/#2
 g:sf1:read = http://#1.git.sourceforge.net:8000/gitroot/#1/#1
 g:sf1:write = ssh://#1.git.sourceforge.net/gitroot/#1/#1
-g:sf-zrepos:read = http://zrepos.git.sourceforge.net:8000/gitroot/zrepos/#1/#2
-g:sf-zrepos:write = ssh://zrepos.git.sourceforge.net/gitroot/zrepos/#1/#2
+g:sf-zrepos:read = /home/scm_git/z/zr/zrepos/#1/#2.git
+g:sf-zrepos:write = /home/scm_git/z/zr/zrepos/#1/#2.git
 g:asm:read = git@git.assembla.com:#1.git
 g:asm:write = git@git.assembla.com:#1.git
 g:ufd:read = git@eotect.unfuddle.com:eotect/#1.git
 g:ufd:write = git@eotect.unfuddle.com:eotect/#1.git
-g:tmp_gh = tmp/github/#1/git
-g:tmp_gr = tmp/gitorious/#1/git
-g:tmp_sf = tmp/sourceforge/#1/git
-g:tmp_ufd = tmp/unfuddle/#1/git
-g:tmp_local = tmp/local/#1/git
-g:tmp_checkout = tmp/checkout/#1
-s:tmp_local = tmp/local/#1/svn
-s:tmp_checkout = tmp/checkout/#1
-s:tmp_gc = tmp/googlecode/#1/svn
-s:tmp_sf = tmp/sourceforge/#1/svn
 checkout = ./
+g:checkout:write = #checkout##1
+g:checkout:read = #checkout##1
+s:checkout:write = #checkout##1
+s:checkout:read = #checkout##1
 
 [firefox]
-name = zprofile/firefox
+name = zprofiles/firefox
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
 
-[zprofile/linux]
-checkout = ../data/app
+[homebase]
+name = zprofiles/homebase
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
+g:mirrors_1 = g:sf-zrepos/
 
 [drawing]
 name = eotect/drawing
@@ -100,6 +91,12 @@ g:mirror = g:gr/
 
 [text]
 name = eotect/text
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[notes]
+name = eotect/notes
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
@@ -123,14 +120,22 @@ g:source = g:gh/
 g:mirror = g:gr/
 
 [losebox]
-s:local = s:local/
-s:source = s:gc/
-s:mirror = s:sf/
+name = loseplace/losebox
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
 
 [loseplace]
-s:local = s:local/
-s:source = s:gc/
-s:mirror = s:sf/
+name = loseplace/loseplace
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[thinapp]
+name = loseplace/thinapp
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
 
 [zrepos]
 s:local = s:local/
@@ -155,6 +160,7 @@ name = vcsplace/reposman
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
+g:mirrors_1 = g:sf-zrepos/
 
 [sf-sync]
 name = vcsplace/sf-sync
@@ -168,25 +174,20 @@ checkout = .
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
+g:mirrors_1 = g:sf-zrepos/
 
-[c]
-name = zcodebase/c
-g:local = g:local/
-g:source = g:gh/
-g:mirror = g:gr/
-
-[cpp]
-name = zcodebase/cpp
-g:local = g:local/
-g:source = g:gh/
-g:mirror = g:gr/
-
+;zcodebase
 [vb6]
 name = zcodebase/vb6
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
 
+[vc6]
+name = zcodebase/vc6
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
 
 [freebasic]
 name = zcodebase/freebasic
@@ -194,18 +195,77 @@ g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
 
+[c]
+name = zcodebase/c
+checkout = g:checkout/codebase/
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[cpp]
+name = zcodebase/cpp
+checkout = g:checkout/codebase/
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[vsnet]
+name = zcodebase/vsnet
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[devcpp]
+name = zcodebase/devcpp
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[eclipse]
+name = zcodebase/eclipse
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[makefiles]
+name = zcodebase/makefiles
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+
+;zscripts
+[logo]
+name = zscripts/logo
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[lua]
+name = zscripts/lua
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[wscript]
+name = zscripts/wscript
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
 
 [perl]
 name = zscripts/perl
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
+g:mirrors_1 = g:sf-zrepos/
 
 [shellscript]
 name = zscripts/sh
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
+g:mirrors_1 = g:sf-zrepos/
 
 [batch]
 name = zscripts/batch
@@ -219,12 +279,12 @@ checkout = ./perl/modules/MyPlace
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
+g:mirrors_1 = g:sf-zrepos/
 
 [badluck]
 g:local = g:local/
 g:source = g:gh1/
 g:mirror = g:gr1/
-
 
 [nightgun]
 g:local = g:local/
@@ -237,10 +297,9 @@ g:source = g:gh1/
 g:mirror = g:gr1/
 
 [usys]
-name = zusys
-s:local = s:local/
-s:source = s:gc/
-s:mirror = s:sf/
+g:local = g:local/
+g:source = g:gh1/
+g:mirror = g:gr1/
 
 [websaver2]
 checkout = ./firefox/extensions/websaver2@myplace.hell
@@ -248,25 +307,45 @@ g:local = g:local/
 g:source = g:gh1/
 g:mirror = g:gr1/
 
-[gm_scripts]
+[gm-scripts]
 checkout = ./firefox/gm_scripts
 g:local = g:local/
-g:source = g:ufd/gmscripts
+g:source = g:asm/
 g:mirrors_1 = g:sf-zrepos/
-g:mirrors_2 = g:asm/gmscripts
+g:mirrors_2 = g:ufd/
 
 [babebase]
 checkout = ./perl/urlrule
 g:local = g:local/
-g:source = g:ufd/
+g:source = g:asm/
 g:mirrors_1 = g:sf-zrepos/
-g:mirrors_2 = g:asm/
+g:mirrors_2 = g:ufd/
 
 [gsbridge]
 g:local = g:local/
-g:source = g:ufd/
+g:source = g:asm/
 g:mirrors_1 = g:sf-zrepos/
-g:mirrors_2 = g:asm/
+g:mirrors_2 = g:ufd/
 
+[htmlscripts]
+name = zwebdev/htmlscripts
+checkout = g:checkout/webdev/
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[css]
+name = zwebdev/css
+checkout = g:checkout/webdev/
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[templates]
+name = zwebdev/templates
+checkout = g:checkout/webdev/
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
 
 ;	vim:filetype=dosini
