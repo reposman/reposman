@@ -349,4 +349,9 @@ g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
 
+[avatars]
+name = eotect/avatars
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
 ;	vim:filetype=dosini
