@@ -70,6 +70,18 @@ sub run {
     return 1 if($F_TEST);
     return system(@_) == 0;
 }
+
+sub run_git {
+	my $target = shift;
+	if($target) {
+		print "[$target] git ",join(" ",@_),"\n";
+		return system(@GIT,'--work-tree',$target,'--git-dir',$target . '/.git',@_) == 0;
+	}
+	else {
+		run(@GIT,@_);
+	}
+}
+
 sub error {
     print STDERR @_;
     return undef;
@@ -349,10 +361,6 @@ sub git_push_remote {
     }
     return 1;
 }
-sub GIT_R {
-	my $target = shift;
-	return @GIT,'--work-tree',$target,'--git-dir',$target . '/.git';
-}
 
 sub url_get_domain {
 	my $url = shift;
@@ -371,8 +379,8 @@ sub git_add_remote {
 		my $url = $_->{'push'};
 		my $name = unique_name(url_get_domain($url),\%pool);
 		$pool{$name} = 1;
-		run(GIT_R($target),qw/remote rm/,$name);
-		run(GIT_R($target),qw/remote add/,$name,$url);
+		run_git($target,qw/remote rm/,$name);
+		run_git($target,qw/remote add/,$name,$url);
 	}
 }
 sub hg_add_remote {
@@ -430,26 +438,26 @@ sub checkout_repo {
 		}
 		else {
 			unless(-d $local->{'push'}) {
-				run(@GIT,'init','--bare',$local->{'push'});
+				run_git(undef,'init','--bare',$local->{'push'});
 			}
 		}
 		unless(-d $target) {
-			run(@GIT,'clone',$source->{'push'},$target);
+			run_git(undef,'clone',$source->{'push'},$target);
 		}
 		else {
-			run(@GIT,"init",$target);
-			run(@GIT,"--work-tree",$target,"--git-dir","$target/.git",qw/remote rm origin/);
-			run(@GIT,"--work-tree",$target,"--git-dir","$target/.git",qw/remote add origin/,$source->{'push'});
+			run_git(undef,"init",$target);
+			run_git($target,qw/remote rm origin/);
+			run_git($target,qw/remote add origin/,$source->{'push'});
 		}
 		git_add_remote($repo,$target,@{$repo->{git}});
 		if($OPTS{'fetch-all'}) {
-			run(GIT_R($target),qw/fetch --all/);
+			run_git($target,qw/fetch --all/);
 		}
 		else {
-			run(GIT_R($target),qw/fetch origin/);
+			run_git($target,qw/fetch origin/);
 		}
-		run(GIT_R($target),qw/remote -v/);
-		run(GIT_R($target),qw/branch -av/);
+		run_git($target,qw/remote -v/);
+		run_git($target,qw/branch -av/);
 	}
 	return 1;
 }
@@ -494,10 +502,10 @@ sub sync_repo {
 		my $target = $local->{'push'};
 		my $source = shift @{$repo->{git}};
 		$repo->{git_source} = $source;
-		run(@GIT,'--bare','clone',$source->{'pull'},$target);
+		run_git(undef,'--bare','clone',$source->{'pull'},$target);
 		unless($first_only) {
 			foreach(@{$repo->{git}}) {
-				run(@GIT,'--bare','--git-dir',$target,'push',$_->{'push'});
+				run_git(undef,'--bare','--git-dir',$target,'push',$_->{'push'});
 			}
 		}
 	}
