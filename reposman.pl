@@ -5,7 +5,7 @@ require v5.8.0;
 our $VERSION = 'v1.0';
 
 my %OPTS;
-my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-projects|dp dump-config|dc dump-data|dd sync|s sync-all|sa checkout|co|c file|f:s no-user|nu/;
+my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-projects|dp dump-config|dc dump-data|dd sync|s sync-all|sa checkout|co|c file|f:s no-user|nu no-local fetch-all/;
 if(@ARGV)
 {
     require Getopt::Long;
@@ -424,7 +424,15 @@ sub checkout_repo {
 	}
 	if($repo->{git} and !$OPTS{'no-git'}) {
 		my $local = shift @{$repo->{git}};
-		my $source = shift @{$repo->{git}};
+		my $source = $local;
+		if($OPTS{'no-local'}) {
+			$source = shift @{$repo->{git}};
+		}
+		else {
+			unless(-d $local->{'push'}) {
+				run(@GIT,'init','--bare',$local->{'push'});
+			}
+		}
 		unless(-d $target) {
 			run(@GIT,'clone',$source->{'push'},$target);
 		}
@@ -434,7 +442,12 @@ sub checkout_repo {
 			run(@GIT,"--work-tree",$target,"--git-dir","$target/.git",qw/remote add origin/,$source->{'push'});
 		}
 		git_add_remote($repo,$target,@{$repo->{git}});
-		run(GIT_R($target),qw/fetch --all/);
+		if($OPTS{'fetch-all'}) {
+			run(GIT_R($target),qw/fetch --all/);
+		}
+		else {
+			run(GIT_R($target),qw/fetch origin/);
+		}
 		run(GIT_R($target),qw/remote -v/);
 		run(GIT_R($target),qw/branch -av/);
 	}
@@ -656,6 +669,14 @@ Dump DATA
 
 List projects
 
+=item B<--no-local>
+
+Ignore local repositories
+
+=item B<--fetch-all>
+
+Instead of fetching the origin, fetch all repositories
+
 =item B<-h>,B<--help>
 
 Print a brief help message and exits.
@@ -695,6 +716,11 @@ git-svn projects manager
 		* updated projects definition format
 		* added two actions: checking and resetting
 		* version 1.0
+
+	2011-2-13	xiaoranzzz  <xiaoranzzz@myplace.hell>
+
+		* only checkout the origin repository
+		* added options 'no-local' and 'fetch-all'
 
 =head1  AUTHOR
 

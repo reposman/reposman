@@ -18,8 +18,8 @@ s:local2:read = #1/svn
 s:local2:write = #1/svn
 h:local:read = #1/hg
 h:local:write = #1/hg
-g:local:read = #1/git
-g:local:write = #1/git
+g:local:read = /myplace/repos/#1.git
+g:local:write = /myplace/repos/#1.git
 s:asm:read = http://subversion.assembla.com/svn/#1
 s:asm:write = https://subversion.assembla.com/svn/#1
 s:gc:read = http://#1.googlecode.com/svn/#2
@@ -334,20 +334,20 @@ g:mirror = g:gr1/
 
 [gm-scripts]
 checkout = ./firefox/gm_scripts
-g:local = g:local/
+g:local = g:local/zprofiles/
 g:source = g:asm/
 g:mirrors_1 = g:sf-zrepos/
 g:mirrors_2 = g:ufd/
 
 [babebase]
 checkout = ./perl/urlrule
-g:local = g:local/
+g:local = g:local/zprofiles/
 g:source = g:asm/
 g:mirrors_1 = g:sf-zrepos/
 g:mirrors_2 = g:ufd/
 
 [gsbridge]
-g:local = g:local/
+g:local = g:local/vcsplace/
 g:source = g:asm/
 g:mirrors_1 = g:sf-zrepos/
 g:mirrors_2 = g:ufd/
@@ -374,7 +374,7 @@ g:source = g:gh/
 g:mirror = g:gr/
 
 [avatars]
-name = eotect/avatars
+name = zprofiles/avatars
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
