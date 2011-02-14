@@ -69,6 +69,13 @@ g:checkout:write = #checkout##1
 g:checkout:read = #checkout##1
 s:checkout:write = #checkout##1
 s:checkout:read = #checkout##1
+local:zprofiles = profiles
+local:ztexts = texts
+local:zcodebase = codebase
+local:zscripts = scripts
+local:zwebdev = webdev
+local:zmyplace = myplace
+local:zrepos = repos
 
 [firefox]
 name = zprofiles/firefox
@@ -83,38 +90,26 @@ g:source = g:gh/
 g:mirror = g:gr/
 g:mirrors_1 = g:sf-zrepos/
 
-[drawing]
-name = eotect/drawing
-g:local = g:local/
-g:source = g:gh/
-g:mirror = g:gr/
-
-[text]
-name = eotect/text
+[texts]
+name = ztexts/texts
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
 
 [notes]
-name = eotect/notes
+name = ztexts/notes
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
 
 [www]
-name = eotect/www
+name = ztexts/www
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
 
-[pages]
-name = eotect/pages
-g:local = g:local/
-g:source = g:gh/
-g:mirror = g:gr/
-
-[ebook]
-name = eotect/ebook
+[webpages]
+name = ztexts/webpages
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
@@ -137,11 +132,6 @@ g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
 
-[zrepos]
-s:local = s:local/
-s:source = s:gc/
-s:mirror = s:sf/
-
 [github-sync]
 name = vcsplace/github-sync
 g:local = g:local/
@@ -161,12 +151,6 @@ g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
 g:mirrors_1 = g:sf-zrepos/
-
-[sf-sync]
-name = vcsplace/sf-sync
-g:local = g:local/
-g:source = g:gh/
-g:mirror = g:gr/
 
 [ws]
 name = vcsplace/ws
@@ -282,14 +266,16 @@ g:mirror = g:gr/
 g:mirrors_1 = g:sf-zrepos/
 
 [badluck]
+name = badluck/badluck
 g:local = g:local/
-g:source = g:gh1/
-g:mirror = g:gr1/
+g:source = g:gh/
+g:mirror = g:gr/
 
 [nightgun]
+name = nightgun/nightgun
 g:local = g:local/
-g:source = g:gh1/
-g:mirror = g:gr1/
+g:source = g:gh/
+g:mirror = g:gr/
 
 [utils]
 g:local = g:local/
@@ -326,10 +312,11 @@ g:source = g:gh/
 g:mirror = g:gr/
 
 [websaver2]
+name = websaver/websaver2
 checkout = ./firefox/extensions/websaver2@myplace.hell
-g:local = g:local/websaver2/
-g:source = g:gh1/
-g:mirror = g:gr1/
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
 
 [gm-scripts]
 checkout = ./firefox/gm_scripts
@@ -377,4 +364,22 @@ name = zprofiles/avatars
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
+
+[drawings]
+name = eotect/drawings
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[ebooks]
+name = eotect/ebooks
+g:local = g:local/
+g:source = g:gh/
+g:mirror = g:gr/
+
+[zrepos]
+s:local = s:local/
+s:source = s:gc/
+s:mirror = s:sf/
+
 ;	vim:filetype=dosini
