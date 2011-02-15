@@ -90,6 +90,29 @@ g:source = g:gh/
 g:mirror = g:gr/
 g:mirrors_1 = g:sf-zrepos/
 
+[gm-scripts]
+name = zprofiles/gm-scripts
+checkout = ./firefox/gm_scripts
+g:local = g:local/
+g:source = g:asm/gm-scripts
+g:mirrors_1 = g:sf-zrepos/
+g:mirrors_2 = g:ufd/gm-scripts
+
+[babebase]
+name = zprofiles/babebase
+checkout = ./perl/urlrule
+g:local = g:local/
+g:source = g:asm/babebase
+g:mirrors_1 = g:sf-zrepos/
+g:mirrors_2 = g:ufd/babebase
+
+[gsbridge]
+name = vcsplace/gsbridge
+g:local = g:local/
+g:source = g:asm/gsbridge
+g:mirrors_1 = g:sf-zrepos/
+g:mirrors_2 = g:ufd/gsbridge
+
 [texts]
 name = ztexts/texts
 g:local = g:local/
@@ -317,26 +340,6 @@ checkout = ./firefox/extensions/websaver2@myplace.hell
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
-
-[gm-scripts]
-checkout = ./firefox/gm_scripts
-g:local = g:local/zprofiles/
-g:source = g:asm/
-g:mirrors_1 = g:sf-zrepos/
-g:mirrors_2 = g:ufd/
-
-[babebase]
-checkout = ./perl/urlrule
-g:local = g:local/zprofiles/
-g:source = g:asm/
-g:mirrors_1 = g:sf-zrepos/
-g:mirrors_2 = g:ufd/
-
-[gsbridge]
-g:local = g:local/vcsplace/
-g:source = g:asm/
-g:mirrors_1 = g:sf-zrepos/
-g:mirrors_2 = g:ufd/
 
 [htmlscripts]
 name = zwebdev/htmlscripts
