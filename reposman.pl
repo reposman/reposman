@@ -3,7 +3,14 @@
 use strict;
 require v5.8.0;
 our $VERSION = 'v1.0';
-
+BEGIN
+{
+    my $PROGRAM_DIR = $0;
+    $PROGRAM_DIR =~ s/[^\/\\]+$//;
+    $PROGRAM_DIR = "./" unless($PROGRAM_DIR);
+    unshift @INC, 
+        map "$PROGRAM_DIR$_",qw{modules lib ../modules ..lib};
+}
 my %OPTS;
 my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-projects|dp dump-config|dc dump-data|dd sync|s sync-all|sa checkout|co|c file|f:s no-user|nu no-local fetch-all no-remote reset-config/;
 if(@ARGV)
@@ -103,6 +110,23 @@ sub get_project_data {
 }
 
 sub parse_project_data {
+	require IniExt;
+	%DATA = MyPlace::IniExt::parse_strings(@_);
+	no warnings;
+	my $config_key = $MyPlace::IniExt::DEFINITION;
+	foreach(keys %DATA) {
+		if($_ eq $config_key) {
+			foreach my $key (keys %{$DATA{$_}}) {
+				$CONFIG{$key} = $DATA{$_}->{$key};
+			}
+		}
+		else {
+			$PROJECTS{$_} = $DATA{$_};
+		}
+	}
+}
+
+sub parse_project_data1 {
 	my $current_section = 'noname';
     foreach my $line (@_) {
 		my $name = undef;
@@ -254,10 +278,16 @@ sub get_repo {
 		}
 	}
 	foreach my $repos_type (qw/s svn g git h hg/) {
-		foreach my $url_type (qw/source mirror mirrors mirrors_1 mirrors_2 mirrors_3 mirrors_4 mirrors_5 mirrors_6/) {
+		foreach my $url_type (qw/source mirror mirrors_1 mirrors_2 mirrors_3 mirrors_4 mirrors_5 mirrors_6/) {
 			my $key = "$repos_type:$url_type";
 			if($project->{$key}) {
 				my $url = parse_url($r{name},$project->{$key},\%r);
+				push @{$r{$url->{type}}},$url;
+			}
+		}
+		if($project->{"$repos_type:mirrors"}) {
+			foreach(@{$project->{"$repos_type:mirrors"}}) {
+				my $url = parse_url($r{name},$_,\%r);
 				push @{$r{$url->{type}}},$url;
 			}
 		}
