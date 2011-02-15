@@ -69,13 +69,13 @@ g:checkout:write = #checkout##1
 g:checkout:read = #checkout##1
 s:checkout:write = #checkout##1
 s:checkout:read = #checkout##1
-localname:map:zprofiles = profiles
-localname:map:ztexts = texts
-localname:map:zcodebase = codebase
-localname:map:zscripts = scripts
-localname:map:zwebdev = webdev
-localname:map:zmyplace = myplace
-localname:map:zrepos = repos
+localname->maps->zprofiles = profiles
+localname->maps->ztexts = texts
+localname->maps->zcodebase = codebase
+localname->maps->zscripts = scripts
+localname->maps->zwebdev = webdev
+localname->maps->zmyplace = myplace
+localname->maps->zrepos = repos
 
 [firefox]
 name = zprofiles/firefox
@@ -87,31 +87,39 @@ g:mirror = g:gr/
 name = zprofiles/homebase
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
-g:mirrors_1 = g:sf-zrepos/
+g:mirrors = {
+	g:gr/
+	g:sf-zrepos/
+}
 
 [gm-scripts]
 name = zprofiles/gm-scripts
 checkout = ./firefox/gm_scripts
 g:local = g:local/
 g:source = g:asm/gm-scripts
-g:mirrors_1 = g:sf-zrepos/
-g:mirrors_2 = g:ufd/gm-scripts
+g:mirrors =  {
+	g:sf-zrepos/
+	g:ufd/gm-scripts
+}
 
 [babebase]
 name = zprofiles/babebase
 checkout = ./perl/urlrule
 g:local = g:local/
 g:source = g:asm/babebase
-g:mirrors_1 = g:sf-zrepos/
-g:mirrors_2 = g:ufd/babebase
+g:mirrors = {
+	g:sf-zrepos/
+	g:ufd/babebase
+}
 
 [gsbridge]
 name = vcsplace/gsbridge
 g:local = g:local/
 g:source = g:asm/gsbridge
-g:mirrors_1 = g:sf-zrepos/
-g:mirrors_2 = g:ufd/gsbridge
+g:mirrors = {
+	g:sf-zrepos/
+	g:ufd/gsbridge
+}
 
 [texts]
 name = ztexts/texts
@@ -171,17 +179,21 @@ g:mirror = g:gr/
 [reposman]
 name = vcsplace/reposman
 g:local = g:local/
-g:source = g:gh/
-g:mirror = g:gr/
-g:mirrors_1 = g:sf-zrepos/
+g:mirrors = {
+	g:gh/
+	g:gr/
+	g:sf-zrepos/
+}
 
 [ws]
 name = vcsplace/ws
 checkout = .
 g:local = g:local/
-g:source = g:gh/
-g:mirror = g:gr/
-g:mirrors_1 = g:sf-zrepos/
+g:mirrors = {
+	g:gh/
+	g:gr/
+	g:sf-zrepos/
+}
 
 ;zcodebase
 [vb6]
@@ -263,16 +275,20 @@ g:mirror = g:gr/
 [perl]
 name = zscripts/perl
 g:local = g:local/
-g:source = g:gh/
-g:mirror = g:gr/
-g:mirrors_1 = g:sf-zrepos/
+g:mirrors = {
+	g:gh/
+	g:gr/
+	g:sf-zrepos/
+}
 
 [shellscript]
 name = zscripts/sh
 g:local = g:local/
-g:source = g:gh/
-g:mirror = g:gr/
-g:mirrors_1 = g:sf-zrepos/
+g:mirrors = {
+	g:gh/
+	g:gr/
+	g:sf-zrepos/
+}
 
 [batch]
 name = zscripts/batch
@@ -285,8 +301,10 @@ name = zscripts/libmyplace-perl
 checkout = ./perl/modules/MyPlace
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
-g:mirrors_1 = g:sf-zrepos/
+g:mirrors = {
+	g:gr/
+	g:sf-zrepos/
+}
 
 [badluck]
 name = badluck/badluck
@@ -383,6 +401,8 @@ g:mirror = g:gr/
 [zrepos]
 s:local = s:local/
 s:source = s:gc/
-s:mirror = s:sf/
+s:mirrors = {
+	s:sf/
+}
 
 ;	vim:filetype=dosini
