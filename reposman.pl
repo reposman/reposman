@@ -12,7 +12,7 @@ BEGIN
         map "$PROGRAM_DIR$_",qw{modules lib ../modules ..lib};
 }
 my %OPTS;
-my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-projects|dp dump-config|dc dump-data|dd sync|s sync-all|sa checkout|co|c file|f:s no-user|nu no-local fetch-all no-remote reset-config/;
+my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-projects|dp dump-config|dc dump-data|dd sync|s sync-all|sa checkout|co|c file|f:s login|nu no-local fetch-all no-remote reset-config to-local force/;
 if(@ARGV)
 {
     require Getopt::Long;
@@ -33,7 +33,7 @@ foreach(keys %OPTS) {
 }
 unless($have_opts) {
 	my $first_arg = shift;
-	if($first_arg and $first_arg =~ m/^(help|manual|test|project|dump|dump-config|dump-data|check|list|pull|reset|clone|sync|checkout)$/) {
+	if($first_arg and $first_arg =~ m/^(help|manual|test|project|dump|dump-config|dump-data|check|list|pull|reset|clone|sync|checkout|to-local)$/) {
 		$OPTS{$first_arg} = 1;
 	}
 	else {
@@ -78,11 +78,28 @@ sub run {
     return system(@_) == 0;
 }
 
+sub run_s {
+	return system(@_) == 0;
+}
+
 sub run_git {
+	my $silent = shift;
+	if($silent and $silent eq '#silent') {
+		$silent = 1;
+	}
+	else {
+		unshift @_,$silent;
+		$silent = undef;
+	}
 	my $target = shift;
 	if($target) {
-		print "[$target] git ",join(" ",@_),"\n";
-		return system(@GIT,'--work-tree',$target,'--git-dir',$target . '/.git',@_) == 0;
+		print "[$target] git ",join(" ",@_),"\n" unless($silent);
+		if(-d "$target/.git") {
+			return system(@GIT,'--work-tree',$target,'--git-dir',$target . '/.git',@_) == 0;
+		}
+		else {
+			return system(@GIT,'--git-dir',$target,'--work-tree',$target,@_) == 0;
+		}
 	}
 	else {
 		run(@GIT,@_);
@@ -110,7 +127,7 @@ sub get_project_data {
 }
 
 sub parse_project_data {
-	require IniExt;
+	require MyPlace::IniExt;
 	%DATA = MyPlace::IniExt::parse_strings(@_);
 	no warnings;
 	my $config_key = $MyPlace::IniExt::DEFINITION;
@@ -188,7 +205,7 @@ sub translate_url {
     }
     $url =~ s/\/+$//;
 	$url =~ s/\.{2,}([^\/]+)/\.$1/g;
-	if($url and !$OPTS{'no-user'}) {
+	if($url and $OPTS{'login'}) {
 		$url =~ s/:\/\//:\/\/$id\@/;
 	}
     return $url;
@@ -250,9 +267,9 @@ sub get_repo {
 	my ($name,$new_target) = parse_query($query_name);
     $r{shortname} = $name ? $name : $project->{shortname};
 	$r{name} = $project->{name} ? $project->{name} : $r{shortname};
-	$r{localname} = $r{name};
-	foreach(keys %{$CONFIG{localname}}) {
-		$r{localname} =~ s/$_/$CONFIG{localname}->{$_}/g;
+	$r{localname} = $project->{localname} ? $project->{localname} : $r{name};
+	foreach(keys %{$CONFIG{localname}->{maps}}) {
+		$r{localname} =~ s/$_/$CONFIG{localname}->{maps}->{$_}/g;
 	}
 	foreach(qw/user email author username type checkout/) {
 		$r{$_} = $project->{$_} ? $project->{$_} : $CONFIG{$_};
@@ -423,7 +440,7 @@ sub git_add_remote {
 		my $url = $_->{'push'};
 		my $name = unique_name(url_get_domain($url),\%pool);
 		$pool{$name} = 1;
-		run_git($target,qw/remote rm/,$name);
+		run_git("#silent",$target,qw/remote rm/,$name);
 		run_git($target,qw/remote add/,$name,$url);
 	}
 }
@@ -562,6 +579,72 @@ sub sync_repo {
 	return 1;
 }
 
+sub sync_to_local {
+	my $repo = shift;
+	my $first_only = shift;
+#	my $target = $repo->{target}; #ignore this checkout point
+	my $name = $repo->{name};
+	if($repo->{hg} and !$OPTS{'no-hg'}) {
+		return print STDERR("\nHG repositories support need testing\n");
+		my $local = shift @{$repo->{hg}};
+		my $target = $local->{'push'};
+		my $source = shift @{$repo->{hg}};
+		unless(-d $target) {
+			run(@HG,'clone','-U',$source->{'pull'},$target);
+		}
+		else {
+			#run(@HG,'-R',$target,qw/update -C/);
+			run(@HG,'-R',$target,qw/pull -f/,$source->{'pull'});
+		}
+		unless($first_only) {
+			foreach(@{$repo->{hg}}) {
+				run(@HG,'-R',$target,'push','-f',$_->{'push'});
+			}
+		}
+		run(@HG,'-R',$target,'tip');
+		run(@HG,'-R',$target,'summary');
+	}
+	if($repo->{svn} and !$OPTS{'no-svn'}) {
+		return print STDERR ("\nSVN repositories support need testing\n");
+		my $local = shift @{$repo->{svn}};
+		my $target = $local->{'push'};
+		my $source = shift @{$repo->{svn}};
+		$repo->{svn_source} = $source;
+		svnsync($source->{'pull'},$target,$source->{id},$local->{id});
+		unless($first_only) {
+			foreach(@{$repo->{svn}}) {
+				svnsync($source->{'pull'},$_->{'push'},$source->{'id'},$_->{'id'});
+			}
+		}
+	}
+	if($repo->{git} and !$OPTS{'no-git'}) {
+		my $local = shift @{$repo->{git}};
+		my $target;
+		if($repo->{_target} and $repo->{target}) {
+			$target = $repo->{target};
+		}
+		else {
+			$target = $local->{'push'};
+		}
+		my $source = shift @{$repo->{git}};
+		$repo->{git_source} = $source;
+		if(-d $target and $OPTS{'force'}) {
+			run('rm','-fr',$target);
+		}
+		run_git(undef,'--bare','clone',$source->{'pull'},$target);
+		run_git('#silent',$target,qw/remote rm origin/);
+		run_git($target,qw/remote add origin/,$source->{'push'});
+		if(!$OPTS{'no-remote'}) {
+			git_add_remote($repo,$target,@{$repo->{git}});
+		}
+		if($OPTS{'fetch-all'}) {
+			run_git($target,qw/fetch --all/);
+		}
+		run_git($target,qw/remote -v/);
+		run_git($target,qw/branch -av/);
+	}
+	return 1;
+}
 my $PROGRAM_DIR = $0;
 $PROGRAM_DIR =~ s/[^\/\\]+$//;
 my $cwd = getcwd();
@@ -648,6 +731,10 @@ elsif($OPTS{sync}) {
 elsif($OPTS{'sync-all'}) {
 	$action = 'sync-all';
 	$action_sub = \&sync_repo;
+}
+elsif($OPTS{'to-local'}) {
+	$action = 'to-local';
+	$action_sub = \&sync_to_local;
 }
 else {
 	die("Invalid action specified!\n");
