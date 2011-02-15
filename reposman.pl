@@ -137,6 +137,9 @@ sub parse_project_data {
 				if($name =~ m/^(?:id|id:.+|authors|user|user:.+|author|author:.+|username|username:.+|email|email:.+|s|s:.+|svn|svn:.+|g|g:.+|git|git:.+|h|h:.+|hg|hg:.+|checkout)$/) {
 				$CONFIG{$name} = $value;
 				}
+				elsif($name =~ m/^(?:localname:map:(.+)\s*)$/) {
+					$CONFIG{localname}->{$1} = $value;
+				}
 			}
 			else {
 				$PROJECTS{$current_section}->{$name} = $value;
@@ -223,6 +226,10 @@ sub get_repo {
 	my ($name,$new_target) = parse_query($query_name);
     $r{shortname} = $name ? $name : $project->{shortname};
 	$r{name} = $project->{name} ? $project->{name} : $r{shortname};
+	$r{localname} = $r{name};
+	foreach(keys %{$CONFIG{localname}}) {
+		$r{localname} =~ s/$_/$CONFIG{localname}->{$_}/g;
+	}
 	foreach(qw/user email author username type checkout/) {
 		$r{$_} = $project->{$_} ? $project->{$_} : $CONFIG{$_};
 	}
@@ -240,7 +247,14 @@ sub get_repo {
 		$r{target} = $target->{'push'};
 	}
 	foreach my $repos_type (qw/s svn g git h hg/) {
-		foreach my $url_type (qw/local source mirror mirrors mirrors_1 mirrors_2 mirrors_3 mirrors_4 mirrors_5 mirrors_6/) {
+		if($project->{"$repos_type:local"}) {
+			my $url = $project->{"$repos_type:local"};
+			$url = parse_url($r{localname},$url,\%r);
+			push @{$r{$url->{type}}},$url;
+		}
+	}
+	foreach my $repos_type (qw/s svn g git h hg/) {
+		foreach my $url_type (qw/source mirror mirrors mirrors_1 mirrors_2 mirrors_3 mirrors_4 mirrors_5 mirrors_6/) {
 			my $key = "$repos_type:$url_type";
 			if($project->{$key}) {
 				my $url = parse_url($r{name},$project->{$key},\%r);

@@ -69,13 +69,13 @@ g:checkout:write = #checkout##1
 g:checkout:read = #checkout##1
 s:checkout:write = #checkout##1
 s:checkout:read = #checkout##1
-local:zprofiles = profiles
-local:ztexts = texts
-local:zcodebase = codebase
-local:zscripts = scripts
-local:zwebdev = webdev
-local:zmyplace = myplace
-local:zrepos = repos
+localname:map:zprofiles = profiles
+localname:map:ztexts = texts
+localname:map:zcodebase = codebase
+localname:map:zscripts = scripts
+localname:map:zwebdev = webdev
+localname:map:zmyplace = myplace
+localname:map:zrepos = repos
 
 [firefox]
 name = zprofiles/firefox
