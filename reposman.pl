@@ -569,7 +569,7 @@ sub sync_repo {
 		my $target = $local->{'push'};
 		my $source = shift @{$repo->{git}};
 		$repo->{git_source} = $source;
-		run_git(undef,'--bare','clone',$source->{'pull'},$target);
+		run_git(undef,'clone','--bare',$source->{'pull'},$target);
 		unless($first_only) {
 			foreach(@{$repo->{git}}) {
 				run_git(undef,'--bare','--git-dir',$target,'push',$_->{'push'});
@@ -631,7 +631,7 @@ sub sync_to_local {
 		if(-d $target and $OPTS{'force'}) {
 			run('rm','-fr',$target);
 		}
-		run_git(undef,'--bare','clone',$source->{'pull'},$target);
+		run_git(undef,'clone','--bare',$source->{'pull'},$target);
 		run_git('#silent',$target,qw/remote rm origin/);
 		run_git($target,qw/remote add origin/,$source->{'push'});
 		if(!$OPTS{'no-remote'}) {
