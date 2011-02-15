@@ -5,7 +5,7 @@ require v5.8.0;
 our $VERSION = 'v1.0';
 
 my %OPTS;
-my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-projects|dp dump-config|dc dump-data|dd sync|s sync-all|sa checkout|co|c file|f:s no-user|nu no-local fetch-all/;
+my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-projects|dp dump-config|dc dump-data|dd sync|s sync-all|sa checkout|co|c file|f:s no-user|nu no-local fetch-all no-remote reset-config/;
 if(@ARGV)
 {
     require Getopt::Long;
@@ -447,6 +447,10 @@ sub checkout_repo {
 	if($repo->{git} and !$OPTS{'no-git'}) {
 		my $local = shift @{$repo->{git}};
 		my $source = $local;
+		if($OPTS{'reset-config'} and -d $target) {
+			print STDERR "[$target] GIT Reset\n";
+			run('rm','-frv',"$target/.git/config","$target/.git/refs/remotes");
+		}
 		if($OPTS{'no-local'}) {
 			$source = shift @{$repo->{git}};
 		}
@@ -463,7 +467,9 @@ sub checkout_repo {
 			run_git($target,qw/remote rm origin/);
 			run_git($target,qw/remote add origin/,$source->{'push'});
 		}
-		git_add_remote($repo,$target,@{$repo->{git}});
+		if(!$OPTS{'no-remote'}) {
+			git_add_remote($repo,$target,@{$repo->{git}});
+		}
 		if($OPTS{'fetch-all'}) {
 			run_git($target,qw/fetch --all/);
 		}
@@ -699,6 +705,10 @@ Ignore local repositories
 
 Instead of fetching the origin, fetch all repositories
 
+=item B<--reset-config>
+
+Reset .git/config and .git/refs/remotes
+
 =item B<-h>,B<--help>
 
 Print a brief help message and exits.
@@ -743,6 +753,11 @@ git-svn projects manager
 
 		* only checkout the origin repository
 		* added options 'no-local' and 'fetch-all'
+
+	2011-2-15	xiaoranzzz	<xiaoranzzz@myplace.hell>
+
+		* add definition localname:map
+		* add option 'reset-config'
 
 =head1  AUTHOR
 
