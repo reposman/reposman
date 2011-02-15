@@ -69,13 +69,13 @@ g:checkout:write = #checkout##1
 g:checkout:read = #checkout##1
 s:checkout:write = #checkout##1
 s:checkout:read = #checkout##1
-localname->maps->zprofiles = profiles
-localname->maps->ztexts = texts
-localname->maps->zcodebase = codebase
-localname->maps->zscripts = scripts
-localname->maps->zwebdev = webdev
-localname->maps->zmyplace = myplace
-localname->maps->zrepos = repos
+localname>maps>zprofiles = profiles
+localname>maps>ztexts = texts
+localname>maps>zcodebase = codebase
+localname>maps>zscripts = scripts
+localname>maps>zwebdev = webdev
+localname>maps>zmyplace = myplace
+localname>maps>zrepos = repos
 
 [firefox]
 name = zprofiles/firefox
@@ -178,6 +178,7 @@ g:mirror = g:gr/
 
 [reposman]
 name = vcsplace/reposman
+checkout = perl/
 g:local = g:local/
 g:mirrors = {
 	g:gh/
@@ -319,9 +320,11 @@ g:source = g:gh/
 g:mirror = g:gr/
 
 [utils]
+name = eotect/utils
+localname = utils
 g:local = g:local/
-g:source = g:gh1/
-g:mirror = g:gr1/
+g:source = g:gh/
+g:mirror = g:gr/
 
 ;USB Disk Booting System
 [usys]
@@ -388,12 +391,14 @@ g:mirror = g:gr/
 
 [drawings]
 name = eotect/drawings
+localname = drawings
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
 
 [ebooks]
 name = eotect/ebooks
+localname = ebooks
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
