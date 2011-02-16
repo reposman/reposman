@@ -145,6 +145,7 @@ g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
 
+;loseplace
 [losebox]
 name = loseplace/losebox
 g:local = g:local/
@@ -156,6 +157,20 @@ name = loseplace/loseplace
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
+
+[loseplace/mini]
+g:local = g:local/
+g:mirrors = {
+	g:gh/
+	g:gr/
+}
+
+[loseplace/core]
+g:local = g:local/
+g:mirrors = {
+	g:gh/
+	g:gr/
+}
 
 [thinapp]
 name = loseplace/thinapp
