@@ -335,8 +335,7 @@ g:source = g:gh/
 g:mirror = g:gr/
 
 [utils]
-name = eotect/utils
-localname = utils
+name = utils/utils
 g:local = g:local/
 g:source = g:gh/
 g:mirror = g:gr/
