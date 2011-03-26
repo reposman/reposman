@@ -1,8 +1,7 @@
 #!/usr/bin/perl -w
 # $Id$
 use strict;
-require v5.8.0;
-our $VERSION = 'v1.0';
+our $VERSION = 'v1.1';
 BEGIN
 {
     my $PROGRAM_DIR = $0;
@@ -12,7 +11,7 @@ BEGIN
         map "$PROGRAM_DIR$_",qw{modules lib ../modules ..lib};
 }
 my %OPTS;
-my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-projects|dp dump-config|dc dump-data|dd sync|s sync-all|sa checkout|co|c file|f:s login|nu no-local fetch-all no-remote reset-config to-local force to-remote/;
+my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-projects|dp dump-config|dc dump-data|dd sync|s sync-all|sa checkout|co|c file|f:s login|nu no-local fetch-all no-remote reset-config to-local force to-remote config-local mirror/;
 if(@ARGV)
 {
     require Getopt::Long;
@@ -33,7 +32,7 @@ foreach(keys %OPTS) {
 }
 unless($have_opts) {
 	my $first_arg = shift;
-	if($first_arg and $first_arg =~ m/^(help|manual|test|project|dump|dump-config|dump-data|check|list|pull|reset|clone|sync|checkout|to-local)$/) {
+	if($first_arg and $first_arg =~ m/^(help|manual|test|project|dump|dump-config|dump-data|check|list|pull|reset|clone|sync|checkout|to-local|to-remote|config-local)$/) {
 		$OPTS{$first_arg} = 1;
 	}
 	else {
@@ -106,6 +105,92 @@ sub run_git {
 	}
 }
 
+sub unique_name {
+	my ($base,$pool) = @_;
+	my $idx = 2;
+	my $result = $base;
+	while($pool->{$result}) {
+		$result = $base . $idx;
+		$idx++;
+	}
+	return $result;
+}
+
+sub url_get_domain {
+	my $url = shift;
+	if($url =~ m/.*?([^\/\\:@\.]+)\.(?:org|com|net|\.cn)/) {
+		return $1;
+	}
+	else {
+		return 'no_name';
+	}
+}
+
+sub get_remotes {
+	my $target = shift;
+	my @query_cmd;
+	if(!$target) {
+		@query_cmd = qw/git remote/;
+	}
+	elsif(-d "$target/.git") {
+		@query_cmd = (
+			'git',
+			'--git-dir',"$target/.git",
+			'--working-dir',$target,
+			'remote'
+		);
+	}
+	else {
+		@query_cmd = ('git','--git-dir',$target,'remote');
+	}
+    my @remotes;
+    open FI,"-|",@query_cmd or return undef;
+    while(<FI>) {
+        chomp;
+        push @remotes,$_ if($_);
+    }
+    close FI;
+	return @remotes;
+}
+
+sub git_add_remotes {
+	my ($target,@remotes) = @_;
+	my %pool;
+	my %old_remotes;
+	foreach(get_remotes($target)) {
+		$old_remotes{$_} = 1;
+	}
+	foreach(@remotes) {
+		my $url = $_->{'push'};
+		my $name = unique_name(url_get_domain($url),\%pool);
+		$pool{$name} = 1;
+		run_git("#silent",$target,qw/remote rm/,$name) if($old_remotes{$name});
+		print STDERR "\t Add remote [$name] $url\n";
+		run_git('#silent',$target,qw/remote add/,$name,$url);
+	}
+}
+sub hg_add_remote {
+	my ($repo,$target,@remotes) = @_;
+	my %pool;
+	if(-f "$target/.hg/hgrc") {
+		run('cp','-av',"$target/.hg/hgrc","$target/.hg/hgrc.bak");
+	}
+	open FO,">","$target/.hg/hgrc" or return error("$!\n");
+	print FO '[paths]',"\n";
+	foreach(@remotes) {
+		my $name = unique_name('default',\%pool);
+		$pool{$name} = 1;
+		print FO "$name = $_->{'pull'}\n";
+		print FO "$name-push = $_->{'push'}\n";
+	}
+	close FO;
+#	my @HGCONFIG = (@HG,qw/-R/,$target,'--config');
+#	foreach(keys %remotes) {
+#		run(@HGCONFIG,"paths.$_=$remotes{$_}->{'pull'}");
+#		run(@HGCONFIG,"paths.$_-push=$remotes{$_}->{'pull'}");
+#	}
+	run(@HG,'-R',$target,'paths');
+}
 sub error {
     print STDERR @_;
     return undef;
@@ -388,25 +473,8 @@ sub svnsync {
 		or return error("fatal: while syncing $DEST_URL\n");
 	return 1;
 }
-sub unique_name {
-	my ($base,$pool) = @_;
-	my $idx = 2;
-	my $result = $base;
-	while($pool->{$result}) {
-		$result = $base . $idx;
-		$idx++;
-	}
-	return $result;
-}
-
 sub git_push_remote {
-    my @remotes;
-    open FI,"-|",qw/git remote/;
-    while(<FI>) {
-        chomp;
-        push @remotes,$_ if($_);
-    }
-    close FI;
+    my @remotes = get_remotes();
     if(@remotes) {
         my $idx=0;
         my $count=@remotes;
@@ -428,49 +496,6 @@ sub git_push_remote {
     return 1;
 }
 
-sub url_get_domain {
-	my $url = shift;
-	if($url =~ m/.*?([^\/\\:@\.]+)\.(?:org|com|net|\.cn)/) {
-		return $1;
-	}
-	else {
-		return 'no_name';
-	}
-}
-
-sub git_add_remote {
-	my ($repo,$target,@remotes) = @_;
-	my %pool;
-	foreach(@remotes) {
-		my $url = $_->{'push'};
-		my $name = unique_name(url_get_domain($url),\%pool);
-		$pool{$name} = 1;
-		run_git("#silent",$target,qw/remote rm/,$name);
-		run_git($target,qw/remote add/,$name,$url);
-	}
-}
-sub hg_add_remote {
-	my ($repo,$target,@remotes) = @_;
-	my %pool;
-	if(-f "$target/.hg/hgrc") {
-		run('cp','-av',"$target/.hg/hgrc","$target/.hg/hgrc.bak");
-	}
-	open FO,">","$target/.hg/hgrc" or return error("$!\n");
-	print FO '[paths]',"\n";
-	foreach(@remotes) {
-		my $name = unique_name('default',\%pool);
-		$pool{$name} = 1;
-		print FO "$name = $_->{'pull'}\n";
-		print FO "$name-push = $_->{'push'}\n";
-	}
-	close FO;
-#	my @HGCONFIG = (@HG,qw/-R/,$target,'--config');
-#	foreach(keys %remotes) {
-#		run(@HGCONFIG,"paths.$_=$remotes{$_}->{'pull'}");
-#		run(@HGCONFIG,"paths.$_-push=$remotes{$_}->{'pull'}");
-#	}
-	run(@HG,'-R',$target,'paths');
-}
 sub checkout_repo {
 	my $repo = shift;
 	my $target = $repo->{target};
@@ -520,7 +545,7 @@ sub checkout_repo {
 			run_git($target,qw/remote add origin/,$source->{'push'});
 		}
 		if(!$OPTS{'no-remote'}) {
-			git_add_remote($repo,$target,@{$repo->{git}});
+			git_add_remotes($target,@{$repo->{git}});
 		}
 		if($OPTS{'fetch-all'}) {
 			run_git($target,qw/fetch --all/);
@@ -640,7 +665,7 @@ sub sync_to_local {
 		run_git('#silent',$target,qw/remote rm origin/);
 		run_git($target,qw/remote add origin/,$source->{'push'});
 		if(!$OPTS{'no-remote'}) {
-			git_add_remote($repo,$target,@{$repo->{git}});
+			git_add_remotes($target,@{$repo->{git}});
 		}
 		if($OPTS{'fetch-all'}) {
 			run_git($target,qw/fetch --all/);
@@ -661,15 +686,43 @@ sub local_to_remote {
 			print STDERR "\t Error directory not exists.\n";
 		}
 		else {
+			my @push = 'push';
+			if($OPTS{'mirror'}) {
+				@push = ('push','--mirror');
+			}
+			elsif($OPTS{'force'}) {
+				@push = qw/push --force/;
+			}
 			foreach(@{$repo->{git}}) {
-				print STDERR "  Dest: ",$_->{push}, "\n";
-				run_s('git','--git-dir',$local->{pull},'--bare','push','--mirror',$_->{push});
+				print STDERR "  Dest: ",$_->{push}, " (", join(" ",@push), ") \n";
+				run_s('git','--git-dir',$local->{pull},'--bare',@push ,$_->{push});
 			}
 		}
 	}
 	return 1;
 }
 
+sub config_local {
+	my $repo = shift;
+	my $first_only = shift;
+	if($repo->{git} and !$OPTS{'no-git'}) {
+		my $local = shift @{$repo->{git}};
+		print STDERR "Source: ", $local->{pull},"\n";
+		if(! -d $local->{pull}) {
+			print STDERR "\t Error directory not exists.\n";
+		}
+		else {
+			my @remotes = get_remotes($local->{pull},1);
+			foreach(@remotes) {
+				print STDERR "\t Remove old remote [$_]\n";
+				run_s('git','--git-dir',$local->{pull},'--bare','remote','rm',$_);
+			}
+			git_add_remotes($local->{pull},@{$repo->{git}});
+			run_git($local->{pull},qw/remote -v/);
+		}
+	}
+	return 1;
+}
 my $PROGRAM_DIR = $0;
 $PROGRAM_DIR =~ s/[^\/\\]+$//;
 my $cwd = getcwd();
@@ -765,6 +818,10 @@ elsif($OPTS{'to-remote'}) {
 	$action = 'Push';
 	$action_sub = \&local_to_remote;
 }
+elsif($OPTS{'config-local'}) {
+	$action = 'Configuring local';
+	$action_sub = \&config_local;
+}
 else {
 	die("Invalid action specified!\n");
 }
@@ -855,6 +912,14 @@ Instead of fetching the origin, fetch all repositories
 
 Reset .git/config and .git/refs/remotes
 
+=item B<--to-remote>
+
+Push local repository to remotes
+
+=item B<--config-local>
+
+Re-configure local repositories
+
 =item B<-h>,B<--help>
 
 Print a brief help message and exits.
@@ -904,6 +969,12 @@ git-svn projects manager
 
 		* add definition localname:map
 		* add option 'reset-config'
+
+	2011-03-27	xiaoranzzz	<xiaoranzzz@myplace.hell>
+
+		* add repository url definition macros e.g. g:gh/#localname# 
+		* add action 'to-remote'
+		* add action 'config-local'
 
 =head1  AUTHOR
 
