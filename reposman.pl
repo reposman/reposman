@@ -12,7 +12,7 @@ BEGIN
         map "$PROGRAM_DIR$_",qw{modules lib ../modules ..lib};
 }
 my %OPTS;
-my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-projects|dp dump-config|dc dump-data|dd sync|s sync-all|sa checkout|co|c file|f:s login|nu no-local fetch-all no-remote reset-config to-local force/;
+my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-projects|dp dump-config|dc dump-data|dd sync|s sync-all|sa checkout|co|c file|f:s login|nu no-local fetch-all no-remote reset-config to-local force to-remote/;
 if(@ARGV)
 {
     require Getopt::Long;
@@ -218,6 +218,11 @@ sub parse_url {
 	my $push = $template;
 	if($push =~ m/\/$/) {
 		$push = $push ."$name"; 
+	}
+	elsif($push =~ m/^(.+)\/#([^#]+)#$/) {
+		if($project->{$2}) {
+			$push = "$1/$project->{$2}";
+		}
 	}
 	my $user = $project->{user};
 	my $type = $project->{type};
@@ -569,7 +574,7 @@ sub sync_repo {
 		my $target = $local->{'push'};
 		my $source = shift @{$repo->{git}};
 		$repo->{git_source} = $source;
-		run_git(undef,'clone','--bare',$source->{'pull'},$target);
+		run_git(undef,'--bare','clone',$source->{'pull'},$target);
 		unless($first_only) {
 			foreach(@{$repo->{git}}) {
 				run_git(undef,'--bare','--git-dir',$target,'push',$_->{'push'});
@@ -631,7 +636,7 @@ sub sync_to_local {
 		if(-d $target and $OPTS{'force'}) {
 			run('rm','-fr',$target);
 		}
-		run_git(undef,'clone','--bare',$source->{'pull'},$target);
+		run_git(undef,'--bare','clone',$source->{'pull'},$target);
 		run_git('#silent',$target,qw/remote rm origin/);
 		run_git($target,qw/remote add origin/,$source->{'push'});
 		if(!$OPTS{'no-remote'}) {
@@ -645,6 +650,26 @@ sub sync_to_local {
 	}
 	return 1;
 }
+
+sub local_to_remote {
+	my $repo = shift;
+	my $first_only = shift;
+	if($repo->{git} and !$OPTS{'no-git'}) {
+		my $local = shift @{$repo->{git}};
+		print STDERR "Source: ", $local->{pull},"\n";
+		if(! -d $local->{pull}) {
+			print STDERR "\t Error directory not exists.\n";
+		}
+		else {
+			foreach(@{$repo->{git}}) {
+				print STDERR "  Dest: ",$_->{push}, "\n";
+				run_s('git','--git-dir',$local->{pull},'--bare','push','--mirror',$_->{push});
+			}
+		}
+	}
+	return 1;
+}
+
 my $PROGRAM_DIR = $0;
 $PROGRAM_DIR =~ s/[^\/\\]+$//;
 my $cwd = getcwd();
@@ -735,6 +760,10 @@ elsif($OPTS{'sync-all'}) {
 elsif($OPTS{'to-local'}) {
 	$action = 'to-local';
 	$action_sub = \&sync_to_local;
+}
+elsif($OPTS{'to-remote'}) {
+	$action = 'Push';
+	$action_sub = \&local_to_remote;
 }
 else {
 	die("Invalid action specified!\n");
