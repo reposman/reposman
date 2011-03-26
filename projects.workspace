@@ -27,13 +27,13 @@ s:gc:write = https://#1.googlecode.com/svn/#2
 h:gc:read = http://#2.#1.googlecode.com/hg
 h:gc:write = https://#2.#1.googlecode.com/hg
 s:sf:read = http://#1.svn.sourceforge.net/svnroot/#1
-s:sf:write = https://#1.svn.sourceforge.net/svnroot/#1
+s:sf:write = https://eotect@#1.svn.sourceforge.net/svnroot/#1
 g:sf:read = http://#1.git.sourceforge.net/gitroot/#1/#2
-g:sf:write = ssh://#1.git.sourceforge.net/gitroot/#1/#2
+g:sf:write = ssh://eotect@#1.git.sourceforge.net/gitroot/#1/#2
 h:sf:read = http://#1.hg.sourceforge.net:8000/hgroot/#1/#2
-h:sf:write = ssh://#1.hg.sourceforge.net/hgroot/#1/#2
+h:sf:write = ssh://eotect@#1.hg.sourceforge.net/hgroot/#1/#2
 h:sf1:read = http://#1.hg.sourceforge.net:8000/hgroot/#1/#1
-h:sf1:write = ssh://#1.hg.sourceforge.net/hgroot/#1/#1
+h:sf1:write = ssh://eotect@#1.hg.sourceforge.net/hgroot/#1/#1
 h:sf-zrepos:read = http://zrepos.hg.sourceforge.net:8000/hgroot/zrepos/#1/#2
 h:sf-zrepos:write = ssh://zrepos.hg.sourceforge.net/hgroot/zrepos/#1/#2
 s:pl:read = http://pl3.projectlocker.com/#1/#2/svn
@@ -59,7 +59,7 @@ g:sf:write = ssh://#1.git.sourceforge.net/gitroot/#1/#2
 g:sf1:read = http://#1.git.sourceforge.net:8000/gitroot/#1/#1
 g:sf1:write = ssh://#1.git.sourceforge.net/gitroot/#1/#1
 g:sf-zrepos:read = http://zrepos.git.sourceforge.net:8000/gitroot/zrepos/#1/#2
-g:sf-zrepos:write = ssh://zrepos.git.sourceforge.net/gitroot/zrepos/#1/#2
+g:sf-zrepos:write = ssh://eotect@zrepos.git.sourceforge.net/gitroot/zrepos/#1/#2
 g:asm:read = git@git.assembla.com:#1.git
 g:asm:write = git@git.assembla.com:#1.git
 g:ufd:read = git@eotect.unfuddle.com:eotect/#1.git
@@ -76,20 +76,24 @@ localname>maps>zscripts = scripts
 localname>maps>zwebdev = webdev
 localname>maps>zmyplace = myplace
 localname>maps>zrepos = repos
+sourceforge.zrepos = g:sf-zrepos/#localname#
+
 
 [firefox]
 name = zprofiles/firefox
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
-
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 [homebase]
 name = zprofiles/homebase
 g:local = g:local/
 g:source = g:gh/
 g:mirrors = {
 	g:gr/
-	g:sf-zrepos/
+	#sourceforge.zrepos#
 }
 
 [gm-scripts]
@@ -97,8 +101,8 @@ name = zprofiles/gm-scripts
 checkout = ./firefox/gm_scripts
 g:local = g:local/
 g:source = g:asm/gm-scripts
-g:mirrors =  {
-	g:sf-zrepos/
+g:mirrors = {
+	#sourceforge.zrepos#
 	g:ufd/gm-scripts
 }
 
@@ -108,8 +112,26 @@ checkout = ./perl/urlrule
 g:local = g:local/
 g:source = g:asm/babebase
 g:mirrors = {
-	g:sf-zrepos/
+	#sourceforge.zrepos#
 	g:ufd/babebase
+}
+
+[foxwps]
+name = zprofiles/foxwps
+g:local = g:local/
+g:source = g:asm/foxwps
+g:mirrors = {
+	#sourceforge.zrepos#
+	g:ufd/foxwps
+}
+
+[private]
+name = zprofiles/private
+g:local = g:local/
+g:source = g:asm/profiles-private
+g:mirrors = {
+	#sourceforge.zrepos#
+	g:ufd/private
 }
 
 [gsbridge]
@@ -117,7 +139,7 @@ name = vcsplace/gsbridge
 g:local = g:local/
 g:source = g:asm/gsbridge
 g:mirrors = {
-	g:sf-zrepos/
+	#sourceforge.zrepos#
 	g:ufd/gsbridge
 }
 
@@ -125,44 +147,63 @@ g:mirrors = {
 name = ztexts/texts
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [notes]
 name = ztexts/notes
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [www]
 name = ztexts/www
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [webpages]
 name = ztexts/webpages
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 ;loseplace
 [losebox]
 name = loseplace/losebox
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [loseplace]
 name = loseplace/loseplace
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [loseplace/mini]
 g:local = g:local/
 g:mirrors = {
 	g:gh/
 	g:gr/
+	#sourceforge.zrepos#
 }
 
 [loseplace/core]
@@ -170,26 +211,36 @@ g:local = g:local/
 g:mirrors = {
 	g:gh/
 	g:gr/
+	#sourceforge.zrepos#
 }
 
 [thinapp]
 name = loseplace/thinapp
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [github-sync]
 name = vcsplace/github-sync
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 
 [gsvn-bundle]
 name = vcsplace/gsvn-bundle
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [reposman]
 name = vcsplace/reposman
@@ -198,7 +249,7 @@ g:local = g:local/
 g:mirrors = {
 	g:gh/
 	g:gr/
-	g:sf-zrepos/
+	#sourceforge.zrepos#
 }
 
 [ws]
@@ -208,7 +259,7 @@ g:local = g:local/
 g:mirrors = {
 	g:gh/
 	g:gr/
-	g:sf-zrepos/
+	#sourceforge.zrepos#
 }
 
 ;zcodebase
@@ -216,57 +267,84 @@ g:mirrors = {
 name = zcodebase/vb6
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [vc6]
 name = zcodebase/vc6
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [freebasic]
 name = zcodebase/freebasic
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [c]
 name = zcodebase/c
 checkout = g:checkout/codebase/
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [cpp]
 name = zcodebase/cpp
 checkout = g:checkout/codebase/
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [vsnet]
 name = zcodebase/vsnet
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [devcpp]
 name = zcodebase/devcpp
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [eclipse]
 name = zcodebase/eclipse
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [makefiles]
 name = zcodebase/makefiles
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 
 ;zscripts
@@ -274,19 +352,28 @@ g:mirror = g:gr/
 name = zscripts/logo
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [lua]
 name = zscripts/lua
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [wscript]
 name = zscripts/wscript
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [perl]
 name = zscripts/perl
@@ -294,7 +381,7 @@ g:local = g:local/
 g:mirrors = {
 	g:gh/
 	g:gr/
-	g:sf-zrepos/
+	#sourceforge.zrepos#
 }
 
 [shellscript]
@@ -303,14 +390,17 @@ g:local = g:local/
 g:mirrors = {
 	g:gh/
 	g:gr/
-	g:sf-zrepos/
+	#sourceforge.zrepos#
 }
 
 [batch]
 name = zscripts/batch
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [libmyplace-perl]
 name = zscripts/libmyplace-perl
@@ -319,26 +409,36 @@ g:local = g:local/
 g:source = g:gh/
 g:mirrors = {
 	g:gr/
-	g:sf-zrepos/
+	#sourceforge.zrepos#
 }
 
 [badluck]
 name = badluck/badluck
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [nightgun]
 name = nightgun/nightgun
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [utils]
-name = utils/utils
+name = eotect/utils
+localname = utils
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 ;USB Disk Booting System
 [usys]
@@ -346,82 +446,124 @@ name = usys/usys
 checkout = usys/usys
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [xrdos]
 name = usys/xrdos
 checkout = usys/xrdos
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [toolbox]
 name = usys/toolbox
 checkout = usys/toolbox
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [sysbuilder]
 name = usys/sysbuilder
 checkout = usys/sysbuilder
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [websaver2]
 name = websaver/websaver2
 checkout = ./firefox/extensions/websaver2@myplace.hell
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [htmlscripts]
 name = zwebdev/htmlscripts
 checkout = g:checkout/webdev/
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [css]
 name = zwebdev/css
 checkout = g:checkout/webdev/
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [templates]
 name = zwebdev/templates
 checkout = g:checkout/webdev/
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [avatars]
 name = zprofiles/avatars
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [drawings]
 name = eotect/drawings
 localname = drawings
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [ebooks]
 name = eotect/ebooks
 localname = ebooks
 g:local = g:local/
 g:source = g:gh/
-g:mirror = g:gr/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
 
 [zrepos]
 s:local = s:local/
 s:source = s:gc/
 s:mirrors = {
 	s:sf/
+}
+
+[repos]
+name = eotect/repos
+g:local = /myplace/repos.git
+g:source = g:gh/
+g:mirrors = {
+	g:gr/
+	g:sf-zrepos/repos.git
 }
 
 ;	vim:filetype=dosini
