@@ -11,7 +11,7 @@ BEGIN
         map "$PROGRAM_DIR$_",qw{modules lib ../modules ..lib};
 }
 my %OPTS;
-my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-projects|dp dump-config|dc dump-data|dd sync|s sync-all|sa checkout|co|c file|f:s login|nu no-local fetch-all no-remote reset-config to-local force to-remote config-local mirror/;
+my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-projects|dp dump-config|dc dump-data|dd sync|s sync-all|sa checkout|co|c file|f:s login|nu no-local fetch-all no-remote reset-config to-local force to-remote config-local list query:s/;
 if(@ARGV)
 {
     require Getopt::Long;
@@ -32,7 +32,7 @@ foreach(keys %OPTS) {
 }
 unless($have_opts) {
 	my $first_arg = shift;
-	if($first_arg and $first_arg =~ m/^(help|manual|test|project|dump|dump-config|dump-data|check|list|pull|reset|clone|sync|checkout|to-local|to-remote|config-local)$/) {
+	if($first_arg and $first_arg =~ m/^(help|manual|test|project|dump|dump-config|dump-data|check|list|pull|reset|clone|sync|checkout|to-local|to-remote|config-local|query|list)$/) {
 		$OPTS{$first_arg} = 1;
 	}
 	else {
@@ -67,6 +67,7 @@ $CONFIG{'git:gitorious'} = "git\@gitorious.org:#1/#2.git";
 $CONFIG{authors} = 'authors';
 my %PROJECTS;
 my %MACRO;
+my %REPOS;
 
 my %project;
 my %sub_project;
@@ -347,6 +348,48 @@ sub parse_url {
 		}
 	}
 	return {'push'=>$push,'pull'=>$pull,'user'=>$user,'type'=>$type};
+}
+
+sub get_repos {
+	my $query = shift;
+	my @repos;
+	my $match = 0;
+	my ($query_str,$new_target) = parse_query($query);
+	foreach my $key (qw/name shortname localname/) {
+		foreach my $name (keys %REPOS) {
+			if($REPOS{$name}->{$key} eq $query_str) {
+				push @repos,$REPOS{$name};
+				$match = 1;
+			}
+		}
+		last if($match);
+	}
+	unless($match) {
+	foreach my $key (qw/name shortname localname/) {
+		foreach my $name (keys %REPOS) {
+			if($REPOS{$name}->{$key} =~ $query_str) {
+				push @repos,$REPOS{$name};
+				$match = 1;
+			}
+		}
+		last if($match);
+	}
+	}
+	if($new_target) {
+		foreach(@repos) {
+			modify_repo_target($_,$new_target);
+		}
+	}
+	return @repos;
+}
+sub modify_repo_target {
+	my $repo = shift;
+	my $target = shift;
+	return $repo unless($target);
+	$repo->{_target} = $repo->{target};
+	my $url = parse_url($repo->{name},$target,$repo);
+	$repo->{target} = $url->{'push'} if($url);
+	return $repo;
 }
 sub get_repo {
     #my ($query_name,@repo_data) = @_;
@@ -686,16 +729,9 @@ sub local_to_remote {
 			print STDERR "\t Error directory not exists.\n";
 		}
 		else {
-			my @push = 'push';
-			if($OPTS{'mirror'}) {
-				@push = ('push','--mirror');
-			}
-			elsif($OPTS{'force'}) {
-				@push = qw/push --force/;
-			}
 			foreach(@{$repo->{git}}) {
-				print STDERR "  Dest: ",$_->{push}, " (", join(" ",@push), ") \n";
-				run_s('git','--git-dir',$local->{pull},'--bare',@push ,$_->{push});
+				print STDERR "  Dest: ",$_->{push}, "\n";
+				run_s('git','--git-dir',$local->{pull},'--bare','push','--mirror',$_->{push});
 			}
 		}
 	}
@@ -723,6 +759,40 @@ sub config_local {
 	}
 	return 1;
 }
+
+
+sub list_repo {
+	return 1;
+	my $repo = shift;
+	my $verbose = shift;
+	if($verbose) {
+		use Data::Dumper;
+		print Data::Dumper::Dump([$repo],["*$repo->{name}"]),"\n";
+	}
+	else {
+		print "id: $repo->{shortname} [$repo->{type}]\n";
+		print "name: $repo->{name}\n";
+		print "localname: $repo->{localname}\n";
+		print "checkout point: $repo->{target}\n";
+	}
+}
+sub query_repo {
+	my $repo = shift;
+	return 1 unless($OPTS{query});
+	my $property = $OPTS{query};
+	my $value = $repo->{$property};
+	if($property eq '_all') {
+		print Data::Dumper->Dump([$repo],["*$repo->{shortname}"]);
+	}
+	elsif(ref $value) {
+		print Data::Dumper->Dump([$value],["*$repo->{shortname}" . '->{' . "$property" . '}']);	
+	}
+	else {
+		print "$property = $value\n";
+	}
+	return 1;
+}
+
 my $PROGRAM_DIR = $0;
 $PROGRAM_DIR =~ s/[^\/\\]+$//;
 my $cwd = getcwd();
@@ -762,11 +832,23 @@ if($OPTS{project}) {
 my $total = scalar(keys %PROJECTS);
 print STDERR "$total", $total > 1 ? " projects" : " project", ".\n";
 
+foreach(keys %PROJECTS) {
+	my ($name,$pdata) =  get_project_data($_);
+	$REPOS{$name} = get_repo($_,$pdata);
+}
+
 my @query = @ARGV ? @ARGV : (keys %PROJECTS);
 
-if($OPTS{'list'}) {
-    $OPTS{'dump-projects'} = 1;
+my @targets;
+if(@ARGV) {
+	foreach(@query) {
+		push @targets,get_repos($_);
+	}
 }
+else {
+	@targets = values %REPOS;
+}
+
 
 if($OPTS{'dump'}) {
     $OPTS{'dump-projects'} = 1;
@@ -775,23 +857,19 @@ if($OPTS{'dump'}) {
 use Data::Dumper;
 print Data::Dumper->Dump([\%DATA],["*DATA"]) if($OPTS{'dump-data'});
 print Data::Dumper->Dump([\%CONFIG],["*CONFIG"]) if($OPTS{'dump-config'});
-#print Data::Dumper->Dump([\%PROJECTS],["*PROJECTS"]) if($OPTS{'dump-projects'});
+
+
 
 if($OPTS{'dump-projects'}) {
     use Data::Dumper;
-#    my @query = $QUERY_NAME ? ($QUERY_NAME) : (keys %project,keys %sub_project);
-    foreach my $query_text (@query) {
-        my ($name,$pdata) = get_project_data($query_text);
-        my $repo = get_repo($query_text,$pdata);
-        print Data::Dumper->Dump([$repo],["*$name"]);
-    }
+        print Data::Dumper->Dump([\@targets],['*projects']);
 }
 if($OPTS{'dump'} or $OPTS{'dump-config'} or $OPTS{'dump-data'} or $OPTS{'dump-projects'}) {
     exit 0;
 }
 
 my $idx = 0;
-my $count = scalar(@query);
+my $count = scalar(@targets);
 my $action;
 my $action_sub;
 if($OPTS{checkout}) {
@@ -822,20 +900,22 @@ elsif($OPTS{'config-local'}) {
 	$action = 'Configuring local';
 	$action_sub = \&config_local;
 }
+elsif($OPTS{'list'}) {
+	$action = 'List';
+	$action_sub =\&list_repo;
+}
+elsif($OPTS{'query'}) {
+	$action = 'Query';
+	$action_sub = \&query_repo;
+}
 else {
 	die("Invalid action specified!\n");
 }
 
 print STDERR "to $action $count ", $count > 1 ? "projects" : "project", " ...\n";
-foreach my $query_text (@query) {
+foreach my $repo (@targets) {
         $idx++;
-		my ($name,$pdata) = get_project_data($query_text);
-        print STDERR "[$idx/$count] $action" . " project [$name]\n";
-    	if((!$pdata) or (!ref $pdata)) {
-    		print STDERR "[$idx/$count] project $name not defined.\n";
-    		next;
-    	}
-        my $repo = get_repo($query_text,$pdata);
+        print STDERR "[$idx/$count] $action" . " project [$repo->{name}]\n";
 		&$action_sub($repo) or die("\n");
         print STDERR "\n";
 }
