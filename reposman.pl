@@ -11,7 +11,7 @@ BEGIN
         map "$PROGRAM_DIR$_",qw{modules lib ../modules ..lib};
 }
 my %OPTS;
-my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-projects|dp dump-config|dc dump-data|dd sync|s sync-all|sa checkout|co|c file|f:s login|nu no-local fetch-all no-remote reset-config to-local force to-remote config-local list query:s/;
+my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-projects|dp dump-config|dc dump-data|dd sync|s sync-all|sa checkout|co|c file|f:s login|nu no-local fetch-all no-remote reset-config to-local force to-remote config-local mirror list query:s/;
 if(@ARGV)
 {
     require Getopt::Long;
@@ -729,9 +729,16 @@ sub local_to_remote {
 			print STDERR "\t Error directory not exists.\n";
 		}
 		else {
+			my @push = 'push';
+			if($OPTS{'mirror'}) {
+				@push = ('push','--mirror');
+			}
+			elsif($OPTS{'force'}) {
+				@push = qw/push --force/;
+			}
 			foreach(@{$repo->{git}}) {
-				print STDERR "  Dest: ",$_->{push}, "\n";
-				run_s('git','--git-dir',$local->{pull},'--bare','push','--mirror',$_->{push});
+				print STDERR "  Dest: ",$_->{push}, " (", join(" ",@push), ") \n";
+				run_s('git','--git-dir',$local->{pull},'--bare',@push ,$_->{push});
 			}
 		}
 	}
