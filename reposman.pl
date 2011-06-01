@@ -137,7 +137,7 @@ sub get_remotes {
 		@query_cmd = (
 			'git',
 			'--git-dir',"$target/.git",
-			'--working-dir',$target,
+			'--work-tree',$target,
 			'remote'
 		);
 	}
