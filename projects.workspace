@@ -64,7 +64,7 @@ g:asm:read = git@git.assembla.com:#1.git
 g:asm:write = git@git.assembla.com:#1.git
 g:ufd:read = git@eotect.unfuddle.com:eotect/#1.git
 g:ufd:write = git@eotect.unfuddle.com:eotect/#1.git
-checkout = ./
+checkout = /myplace/workspace/
 g:checkout:write = #checkout##1
 g:checkout:read = #checkout##1
 s:checkout:write = #checkout##1
@@ -98,7 +98,7 @@ g:mirrors = {
 
 [gm-scripts]
 name = zprofiles/gm-scripts
-checkout = ./firefox/gm_scripts
+checkout = firefox/gm_scripts
 g:local = g:local/
 g:source = g:asm/gm-scripts
 g:mirrors = {
@@ -108,7 +108,7 @@ g:mirrors = {
 
 [babebase]
 name = zprofiles/babebase
-checkout = ./perl/urlrule
+checkout = perl/urlrule
 g:local = g:local/
 g:source = g:asm/babebase
 g:mirrors = {
@@ -244,7 +244,6 @@ g:mirrors = {
 
 [reposman]
 name = vcsplace/reposman
-checkout = perl/
 g:local = g:local/
 g:mirrors = {
 	g:gh/
@@ -404,7 +403,7 @@ g:mirrors = {
 
 [libmyplace-perl]
 name = zscripts/libmyplace-perl
-checkout = ./perl/modules/MyPlace
+checkout = perl/modules/MyPlace
 g:local = g:local/
 g:source = g:gh/
 g:mirrors = {
@@ -431,8 +430,8 @@ g:mirrors = {
 }
 
 [utils]
-name = eotect/utils
-localname = utils
+name = zutils/utils
+localname = utils/utils
 g:local = g:local/
 g:source = g:gh/
 g:mirrors = {
@@ -483,7 +482,28 @@ g:mirrors = {
 
 [websaver2]
 name = websaver/websaver2
-checkout = ./firefox/extensions/websaver2@myplace.hell
+checkout = firefox/extensions/websaver2@myplace.hell
+g:local = g:local/
+g:source = g:gh/
+g:mirrors = {
+	g:gr/
+	#sourceforge.zrepos#
+}
+
+[tombloo]
+name = websaver/tombloo
+checkout = firefox/extensions/tombloo
+g:local = g:local/
+g:source = g:gh/
+g:mirrors = {
+	g:gh/to/tombloo
+	g:gr/
+	#sourceforge.zrepos#
+}
+
+[tombloo-data]
+name = websaver/tombloo-data
+checkout = firefox/tombloo
 g:local = g:local/
 g:source = g:gh/
 g:mirrors = {
