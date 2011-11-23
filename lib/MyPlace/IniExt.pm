@@ -8,7 +8,7 @@ our $DEFAULT_SECTION = undef;
 our $DEFINITION = '#define#';
 our $COMMENT_EXP = '^\s*(?:#|;)';
 our $SECTION_EXP = '^\s*\[(.+?)\]\s*$';
-our $SECTION_SEP = '>';
+our $SECTION_SEP = '\.';
 our $NAMEVALUE_EXP = '^\s*([^=]+?)\s*=\s*(.+?)\s*$';
 our $SECTION_SEP_EXP = '\s*([^' . $SECTION_SEP . ']+)\s*';
 our $LIST_START_EXP = '^\s*{\s*$';
