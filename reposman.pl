@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 # $Id$
 use strict;
-our $VERSION = 'v1.1';
+our $VERSION = '2.000';
 BEGIN
 {
     my $PROGRAM_DIR = $0;
@@ -966,9 +966,9 @@ Target and define project from command line
 
 Testing mode
 
-=item B<--dump>
+=item B<--dump>, B<--dump-target>
 
-Dump CONFIG and DATA
+Dump data for targets 
 
 =item B<--dump-config>
 
@@ -976,7 +976,19 @@ Dump CONFIG
 
 =item B<--dump-data>
 
-Dump DATA
+Dump bare DATA
+
+=item B<--dump-projects>
+
+Dump all projects data
+
+=item B<--dump-hosts>
+
+Dump all hosts data
+
+=item B<--dump-all>
+
+Dump everything
 
 =item B<-l>,B<--list>
 
@@ -1057,6 +1069,12 @@ git-svn projects manager
 		* add repository url definition macros e.g. g:gh/#localname# 
 		* add action 'to-remote'
 		* add action 'config-local'
+
+	2011-11-24	xiaoranzzz	<xiaoranzzz@myplace.hell>
+
+		* re-design data file format.
+		* update program and module to reflect format changing;
+		* version 2.000
 
 =head1  AUTHOR
 
