@@ -11,7 +11,7 @@ BEGIN
         map "$PROGRAM_DIR$_",qw{modules lib ../modules ..lib};
 }
 my %OPTS;
-my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-projects|dp dump-config|dc dump-data|dd sync|s sync-all|sa checkout|co|c file|f:s login|nu no-local fetch-all no-remote reset-config to-local force to-remote config-local mirror list query:s dump-hosts|dh dump-target|dt dump-maps|dm dump-all|da/;
+my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-projects|dp dump-config|dc dump-data|dd sync|s sync-all|sa checkout|co|c file|f:s login|nu no-local fetch-all no-remote reset-config to-local force to-remote config-local mirror list query:s dump-hosts|dh dump-target|dt dump-maps|dm dump-all|da branch|b:s/;
 if(@ARGV)
 {
     require Getopt::Long;
@@ -254,18 +254,32 @@ sub translate_url {
     my $url = shift;
     my $path = shift;
 	my $id = shift;
-    if($url =~ m/#2/ and $path =~ m/^([^\/]+)\/(.+)$/) {
-        my $a = $1;
-        my $b = $2;
-        $url =~ s/#1/$a/g;
-        $url =~ s/#2/$b/g;
-    }
-    else {
-        $url =~ s/#1/$path/g;
-        $url =~ s/#2//g;
-    }
-    $url =~ s/\/+$//;
-	$url =~ s/\.{2,}([^\/]+)/\.$1/g;
+	my $root;
+	my $leaf;
+	if($path =~ m/^([^\/]+)\/(.+)$/) {
+		$root = $1;
+		$leaf = $2;
+	}
+	else {
+		$root = $path;
+		$leaf = undef;
+	}
+	if($leaf) {
+		if($url =~ m/#2/) {
+			$url =~ s/#1/$root/g;
+			$url =~ s/#2[!]?/$leaf/g;
+		}
+		else {
+			$url =~ s/#1/$path/g;
+		}
+	}
+	else {
+		$url =~ s/#1/$root/g;
+		$url =~ s/#2!/$root/g;
+		$url =~ s/[\/\.]?#2//g;
+	}
+    #$url =~ s/\/+$//;
+	#$url =~ s/\.{2,}([^\/]+)/\.$1/g;
 	if($url and $OPTS{'login'}) {
 		$url =~ s/:\/\//:\/\/$id\@/;
 	}
@@ -717,6 +731,8 @@ sub local_to_remote {
 		}
 		else {
 			my @push = 'push';
+			my @append;
+			push @append, $OPTS{'branch'} if($OPTS{branch});
 			if($OPTS{'mirror'}) {
 				@push = ('push','--mirror');
 			}
@@ -725,7 +741,7 @@ sub local_to_remote {
 			}
 			foreach(@{$repo->{git}}) {
 				print STDERR "  Dest: ",$_->{push}, " (", join(" ",@push), ") \n";
-				run_s('git','--git-dir',$local->{pull},'--bare',@push ,$_->{push});
+				run_s('git','--git-dir',$local->{pull},'--bare',@push ,$_->{push},@append);
 			}
 		}
 	}
@@ -1014,6 +1030,10 @@ Push local repository to remotes
 
 Re-configure local repositories
 
+=item B<-b>,B<--branch> 
+
+Specify which branch 
+
 =item B<-h>,B<--help>
 
 Print a brief help message and exits.
@@ -1075,6 +1095,10 @@ git-svn projects manager
 		* re-design data file format.
 		* update program and module to reflect format changing;
 		* version 2.000
+
+	2011-12-01	xiaoranzzz	<xiaoranzzz@myplace.hell>
+
+		* add option --branch|-b
 
 =head1  AUTHOR
 
