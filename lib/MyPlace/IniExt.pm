@@ -13,6 +13,9 @@ our $NAMEVALUE_EXP = '^\s*([^=]+?)\s*=\s*(.+?)\s*$';
 our $SECTION_SEP_EXP = '\s*([^' . $SECTION_SEP . ']+)\s*';
 our $LIST_START_EXP = '^\s*{\s*$';
 our $LIST_END_EXP = '^\s*}\s*$';
+our $LINE_START_EXP = '^\s*\(\s*$';
+our $LINE_END_EXP = '^\s*\)\s*$';
+
 
 sub parse_file {
 	my @STRINGS;
@@ -29,9 +32,11 @@ sub parse_strings {
 	my %MACRO;
 	my $current_section = $DEFAULT_SECTION;
 	my $in_list = undef;
+	my $in_line = undef;
 	my $name = undef;
 	my $value = undef;
 
+PROCESS_LINE:
     while(@_) {
 		my $line = shift;
         $_ = $line;
@@ -39,7 +44,14 @@ sub parse_strings {
 		
 		#Execute macros
         foreach my $v_name (keys %MACRO) {
-            s/#$v_name#/$MACRO{$v_name}/g;
+#			my $save = $line;
+            if(s/#$v_name#/$MACRO{$v_name}/g) {
+#				print STDERR "\t$save=>\n$_\n";
+				if(m/\n/) {
+					unshift @_,split("\n",$_);
+					redo PROCESS_LINE;
+				}
+			}
         }
 
 		#Ignore comments
@@ -52,13 +64,21 @@ sub parse_strings {
 			$DATA{$current_section} = {} unless($DATA{$current_section});
 			next;
 		}
-		if($in_list and m/$LIST_END_EXP/) {
+
+		if($in_line && m/$LINE_END_EXP/) {
+				$in_line = undef;
+				$value = join("\n",@{$value});
+				goto SAVE_VALUE;
+				next;
+		}
+
+		if($in_list && m/$LIST_END_EXP/) {
 			$in_list = undef;
 			goto SAVE_VALUE;
 			next;
 		}
 		
-		if($in_list) {
+		if($in_list || $in_line) {
 			$_ =~ s/^\s+//;
 			$_ =~ s/\s+$//;
 			if($value) {
@@ -73,9 +93,14 @@ sub parse_strings {
 		if(m/$NAMEVALUE_EXP/) {
 			$name = $1;
 			$value = $2;
-			if($value =~ m/$LIST_START_EXP/) {
+			if((!$in_line) && $value =~ m/$LIST_START_EXP/) {
 				$value = [];
 				$in_list = 1;
+				next;
+			}
+			elsif((!$in_list) && $value =~ m/$LINE_START_EXP/) {
+				$value = [];
+				$in_line = 1;
 				next;
 			}
 		}
@@ -102,10 +127,11 @@ SAVE_VALUE:
 			}
 			if($current_section eq $DEFINITION) {
 				$MACRO{$name} = $value;
+		#		print STDERR "\t$name=>$value\n";
 			}
 		}
     }
-	if($in_list) {
+	if($in_line || $in_list) {
 		goto SAVE_VALUE;
 	}
 	return %DATA;
