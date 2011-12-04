@@ -276,7 +276,7 @@ sub translate_url {
 	else {
 		$url =~ s/#1/$root/g;
 		$url =~ s/#2!/$root/g;
-		$url =~ s/[\/\.]?#2//g;
+		$url =~ s/[\/\.\-]?#2//g;
 	}
     #$url =~ s/\/+$//;
 	#$url =~ s/\.{2,}([^\/]+)/\.$1/g;
