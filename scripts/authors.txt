@@ -1,5 +1,0 @@
-(no author) = Eotect Nahn <eotect@gmail.com>
-xiaoranzzz = Eotect Nahn <eotect@gmail.com>
-eotect = Eotect Nahn <eotect@gmail.com>
-www-data = www-data <www-data@email.com>
-eotect@gmail.com  = Eotect Nahn <eotect@gmail.com>
