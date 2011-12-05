@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 # $Id$
 use strict;
-our $VERSION = '2.000';
+our $VERSION = '2.100';
 BEGIN
 {
     my $PROGRAM_DIR = $0;
@@ -10,99 +10,81 @@ BEGIN
     unshift @INC, 
         map "$PROGRAM_DIR$_",qw{modules lib ../modules ..lib};
 }
+use MyPlace::Reposman::Projects;
+use Cwd qw/getcwd/;
+#use MyPlace::Repository;
+
 my %OPTS;
-my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-projects|dp dump-config|dc dump-data|dd sync|s sync-all|sa checkout|co|c file|f:s login|nu no-local fetch-all no-remote reset-config to-local force to-remote config-local mirror list query:s dump-hosts|dh dump-target|dt dump-maps|dm dump-all|da branch|b:s exec-local|el:s append|aa:s prepend|pa:s/;
+my @OPTIONS = qw/
+				help|h|? 
+				manual|m 
+				test|t 
+				debug 
+				sync|s 
+				sync-all|sa 
+				checkout|co|c 
+				file|f:s 
+				login|nu 
+				no-local 
+				fetch-all 
+				no-remote 
+				reset-config 
+				to-local 
+				force 
+				to-remote 
+				config-local
+				mirror
+				list|l
+				query|q:s
+				dump|d 
+				dump-projects|dp 
+				dump-config|dc 
+				dump-data|dd 
+				dump-hosts|dh 
+				dump-target|dt 
+				dump-maps|dm 
+				dump-repos|dr
+				dump-all|da 
+				branch|b:s 
+				exec-local|el:s 
+				append|aa:s 
+				prepend|pa:s
+			/;
 if(@ARGV)
 {
     require Getopt::Long;
     Getopt::Long::GetOptions(\%OPTS,@OPTIONS);
+	my $have_opts;
+	foreach(keys %OPTS) {
+		if($OPTS{$_}) {
+			$have_opts = 1;
+			last;
+		}
+	}
+	unless($have_opts) {
+		my $first_arg = shift;
+		foreach(@OPTIONS) {
+			next if(m/:s$/);
+			if( $first_arg =~ m/^(:?$_)$/) {
+				$OPTS{$first_arg} = 1;
+				last;
+			}
+		}
+		if(!$OPTS{$first_arg}) {
+			unshift @ARGV,$first_arg;
+			$OPTS{dump} = 1;
+		}
+	}
 }
 else {
     $OPTS{help} = 1;
 }
 
-#use MyPlace::Repository;
-
-#START	//map options to actions
-my $have_opts;
-foreach(keys %OPTS) {
-	if($OPTS{$_}) {
-		$have_opts = 1;
-		last;
-	}
-}
-unless($have_opts) {
-	my $first_arg = shift;
-	if($first_arg and $first_arg =~ m/^(help|manual|test|project|dump|dump-config|dump-data|check|list|pull|reset|clone|sync|checkout|to-local|to-remote|config-local|query|list|dump-target|dump-hosts|dump-maps|dump-all)$/) {
-		$OPTS{$first_arg} = 1;
-	}
-	else {
-		unshift @ARGV,$first_arg;
-		$OPTS{sync} = 1;
-	}
-}
-#END	//map options to actions
-
-if($OPTS{help}) {
-    require Pod::Usage;
-    Pod::Usage::pod2usage(-exitval=>0,-verbose => 1);
-    exit 0;
-}
-elsif($OPTS{manual}) {
-    require Pod::Usage;
-    Pod::Usage::pod2usage(-exitval=>0,-verbose => 2);
-    exit 0;
-}
-
-use Cwd qw/getcwd/;
-
 my $F_TEST = $OPTS{test};
 my @HG = qw/hg -v/;
 my @GIT = qw/git/;
 my @SVN = qw/svn/;
-my %DATA;
-my %REPOS;
 
-my %project;
-my %sub_project;
-
-my %CONFIG;
-my %PROJECTS;
-my %HOSTS;
-my %MAPS;
-
-sub parse_project_data {
-	require MyPlace::IniExt;
-	%DATA = MyPlace::IniExt::parse_strings(@_);
-	no warnings;
-	my $config_key = $MyPlace::IniExt::DEFINITION;
-	foreach(keys %DATA) {
-		if($_ eq $config_key) {
-			#foreach my $key (keys %{$DATA{$_}}) {
-			#	$CONFIG{$key} = $DATA{$_}->{$key};
-			#}
-			%CONFIG = (%CONFIG,%{$DATA{$_}});
-		}
-		elsif($_ =~ m/^host\.(.+)$/) {
-			$HOSTS{$1} = $DATA{$_};
-		}
-		elsif($_ =~ m/^map\.(.+)$/) {
-			$MAPS{$1} = $DATA{$_};
-		}
-		elsif($_ =~ m/^type\.(.+)$/) {
-			$CONFIG{$1} = $DATA{$_};
-		}
-		else {
-			$PROJECTS{$_} = $DATA{$_};
-		}
-	}
-	#if(%MAPS) {
-	#	foreach (keys %MAPS) {
-	#		$CONFIG{$_}->{maps} = $MAPS{$_};
-	#	}
-	#}
-	return \%CONFIG,\%MAPS,\%HOSTS,\%PROJECTS;
-}
 sub dumpdata {
 	use Data::Dumper;
 	my $var = shift;
@@ -235,217 +217,6 @@ sub error {
     return undef;
 }
 
-sub parse_query {
-	my $query = shift;
-	if($query =~ m/^([^:]+):(.*)$/) {
-		return $1,$2;
-	}
-	else {
-		return $query;
-	}
-}
-
-sub get_project_data {
-	my ($name,undef) = parse_query(@_);
-	return $name,$PROJECTS{$name};
-}
-
-
-sub translate_url {
-    my $url = shift;
-    my $path = shift;
-	my $id = shift;
-	my $root;
-	my $leaf;
-	if($path =~ m/^([^\/]+)\/(.+)$/) {
-		$root = $1;
-		$leaf = $2;
-	}
-	else {
-		$root = $path;
-		$leaf = undef;
-	}
-	if($leaf) {
-		if($url =~ m/#2/) {
-			$url =~ s/#1/$root/g;
-			$url =~ s/#2[!]?/$leaf/g;
-		}
-		else {
-			$url =~ s/#1/$path/g;
-		}
-	}
-	else {
-		$url =~ s/#1/$root/g;
-		$url =~ s/#2!/$root/g;
-		$url =~ s/[\/\.\-]?#2//g;
-	}
-    #$url =~ s/\/+$//;
-	#$url =~ s/\.{2,}([^\/]+)/\.$1/g;
-	if($url and $OPTS{'login'}) {
-		$url =~ s/:\/\//:\/\/$id\@/;
-	}
-    return $url;
-}
-sub parse_url {
-	my $name = shift;
-	my $template = shift;
-	my $project = shift;
-	next unless($template);
-	#if($template =~ m/\/$/) {
-	#	$template = $template ."$name"; 
-	#}
-	if($template =~ m/^(.+)\/#([^#]+)#$/) {
-		if($project->{$2}) {
-			$template = "$1/$project->{$2}";
-		}
-	}
-	my $user = $project->{user};
-	if($template =~ m/^([^\/\@]+)\@(.+)$/) {
-		$template = $2;
-		$user = $1;
-	}
-	my $host;
-	my $service;
-	my $entry;
-	if($template =~ m/^\s*([^\.\/]+)\.([^\/]+)\/(.*?)\s*$/) {
-		$host = $HOSTS{$1};
-		$service = $2;
-		$entry = $3;
-	}
-	elsif($template =~ m/^\s*([^\/]+)\/(.*?)\s*$/) {
-		$host = $HOSTS{$1};
-		$entry = "";
-	}
-	if($template =~ m/\/$/) {
-		if(ref $host and $host->{map} and $host->{map} eq 'localname') {
-			$entry .= $project->{localname};
-		}
-		else {
-			$entry .= $name;
-		}
-	}
-	my ($push,$pull,$type);
-	if($host) {
-		if(ref $host->{$service} and $host->{$service}->{write}) {
-			$push = translate_url($host->{$service}->{write},$entry,$user);
-		}
-		elsif($host->{write}) {
-			$push = translate_url($host->{write},$entry,$user);
-		}
-		elsif($host->{$service}) {
-			$push = translate_url($host->{$service},$entry,$user);
-		}
-
-		if(ref $host->{$service} and $host->{$service}->{read}) {
-			$pull = translate_url($host->{$service}->{read},$entry,$user);
-		}
-		elsif($host->{read}) {
-			$pull = translate_url($host->{read},$entry,$user);
-		}
-		elsif($push) {
-			$pull = $push;
-		}
-
-		$push = $pull if(!$push);
-		$type = $host->{$service}->{type} if(ref $host->{$service});
-		$type = $service || $host->{type} unless($type); 
-	}
-
-	if(!$push) {
-		$push = $pull =  translate_url($template,$entry,$user);
-	}
-	if(!$type) {
-		$type = $project->{type};
-	}
-	return {'push'=>$push,'pull'=>$pull,'user'=>$user,'type'=>$type};
-}
-
-sub get_repos {
-	my $query = shift;
-	my @repos;
-	my $match = 0;
-	my ($query_str,$new_target) = parse_query($query);
-	foreach my $key (qw/name shortname localname/) {
-		foreach my $name (keys %REPOS) {
-			if($REPOS{$name}->{$key} eq $query_str) {
-				push @repos,$REPOS{$name};
-				$match = 1;
-			}
-		}
-		last if($match);
-	}
-	unless($match) {
-	foreach my $key (qw/name shortname localname/) {
-		foreach my $name (keys %REPOS) {
-			if($REPOS{$name}->{$key} =~ $query_str) {
-				push @repos,$REPOS{$name};
-				$match = 1;
-			}
-		}
-		last if($match);
-	}
-	}
-	if($new_target) {
-		foreach(@repos) {
-			modify_repo_target($_,$new_target);
-		}
-	}
-	return @repos;
-}
-sub modify_repo_target {
-	my $repo = shift;
-	my $target = shift;
-	return $repo unless($target);
-	$repo->{_target} = $repo->{target};
-	if($target =~ m/\/$/) {
-		$target .= $repo->{name};
-	}
-	$repo->{target} = $target;
-	return $repo;
-}
-sub get_repo {
-    #my ($query_name,@repo_data) = @_;
-	my $query_name = shift;
-	my $project = shift;
-	my %r;
-	$project = {'local'=>'local.git/'} unless($project);
-	my ($name,$new_target) = parse_query($query_name);
-    $r{shortname} = $name ? $name : $project->{shortname};
-	$r{name} = $project->{name} ? $project->{name} : $r{shortname};
-	$r{localname} = $project->{localname} ? $project->{localname} : $r{name};
-	foreach(keys %{$MAPS{localname}}) {
-		$r{localname} =~ s/$_/$MAPS{localname}->{$_}/g;
-	}
-	foreach(qw/user email author username type checkout/) {
-		$r{$_} = $project->{$_} ? $project->{$_} : $CONFIG{$_};
-	}
-	my $target = $r{checkout};
-	$target = $name unless($target);
-	if($new_target) {
-		$r{target} = $new_target;
-		$r{_target} = $target;
-	}
-	else {
-		$r{target} = $target;
-	}
-	if($r{target} =~ m/\/$/) {
-		$r{target} .= $name;
-	}
-	foreach my $url_type (qw/local source mirror mirrors_1 mirrors_2 mirrors_3 mirrors_4 mirrors_5 mirrors_6/) {
-		my $key = "$url_type";
-		if($project->{$key}) {
-			my $url = parse_url($r{name},$project->{$key},\%r);
-			push @{$r{$url->{type}}},$url;
-		}
-	}
-	if($project->{"mirrors"}) {
-		foreach(@{$project->{"mirrors"}}) {
-			my $url = parse_url($r{name},$_,\%r);
-			push @{$r{$url->{type}}},$url;
-		}
-	}
-    return \%r;
-}
 
 sub svnsync {
 	my $SOURCE = shift;
@@ -839,61 +610,77 @@ sub exec_local {
 	}
 	return 1;
 }
+
+
+sub initialize {
+	my $config = shift;
+	my $file;
+	if($OPTS{file}) {
+		$file=$OPTS{file};
+	}
+	else {
+		foreach my $fn (".PROJECTS","~/.PROJECTS","~/.reposman/PROJECTS","/etc/reposman/PROJECTS") {
+			if(-f $fn) {
+				$file = $fn;
+		        last;
+			}
+		}
+	}	
+	if($file) {
+		if(-f $file) {
+			print STDERR "reading \"$file\"... ";
+			return $config->from_file($file);
+	    }
+	}
+	if(not (@ARGV or $file)) {
+		print STDERR "Input projects data line by line\n";
+		return $config->from_strings(<STDIN>);
+	}
+}
+
+
+if($OPTS{help}) {
+    require Pod::Usage;
+    Pod::Usage::pod2usage(-exitval=>0,-verbose => 1);
+    exit 0;
+}
+elsif($OPTS{manual}) {
+    require Pod::Usage;
+    Pod::Usage::pod2usage(-exitval=>0,-verbose => 2);
+    exit 0;
+}
+
+
+
 my $PROGRAM_DIR = $0;
 $PROGRAM_DIR =~ s/[^\/\\]+$//;
 my $cwd = getcwd();
-my $PROJECT_FILE;
-if($OPTS{file}) {
-	$PROJECT_FILE=$OPTS{file};
-}
-else {
-	foreach my $fn (".PROJECTS","~/.PROJECTS","~/.reposman/PROJECTS","/etc/reposman/PROJECTS") {
-	    if(-f $fn) {
-	        $PROJECT_FILE = $fn;
-	        last;
-	    }
-	}
-}	
-if($PROJECT_FILE) {
-    if(-f $PROJECT_FILE) {
-        print STDERR "reading \"$PROJECT_FILE\"... ";
-        open FI,"<".$PROJECT_FILE;
-        parse_project_data(<FI>);
-        close FI;
-    }
-}
-
-if(not (@ARGV or $PROJECT_FILE)) {
-    print STDERR "input projects data line by line\n";
-    print STDERR "separate fields by \"|\".\n";
-    parse_project_data(<STDIN>);
-}
-if($OPTS{project}) {
-	my $name = shift;
-	parse_project_data(join('|',@ARGV),"\n");
-	push @ARGV,$name;
-}
 
 
-my $total = scalar(keys %PROJECTS);
+my $config = MyPlace::Reposman::Projects->new();
+initialize($config);
+
+my @names = $config->get_names();
+
+my $total = scalar(@names);
 print STDERR "$total", $total > 1 ? " projects" : " project", ".\n";
 
-foreach(keys %PROJECTS) {
-	my ($name,$pdata) =  get_project_data($_);
-	$REPOS{$name} = get_repo($_,$pdata);
-}
-
-my @query = @ARGV ? @ARGV : (keys %PROJECTS);
-
-my @targets;
-if(@ARGV) {
-	foreach(@query) {
-		push @targets,get_repos($_);
+my @query = @ARGV;
+if(!@query and -f ".git/config") {
+	my $query = qx/git config --get reposman.query/;
+	chomp($query);
+	if($query) {
+		@query = split(/\s*,\s*/,$query);
 	}
 }
-else {
-	@targets = values %REPOS;
+my @targets;
+if(@query) {
+	@targets = $config->query_repos(@query);
 }
+else {
+	@targets = $config->get_repos();
+}
+
 
 if($OPTS{'dump-all'}) {
 	foreach (qw/
@@ -903,6 +690,7 @@ if($OPTS{'dump-all'}) {
 		dump-maps
 		dump-hosts
 		dump-projects
+		dump-repos
 	/) {
 		$OPTS{$_} = 1;
 	}
@@ -912,11 +700,12 @@ if($OPTS{'dump'}) {
 }
 
 use Data::Dumper;
-print Data::Dumper->Dump([\%DATA],["*DATA"]) if($OPTS{'dump-data'});
-print Data::Dumper->Dump([\%CONFIG],["*CONFIG"]) if($OPTS{'dump-config'});
-print Data::Dumper->Dump([\%MAPS],["*MAPS"]) if($OPTS{'dump-maps'});
-print Data::Dumper->Dump([\%HOSTS],["*HOSTS"]) if($OPTS{'dump-hosts'});
-print Data::Dumper->Dump([\%PROJECTS],["*PROJECTS"]) if($OPTS{'dump-projects'});
+print Data::Dumper->Dump([$config->get_raw()],["*DATA"]) if($OPTS{'dump-data'});
+print Data::Dumper->Dump([$config->get_config()],["*CONFIG"]) if($OPTS{'dump-config'});
+print Data::Dumper->Dump([$config->get_maps()],["*MAPS"]) if($OPTS{'dump-maps'});
+print Data::Dumper->Dump([$config->get_hosts()],["*HOSTS"]) if($OPTS{'dump-hosts'});
+print Data::Dumper->Dump([$config->get_projects()],["*PROJECTS"]) if($OPTS{'dump-projects'});
+print Data::Dumper->Dump([$config->get_repos()],["*REPOS"]) if($OPTS{'dump-repos'});
 print Data::Dumper->Dump([\@targets],["*targets"]) if($OPTS{'dump-target'});
 if($OPTS{'dump'} or $OPTS{'dump-target'}) {
 	exit 0;
@@ -1013,10 +802,6 @@ Re-configure projects
 =item B<-c>,B<--check>
 
 Check projects status
-
-=item B<-p>,B<--project>
-
-Target and define project from command line
 
 =item B<-t>,B<--test>
 
@@ -1145,7 +930,7 @@ git-svn projects manager
 	2011-11-24	xiaoranzzz	<xiaoranzzz@myplace.hell>
 
 		* re-design data file format.
-		* update program and module to reflect format changing;
+		* update program and module to reflect format changing
 		* version 2.000
 
 	2011-12-01	xiaoranzzz	<xiaoranzzz@myplace.hell>
@@ -1155,6 +940,11 @@ git-svn projects manager
 	2011-12-05	xiaoranzzz	<xiaoranzzz@myplace.hell>
 
 		* add options --exec-locak, --append, --prepend
+
+	2011-12-06	xiaoranzzz	<xiaoranzzz@myplace.hell>
+		
+		* move PROJECTS related codes to MyPlace::Reposman::Projects
+		* version 2.100
 
 =head1  AUTHOR
 
