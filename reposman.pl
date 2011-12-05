@@ -11,7 +11,7 @@ BEGIN
         map "$PROGRAM_DIR$_",qw{modules lib ../modules ..lib};
 }
 my %OPTS;
-my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-projects|dp dump-config|dc dump-data|dd sync|s sync-all|sa checkout|co|c file|f:s login|nu no-local fetch-all no-remote reset-config to-local force to-remote config-local mirror list query:s dump-hosts|dh dump-target|dt dump-maps|dm dump-all|da branch|b:s/;
+my @OPTIONS = qw/help|h|? manual|m test|t project|p debug dump|d dump-projects|dp dump-config|dc dump-data|dd sync|s sync-all|sa checkout|co|c file|f:s login|nu no-local fetch-all no-remote reset-config to-local force to-remote config-local mirror list query:s dump-hosts|dh dump-target|dt dump-maps|dm dump-all|da branch|b:s exec-local|el:s append|aa:s prepend|pa:s/;
 if(@ARGV)
 {
     require Getopt::Long;
@@ -21,6 +21,7 @@ else {
     $OPTS{help} = 1;
 }
 
+#use MyPlace::Repository;
 
 #START	//map options to actions
 my $have_opts;
@@ -803,6 +804,41 @@ sub query_repo {
 	return 1;
 }
 
+sub exec_local {
+	my $repo = shift;
+	my $first_only = shift;
+	if($repo->{git} and !$OPTS{'no-git'}) {
+		my $local = shift @{$repo->{git}};
+		print STDERR "Target: ", $local->{pull},"\n";
+		if(! -d $local->{pull}) {
+			print STDERR "\t Error directory not exists.\n";
+		}
+		else {
+			my @cmds = split(/\s+/,$OPTS{'exec-local'});
+			foreach(@cmds) {
+				if(m/^\$(.+?)(\d+)$/) {
+					$_ = $repo->{git}->[$2]->{$1};
+				}
+			}
+			my @append = $OPTS{'append'} ? split(/\s+/,$OPTS{'append'}): ();
+			my @prepend = $OPTS{'prepend'} ? split(/\s+/,$OPTS{'prepend'}) : ();
+			my $app = shift @cmds;
+			if($app eq 'git') {
+				run(
+					'git',
+					@prepend,
+					'--git-dir',$local->{pull},
+					@cmds,
+					@append,
+				);
+			}
+			else {
+				run($app,@cmds,@append);
+			}
+		}
+	}
+	return 1;
+}
 my $PROGRAM_DIR = $0;
 $PROGRAM_DIR =~ s/[^\/\\]+$//;
 my $cwd = getcwd();
@@ -926,6 +962,10 @@ elsif($OPTS{'query'}) {
 	$action = 'Query';
 	$action_sub = \&query_repo;
 }
+elsif($OPTS{'exec-local'}) {
+	$action = 'Exec Local';
+	$action_sub = \&exec_local;
+}
 else {
 	die("Invalid action specified!\n");
 }
@@ -1034,6 +1074,18 @@ Re-configure local repositories
 
 Specify which branch 
 
+=item B<--exec-local>,B<-el>
+
+Execute commands in local reposotiry
+
+=item B<--append>,B<-aa>
+
+Append command argments
+
+=item B<--prepend>,B<-pa>
+
+Prepend command arguments
+
 =item B<-h>,B<--help>
 
 Print a brief help message and exits.
@@ -1099,6 +1151,10 @@ git-svn projects manager
 	2011-12-01	xiaoranzzz	<xiaoranzzz@myplace.hell>
 
 		* add option --branch|-b
+	
+	2011-12-05	xiaoranzzz	<xiaoranzzz@myplace.hell>
+
+		* add options --exec-locak, --append, --prepend
 
 =head1  AUTHOR
 
