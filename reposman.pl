@@ -10,6 +10,7 @@ BEGIN
     unshift @INC, 
         map "$PROGRAM_DIR$_",qw{modules lib ../modules ..lib};
 }
+use MyPlace::Script::Message;
 use MyPlace::Reposman::Projects;
 use Cwd qw/getcwd/;
 #use MyPlace::Repository;
@@ -31,7 +32,7 @@ my @OPTIONS = qw/
 				reset-config 
 				to-local 
 				force 
-				to-remote 
+				to-remote:s 
 				config-local
 				mirror
 				list|l
@@ -85,7 +86,7 @@ my @HG = qw/hg -v/;
 my @GIT = qw/git/;
 my @SVN = qw/svn/;
 
-sub dumpdata {
+sub dump_var {
 	use Data::Dumper;
 	my $var = shift;
 	my $name = shift || '$var';
@@ -93,7 +94,7 @@ sub dumpdata {
 	return $var;
 }
 sub run {
-    print join(" ",@_),"\n";
+    app_message 'Execute:',join(" ",@_),"\n";
     return 1 if($F_TEST);
     return system(@_) == 0;
 }
@@ -113,7 +114,7 @@ sub run_git {
 	}
 	my $target = shift;
 	if($target) {
-		print "[$target] git ",join(" ",@_),"\n" unless($silent);
+		app_message "[$target] git ",join(" ",@_),"\n" unless($silent);
 		if(-d "$target/.git") {
 			return system(@GIT,'--work-tree',$target,'--git-dir',$target . '/.git',@_) == 0;
 		}
@@ -147,7 +148,7 @@ sub url_get_domain {
 	}
 }
 
-sub get_remotes {
+sub git_get_remotes {
 	my $target = shift;
 	my @query_cmd;
 	if(!$target) {
@@ -178,7 +179,7 @@ sub git_add_remotes {
 	my ($target,@remotes) = @_;
 	my %pool;
 	my %old_remotes;
-	foreach(get_remotes($target)) {
+	foreach(git_get_remotes($target)) {
 		$old_remotes{$_} = 1;
 	}
 	foreach(@remotes) {
@@ -186,7 +187,7 @@ sub git_add_remotes {
 		my $name = unique_name(url_get_domain($url),\%pool);
 		$pool{$name} = 1;
 		run_git("#silent",$target,qw/remote rm/,$name) if($old_remotes{$name});
-		print STDERR "\t Add remote [$name] $url\n";
+		app_message "\t Add remote [$name] $url\n";
 		run_git('#silent',$target,qw/remote add/,$name,$url);
 	}
 }
@@ -213,8 +214,7 @@ sub hg_add_remote {
 	run(@HG,'-R',$target,'paths');
 }
 sub error {
-    print STDERR @_;
-    return undef;
+    return app_error(@_);
 }
 
 
@@ -253,11 +253,11 @@ sub svnsync {
 	if($is_localdest) {
 	    $DEST_URL = 'file://' . $DEST;
 	    if(! -d $DEST) {
-	        print STDERR "creating local repository $DEST...\n";
+	        app_message("creating local repository $DEST...\n");
 	        run(qw/svnadmin create/,$DEST)
 				or return error("fatal: creating repository $DEST failed\n");
 	        my $hook = "$DEST/hooks/pre-revprop-change";
-	        print STDERR "creating pre-revprop-change hook in $DEST...\n";
+	        app_message "creating pre-revprop-change hook in $DEST...\n";
 	        open FO,'>',$hook 
 				or return error("fatal: creating repository hook failed\n");
 	        print FO "#!/bin/sh\nexit 0\n";
@@ -280,17 +280,17 @@ sub svnsync {
 	else {
 	    @svnsync = ('svnsync');
 	}
-	print STDERR "initializing svnsync...\n";
-	print STDERR "from\t$SOURCE_URL\n";
-	print STDERR "to  \t$DEST_URL\n";
+	app_message "initializing svnsync...\n";
+	app_message "from\t$SOURCE_URL\n";
+	app_message "to  \t$DEST_URL\n";
 	run(@svnsync,'init',$DEST_URL,$SOURCE_URL);
-	print STDERR "start syncing...\n";
+	app_message "start syncing...\n";
 	 run(@svnsync,'sync',$DEST_URL)	
 		or return error("fatal: while syncing $DEST_URL\n");
 	return 1;
 }
 sub git_push_remote {
-    my @remotes = get_remotes();
+    my @remotes = git_get_remotes();
     if(@remotes) {
         my $idx=0;
         my $count=@remotes;
@@ -298,15 +298,15 @@ sub git_push_remote {
             $idx++;
             my $url = `git config --get "remote.$_.url"`;
             chomp($url);
-            print "[$idx/$count]pushing to [$_] $url ...\n";
+            app_message "[$idx/$count]pushing to [$_] $url ...\n";
             if(system(qw/git push/,$_,@_)!=0) {
-                print "[$idx/$count]pushing to [$_] failed\n";
+                app_message "[$idx/$count]pushing to [$_] failed\n";
                 return undef;
             }
         }
     }
     else {
-       print "NO remotes found, stop pushing\n";
+       app_warning "NO remotes found, stop pushing\n";
        return undef;
     }
     return 1;
@@ -341,7 +341,7 @@ sub checkout_repo {
 		my $local = shift @{$repo->{git}};
 		my $source = $local;
 		if($OPTS{'reset-config'} and -d $target) {
-			print STDERR "[$target] GIT Reset\n";
+			app_message "[$target] GIT Reset\n";
 			run('rm','-frv',"$target/.git/config","$target/.git/refs/remotes");
 		}
 		if($OPTS{'no-local'}) {
@@ -431,7 +431,7 @@ sub sync_to_local {
 #	my $target = $repo->{target}; #ignore this checkout point
 	my $name = $repo->{name};
 	if($repo->{hg} and !$OPTS{'no-hg'}) {
-		return print STDERR("\nHG repositories support need testing\n");
+		return app_message("\nHG repositories support need testing\n");
 		my $local = shift @{$repo->{hg}};
 		my $target = $local->{'push'};
 		my $source = shift @{$repo->{hg}};
@@ -451,7 +451,7 @@ sub sync_to_local {
 		run(@HG,'-R',$target,'summary');
 	}
 	if($repo->{svn} and !$OPTS{'no-svn'}) {
-		return print STDERR ("\nSVN repositories support need testing\n");
+		return app_message ("\nSVN repositories support need testing\n");
 		my $local = shift @{$repo->{svn}};
 		my $target = $local->{'push'};
 		my $source = shift @{$repo->{svn}};
@@ -495,15 +495,21 @@ sub sync_to_local {
 sub local_to_remote {
 	my $repo = shift;
 	my $first_only = shift;
+	my $remote_exp = $OPTS{'to-remote'} || '.';
 	if($repo->{git} and !$OPTS{'no-git'}) {
 		my $local = shift @{$repo->{git}};
-		print STDERR "Source: ", $local->{pull},"\n";
+
+		#Select old matched remote.
+		my @remotes = grep {$_->{push} =~ m/$remote_exp/;} @{$repo->{git}};
+
+		app_message "Source: ", $local->{pull},"\n";
 		if(! -d $local->{pull}) {
-			print STDERR "\t Error directory not exists.\n";
+			app_message "\t Error directory not exists.\n";
 		}
 		else {
 			my @push = 'push';
-			my @append;
+			my @prepend = $OPTS{'prepend'} || ();
+			my @append = $OPTS{'append'} || ();
 			push @append, $OPTS{'branch'} if($OPTS{branch});
 			if($OPTS{'mirror'}) {
 				@push = ('push','--mirror');
@@ -511,9 +517,11 @@ sub local_to_remote {
 			elsif($OPTS{'force'}) {
 				@push = qw/push --force/;
 			}
-			foreach(@{$repo->{git}}) {
-				print STDERR "  Dest: ",$_->{push}, " (", join(" ",@push), ") \n";
-				run_s('git','--git-dir',$local->{pull},'--bare',@push ,$_->{push},@append);
+			foreach(@remotes) {
+				#next unless($_->{push} =~ m/$remote_exp/);
+				#or $_->{host} =~ m/$remote_exp/);
+				app_message "  Dest: ",$_->{push}, " (", join(" ",@push), ") \n";
+				run_s('git',@prepend,'--git-dir',$local->{pull},'--bare',@push ,$_->{push},@append);
 			}
 		}
 	}
@@ -525,14 +533,14 @@ sub config_local {
 	my $first_only = shift;
 	if($repo->{git} and !$OPTS{'no-git'}) {
 		my $local = shift @{$repo->{git}};
-		print STDERR "Source: ", $local->{pull},"\n";
+		app_message "Source: ", $local->{pull},"\n";
 		if(! -d $local->{pull}) {
-			print STDERR "\t Error directory not exists.\n";
+			app_message "\t Error directory not exists.\n";
 		}
 		else {
-			my @remotes = get_remotes($local->{pull},1);
+			my @remotes = git_get_remotes($local->{pull},1);
 			foreach(@remotes) {
-				print STDERR "\t Remove old remote [$_]\n";
+				app_message "\t Remove old remote [$_]\n";
 				run_s('git','--git-dir',$local->{pull},'--bare','remote','rm',$_);
 			}
 			git_add_remotes($local->{pull},@{$repo->{git}});
@@ -548,14 +556,13 @@ sub list_repo {
 	my $repo = shift;
 	my $verbose = shift;
 	if($verbose) {
-		use Data::Dumper;
-		print Data::Dumper::Dump([$repo],["*$repo->{name}"]),"\n";
+		app_message Data::Dumper::Dump([$repo],["*$repo->{name}"]),"\n";
 	}
 	else {
-		print "id: $repo->{shortname} [$repo->{type}]\n";
-		print "name: $repo->{name}\n";
-		print "localname: $repo->{localname}\n";
-		print "checkout point: $repo->{target}\n";
+		app_message "id: $repo->{shortname} [$repo->{type}]\n";
+		app_message "name: $repo->{name}\n";
+		app_message "localname: $repo->{localname}\n";
+		app_message "checkout point: $repo->{target}\n";
 	}
 }
 sub query_repo {
@@ -564,13 +571,13 @@ sub query_repo {
 	my $property = $OPTS{query};
 	my $value = $repo->{$property};
 	if($property eq '_all') {
-		print Data::Dumper->Dump([$repo],["*$repo->{shortname}"]);
+		app_message Data::Dumper->Dump([$repo],["*$repo->{shortname}"]);
 	}
 	elsif(ref $value) {
-		print Data::Dumper->Dump([$value],["*$repo->{shortname}" . '->{' . "$property" . '}']);	
+		app_message Data::Dumper->Dump([$value],["*$repo->{shortname}" . '->{' . "$property" . '}']);	
 	}
 	else {
-		print "$property = $value\n";
+		app_message "$property = $value\n";
 	}
 	return 1;
 }
@@ -580,9 +587,9 @@ sub exec_local {
 	my $first_only = shift;
 	if($repo->{git} and !$OPTS{'no-git'}) {
 		my $local = shift @{$repo->{git}};
-		print STDERR "Target: ", $local->{pull},"\n";
+		app_message "Target: ", $local->{pull},"\n";
 		if(! -d $local->{pull}) {
-			print STDERR "\t Error directory not exists.\n";
+			app_message "\t Error directory not exists.\n";
 		}
 		else {
 			my @cmds = split(/\s+/,$OPTS{'exec-local'});
@@ -628,12 +635,12 @@ sub initialize {
 	}	
 	if($file) {
 		if(-f $file) {
-			print STDERR "reading \"$file\"... ";
+			app_message "reading \"$file\"... ";
 			return $config->from_file($file);
 	    }
 	}
 	if(not (@ARGV or $file)) {
-		print STDERR "Input projects data line by line\n";
+		app_message "Input projects data line by line\n";
 		return $config->from_strings(<STDIN>);
 	}
 }
@@ -663,7 +670,7 @@ initialize($config);
 my @names = $config->get_names();
 
 my $total = scalar(@names);
-print STDERR "$total", $total > 1 ? " projects" : " project", ".\n";
+app_message "$total", $total > 1 ? " projects" : " project", ".\n";
 
 my @query = @ARGV;
 if(!@query and -f ".git/config") {
@@ -699,14 +706,13 @@ if($OPTS{'dump'}) {
     $OPTS{'dump-target'} = 1;
 }
 
-use Data::Dumper;
-print Data::Dumper->Dump([$config->get_raw()],["*DATA"]) if($OPTS{'dump-data'});
-print Data::Dumper->Dump([$config->get_config()],["*CONFIG"]) if($OPTS{'dump-config'});
-print Data::Dumper->Dump([$config->get_maps()],["*MAPS"]) if($OPTS{'dump-maps'});
-print Data::Dumper->Dump([$config->get_hosts()],["*HOSTS"]) if($OPTS{'dump-hosts'});
-print Data::Dumper->Dump([$config->get_projects()],["*PROJECTS"]) if($OPTS{'dump-projects'});
-print Data::Dumper->Dump([$config->get_repos()],["*REPOS"]) if($OPTS{'dump-repos'});
-print Data::Dumper->Dump([\@targets],["*targets"]) if($OPTS{'dump-target'});
+dump_var($config->get_raw(),"*DATA") if($OPTS{'dump-data'});
+dump_var([$config->get_config()],["*CONFIG"]) if($OPTS{'dump-config'});
+dump_var([$config->get_maps()],["*MAPS"]) if($OPTS{'dump-maps'});
+dump_var([$config->get_hosts()],["*HOSTS"]) if($OPTS{'dump-hosts'});
+dump_var([$config->get_projects()],["*PROJECTS"]) if($OPTS{'dump-projects'});
+dump_var([$config->get_repos()],["*REPOS"]) if($OPTS{'dump-repos'});
+dump_var([\@targets],["*targets"]) if($OPTS{'dump-target'});
 if($OPTS{'dump'} or $OPTS{'dump-target'}) {
 	exit 0;
 }
@@ -759,12 +765,11 @@ else {
 	die("Invalid action specified!\n");
 }
 
-print STDERR "To $action $count ", $count > 1 ? "projects" : "project", " ...\n";
+app_message "To $action $count ", $count > 1 ? "projects" : "project", " ...\n";
 foreach my $repo (@targets) {
         $idx++;
-        print STDERR "[$idx/$count] $action" . " project [$repo->{name}]\n";
+        app_message "[$idx/$count] $action" . " project [$repo->{name}]\n";
 		&$action_sub($repo) or die("\n");
-        print STDERR "\n";
 }
 
 exit 0;
@@ -945,7 +950,7 @@ git-svn projects manager
 		
 		* move PROJECTS related codes to MyPlace::Reposman::Projects
 		* version 2.100
-
+	
 =head1  AUTHOR
 
 xiaoranzzz <xiaoranzzz@myplace.hell>

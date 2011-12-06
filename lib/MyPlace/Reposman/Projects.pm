@@ -227,7 +227,7 @@ sub parse_url {
 			$template = "$1/$project->{$2}";
 		}
 	}
-	my $user = $project->{user};
+	my $user = $project->{login};
 	if($template =~ m/^([^\/\@]+)\@(.+)$/) {
 		$template = $2;
 		$user = $1;
@@ -301,8 +301,11 @@ sub new_repo {
 	foreach(keys %{$self->{maps}->{localname}}) {
 		$r{localname} =~ s/$_/$self->{maps}->{localname}->{$_}/g;
 	}
-	foreach(qw/user email author username type checkout/) {
+	foreach(qw/email author type checkout/) {
 		$r{$_} = $project->{$_} ? $project->{$_} : $self->{config}->{$_};
+	}
+	foreach(qw/user username login/) {
+		$r{login} = $project->{$_} if($project->{$_});
 	}
 	$r{target} = $r{checkout} || $name;
 	if($r{target} =~ m/\/$/) {
