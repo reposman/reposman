@@ -683,16 +683,16 @@ sub initialize {
 
 my $command;
 if(@ARGV) {
-	$command = shift @ARGV;
+	my $first = shift @ARGV;
 	foreach(keys %SUBCMDS) {
-		if($command eq $_) {
+		if($first eq $_) {
 			$command = $_;
 			last;
 		}
 	}
 	if(!$command) {
 		foreach(keys %SUBCMDS) {
-			if($command =~ m/^$SUBCMDS{$_}$/) {
+			if($first =~ m/^$SUBCMDS{$_}$/) {
 				$command = $_;
 				last;
 			}
@@ -817,13 +817,17 @@ reposman - svn,git,mercurial repositories manager
 
 =head1  SYNOPSIS
 
-reposman [options] command [command_args...] [project_name|project_name:target]...
+reposman [options] command [args...] [query[:target]]...
+
 	reposman sync ffprofile
 	reposman push --remotes 'github' reposman websaver2
 
-=head1  OPTIONS
+=head2 COMMANDS
+	
+	sync, push, pull, list, query, checkout 
+	reset, config, reset-config, dump, exec
 
-=over 12
+=head1  OPTIONS
 
 =item B<-f>,B<--file>
 
@@ -865,7 +869,6 @@ View application manual
 
 =head1  Commands
 
-=over 13
 
 =head2 checkout, co, c
 
