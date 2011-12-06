@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 # $Id$
 use strict;
-our $VERSION = '2.100';
+our $VERSION = '2.200';
 BEGIN
 {
     my $PROGRAM_DIR = $0;
@@ -16,65 +16,60 @@ use Cwd qw/getcwd/;
 #use MyPlace::Repository;
 
 my %OPTS;
+my %SUBCMDS;
+foreach(qw/
+	help|h
+	manual
+	sync|s
+	sync-all|sa
+	checkout|co|c
+	reset-config
+	pull 
+	push
+	config|conf
+	list|l
+	query|q
+	dump|d 
+	dump-projects|dp 
+	dump-config|dc 
+	dump-data|dd 
+	dump-hosts|dh 
+	dump-target|dt 
+	dump-maps|dm 
+	dump-repos|dr
+	dump-all|da 
+	exec|e 
+/) {
+	if(m/([^|]+)\|/) {
+		$SUBCMDS{$1} = $_;
+	}
+	else {
+		$SUBCMDS{$_} = $_;
+	}
+}
 my @OPTIONS = qw/
 				help|h|? 
 				manual|m 
 				test|t 
 				debug 
-				sync|s 
-				sync-all|sa 
-				checkout|co|c 
 				file|f:s 
+				fetch-all 
 				login|nu 
 				no-local 
-				fetch-all 
 				no-remote 
-				reset-config 
-				to-local 
 				force 
-				to-remote:s 
-				config-local
 				mirror
-				list|l
-				query|q:s
-				dump|d 
-				dump-projects|dp 
-				dump-config|dc 
-				dump-data|dd 
-				dump-hosts|dh 
-				dump-target|dt 
-				dump-maps|dm 
-				dump-repos|dr
-				dump-all|da 
 				branch|b:s 
-				exec-local|el:s 
 				append|aa:s 
 				prepend|pa:s
+				remotes|r:s
+				commands|c:s
+				property|p:s
 			/;
 if(@ARGV)
 {
     require Getopt::Long;
     Getopt::Long::GetOptions(\%OPTS,@OPTIONS);
-	my $have_opts;
-	foreach(keys %OPTS) {
-		if($OPTS{$_}) {
-			$have_opts = 1;
-			last;
-		}
-	}
-	if((!$have_opts) and @ARGV) {
-		my $first_arg = shift;
-		foreach(@OPTIONS) {
-			if(m/\b$first_arg\b/) {
-				$OPTS{$first_arg} = 1;
-				last;
-			}
-		}
-		if(!$OPTS{$first_arg}) {
-			unshift @ARGV,$first_arg;
-			$OPTS{dump} = 1;
-		}
-	}
 }
 else {
     $OPTS{help} = 1;
@@ -494,7 +489,7 @@ sub sync_to_local {
 sub local_to_remote {
 	my $repo = shift;
 	my $first_only = shift;
-	my $remote_exp = $OPTS{'to-remote'} || '.';
+	my $remote_exp = $OPTS{'remotes'} || '.';
 	if($repo->{git} and !$OPTS{'no-git'}) {
 		my $local = shift @{$repo->{git}};
 
@@ -563,8 +558,10 @@ sub list_repo {
 }
 sub query_repo {
 	my $repo = shift;
-	return 1 unless($OPTS{query});
-	my $property = $OPTS{query};
+	if(!$OPTS{property}) {
+		$OPTS{'property'} = 'shortname';
+	}
+	my $property = $OPTS{property};
 	my $value = $repo->{$property};
 	if($property eq '_all') {
 		app_message Data::Dumper->Dump([$repo],["*$repo->{shortname}"]);
@@ -581,6 +578,7 @@ sub query_repo {
 sub exec_local {
 	my $repo = shift;
 	my $first_only = shift;
+	$OPTS{'commands'} = 'git config -l --local' unless($OPTS{'commands'});
 	if($repo->{git} and !$OPTS{'no-git'}) {
 		my $local = shift @{$repo->{git}};
 		app_message "Target: ", $local->{pull},"\n";
@@ -588,7 +586,7 @@ sub exec_local {
 			app_message "\t Error directory not exists.\n";
 		}
 		else {
-			my @cmds = split(/\s+/,$OPTS{'exec-local'});
+			my @cmds = split(/\s+/,$OPTS{'commands'});
 			foreach(@cmds) {
 				if(m/^\$(.+?)(\d+)$/) {
 					$_ = $repo->{git}->[$2]->{$1};
@@ -614,6 +612,47 @@ sub exec_local {
 	return 1;
 }
 
+sub action_dump {
+	my $config = shift;
+	my $targets = shift;
+	my $have_arg = undef;
+	if($OPTS{'dump-all'}) {
+		foreach (qw/
+			dump-data 
+			dump-config
+			dump-maps
+			dump-hosts
+			dump-projects
+			dump-repos
+			dump-target
+		/) {
+			$OPTS{$_} = 1;
+		}
+		$have_arg = 1;
+	}
+	if(!$have_arg) {
+		foreach(qw/
+			dump-data	dump-config
+			dump-maps	dump-hosts
+			dump-repos	dump-projects
+			dump-target
+			/) {
+				if($OPTS{$_}) {
+					$have_arg = 1;
+					last;
+				}
+		}
+	}		
+	$OPTS{'dump-target'} = 1 unless($have_arg);
+	dump_var($config->get_raw(),"*DATA") if($OPTS{'dump-data'});
+	dump_var([$config->get_config()],["*CONFIG"]) if($OPTS{'dump-config'});
+	dump_var([$config->get_maps()],["*MAPS"]) if($OPTS{'dump-maps'});
+	dump_var([$config->get_hosts()],["*HOSTS"]) if($OPTS{'dump-hosts'});
+	dump_var([$config->get_projects()],["*PROJECTS"]) if($OPTS{'dump-projects'});
+	dump_var([$config->get_repos()],["*REPOS"]) if($OPTS{'dump-repos'});
+	dump_var([$targets],["*targets"]) if($OPTS{'dump-target'});
+	return 0;
+}
 
 sub initialize {
 	my $config = shift;
@@ -642,23 +681,39 @@ sub initialize {
 }
 
 
-if($OPTS{help}) {
-    require Pod::Usage;
-    Pod::Usage::pod2usage(-exitval=>0,-verbose => 1);
-    exit 0;
+my $command;
+if(@ARGV) {
+	$command = shift @ARGV;
+	foreach(keys %SUBCMDS) {
+		if($command eq $_) {
+			$command = $_;
+			last;
+		}
+	}
+	if(!$command) {
+		foreach(keys %SUBCMDS) {
+			if($command =~ m/^$SUBCMDS{$_}$/) {
+				$command = $_;
+				last;
+			}
+		}
+	}
 }
-elsif($OPTS{manual}) {
+else {
+	$command = 'help';
+	$OPTS{'help'} = 1;
+}
+
+if($OPTS{manual}) {
     require Pod::Usage;
     Pod::Usage::pod2usage(-exitval=>0,-verbose => 2);
     exit 0;
 }
-
-
-
-my $PROGRAM_DIR = $0;
-$PROGRAM_DIR =~ s/[^\/\\]+$//;
-my $cwd = getcwd();
-
+elsif($OPTS{help}) {
+    require Pod::Usage;
+    Pod::Usage::pod2usage(-exitval=>0,-verbose => 1);
+    exit 0;
+}
 
 my $config = MyPlace::Reposman::Projects->new();
 initialize($config);
@@ -666,7 +721,7 @@ initialize($config);
 my @names = $config->get_names();
 
 my $total = scalar(@names);
-app_message ("$total " . ($total > 1 ? " projects" : " project") .  " read.\n");
+app_message ($total,($total > 1 ? " projects" : " project")," read.\n");
 
 my @query = @ARGV;
 if(!@query and -f ".git/config") {
@@ -684,77 +739,53 @@ else {
 	@targets = $config->get_repos();
 }
 
-
-if($OPTS{'dump-all'}) {
-	foreach (qw/
-		dump
-		dump-data 
-		dump-config
-		dump-maps
-		dump-hosts
-		dump-projects
-		dump-repos
-	/) {
-		$OPTS{$_} = 1;
-	}
-}
-if($OPTS{'dump'}) {
-    $OPTS{'dump-target'} = 1;
-}
-
-dump_var($config->get_raw(),"*DATA") if($OPTS{'dump-data'});
-dump_var([$config->get_config()],["*CONFIG"]) if($OPTS{'dump-config'});
-dump_var([$config->get_maps()],["*MAPS"]) if($OPTS{'dump-maps'});
-dump_var([$config->get_hosts()],["*HOSTS"]) if($OPTS{'dump-hosts'});
-dump_var([$config->get_projects()],["*PROJECTS"]) if($OPTS{'dump-projects'});
-dump_var([$config->get_repos()],["*REPOS"]) if($OPTS{'dump-repos'});
-dump_var([\@targets],["*targets"]) if($OPTS{'dump-target'});
-if($OPTS{'dump'} or $OPTS{'dump-target'}) {
-	exit 0;
+if($command eq 'dump') {
+	exit &action_dump($config,\@targets);
 }
 
 my $idx = 0;
 my $count = scalar(@targets);
-my $action;
+my $msg_fmt;
 my $action_sub;
-if($OPTS{checkout}) {
-	$action = 'Checking out %s';
+
+if($command eq 'checkout') {
+	$msg_fmt = 'Checking out %s';
 	$action_sub = \&checkout_repo;
 }
-elsif($OPTS{check}) {
-	$action = 'Checking %s';
+elsif($command eq 'check') {
+	$msg_fmt = 'Checking %s';
 	$action_sub = \&check_repo;
 }
-elsif($OPTS{sync}) {
-	$action = 'Syncing %s';
+elsif($command eq 'sync') {
+	$msg_fmt = 'Syncing %s';
 	$action_sub = sub {eval 'sync_repo(@_,1)';};
 }
-elsif($OPTS{'sync-all'}) {
-	$action = 'Syncing all for %s';
+elsif($command eq 'sync-all') {
+	$msg_fmt = 'Syncing all for %s';
 	$action_sub = \&sync_repo;
 }
-elsif($OPTS{'to-local'}) {
-	$action = 'Syncing %s to local';
+elsif($command eq 'pull') {
+	$msg_fmt = 'Syncing %s to local';
 	$action_sub = \&sync_to_local;
 }
-elsif($OPTS{'to-remote'}) {
-	$action = 'Syncing %s to remotes';
+elsif($command eq 'push') {
+	$msg_fmt = 'Syncing %s to remotes';
 	$action_sub = \&local_to_remote;
 }
-elsif($OPTS{'config-local'}) {
-	$action = 'Configuring %s';
+elsif($command eq 'config') {
+	$msg_fmt = 'Configuring %s';
 	$action_sub = \&config_local;
 }
-elsif($OPTS{'list'}) {
-	$action = 'Listing %s';
+elsif($command eq 'list') {
+	$msg_fmt = 'Listing %s';
 	$action_sub =\&list_repo;
 }
-elsif($OPTS{'query'}) {
-	$action = 'Quering %s';
+elsif($command eq 'query') {
+	$msg_fmt = 'Quering %s';
 	$action_sub = \&query_repo;
 }
-elsif($OPTS{'exec-local'}) {
-	$action = 'Executing commands for %s';
+elsif($command eq 'exec') {
+	$msg_fmt = 'Executing commands for %s';
 	$action_sub = \&exec_local;
 }
 else {
@@ -763,13 +794,13 @@ else {
 }
 
 my $message = sprintf(
-			$action, 
+			$msg_fmt, 
 			$count > 1 ? " $count projects" : "1 project"
 		);
 app_message($message . " ...\n");
 foreach my $repo (@targets) {
         $idx++;
-		$message = sprintf($action, "project [$repo->{name}]");
+		$message = sprintf($msg_fmt, "project [$repo->{name}]");
         app_message "[$idx/$count] $message\n";
 		&$action_sub($repo) or die("\n");
 }
@@ -786,9 +817,9 @@ reposman - svn,git,mercurial repositories manager
 
 =head1  SYNOPSIS
 
-reposman [options] [action] [project_name|project_name:target]...
-	reposman --sync ffprofile
+reposman [options] command [command_args...] [project_name|project_name:target]...
 	reposman sync ffprofile
+	reposman push --remotes 'github' reposman websaver2
 
 =head1  OPTIONS
 
@@ -798,23 +829,73 @@ reposman [options] [action] [project_name|project_name:target]...
 
 Specify projects data file, default is .PROJECTS
 
-=item B<-s>,B<--sync>
-
-Sync repositories
-
-=item B<-r>,B<--reset>
-
-Re-configure projects
-
-=item B<-c>,B<--check>
-
-Check projects status
-
 =item B<-t>,B<--test>
 
 Testing mode
 
-=item B<--dump>, B<--dump-target>
+=item B<--no-local>
+
+Ignore local repositories
+
+=item B<--fetch-all>
+
+Instead of fetching the origin, fetch all repositories
+
+=item B<-b>,B<--branch> 
+
+Specify which branch 
+
+=item B<--append>,B<-aa>
+
+Append command argments
+
+=item B<--prepend>,B<-pa>
+
+Prepend command arguments
+
+=item B<-h>,B<--help>
+
+Print a brief help message and exits.
+
+=item B<--manual>,B<--man>
+
+View application manual
+
+=back
+
+=head1  Commands
+
+=over 13
+
+=head2 checkout, co, c
+
+	Checkout repositories, set remotes.
+
+=head2  sync|s 
+
+	Sync repositories
+
+=head2  reset|r
+	
+	Re-configure projects
+
+=head2  check
+
+	Check projects status
+
+=head2  dump
+	
+	Dump raw datas
+
+=head3  SYNOPSIS
+	
+	dump [options] [queries]
+
+=head3  OPTIONS
+
+=over 15
+
+=item B<--dump-target>
 
 Dump data for targets 
 
@@ -838,53 +919,65 @@ Dump all hosts data
 
 Dump everything
 
-=item B<-l>,B<--list>
+=back
 
-List projects
+=head2 query
 
-=item B<--no-local>
+=head3 SYNOPSIS
 
-Ignore local repositories
+	query [options] [queries]
 
-=item B<--fetch-all>
+=head3 OPTIONS
 
-Instead of fetching the origin, fetch all repositories
+=item B<--property>
+	
+	Specify property for quering
 
-=item B<--reset-config>
+=head2 list
 
-Reset .git/config and .git/refs/remotes
+	List projects
 
-=item B<--to-remote>
+=head2 reset-config
 
-Push local repository to remotes
+	Reset .git/config and .git/refs/remotes
 
-=item B<--config-local>
+=head2 pull
 
-Re-configure local repositories
+	Pull repository to local repository.
 
-=item B<-b>,B<--branch> 
+=head2 push
 
-Specify which branch 
+	Push local repository to remotes
 
-=item B<--exec-local>,B<-el>
+=head3 SYNOPSIS
+
+	push [options] [queries]
+
+=head3 OPTIONS
+
+=item B<--remotes>
+	
+	Specicy remotes for pushing
+	
+=back	
+
+=head2 config
+
+	Re-configure local repositories
+
+=head2 exec
 
 Execute commands in local reposotiry
 
-=item B<--append>,B<-aa>
+=head3 SYNOPSIS
 
-Append command argments
+	exec [options] [queries]
 
-=item B<--prepend>,B<-pa>
+=head3 OPTIONS
 
-Prepend command arguments
-
-=item B<-h>,B<--help>
-
-Print a brief help message and exits.
-
-=item B<--manual>,B<--man>
-
-View application manual
+=item B<--commands>
+	
+	Specify commands for executing
 
 =back
 
@@ -892,19 +985,17 @@ View application manual
 
 =item B<./.PROJECTS>
 
-Default projects definition file, one line a project, 
-echo field separated by |.
+Default projects definition file
 
 =back
 
 =head1 PROJECTS FILE FORMAT
-#MACRO1#=....
-#MACRO2#=....
-name	|[target]	|[user]	|repo1	|repo2	|repo3...
+
+	use MyPlace::IniExt;
 
 =head1  DESCRIPTION
 
-git-svn projects manager
+Repositories manager, supporting git, svn and mercurial
 
 =head1  CHANGELOG
 
@@ -953,6 +1044,13 @@ git-svn projects manager
 		* move PROJECTS related codes to MyPlace::Reposman::Projects
 		* version 2.100
 	
+	2011-12-06	xiaoranzzz	<xiaoranzzz@myplace.hell>
+		
+		* Treat first program argument as sub command, clean up options.
+		* Update manual
+		* Rename actions.
+		* version 2.200
+
 =head1  AUTHOR
 
 xiaoranzzz <xiaoranzzz@myplace.hell>
