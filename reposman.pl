@@ -62,11 +62,10 @@ if(@ARGV)
 			last;
 		}
 	}
-	unless($have_opts) {
+	if((!$have_opts) and @ARGV) {
 		my $first_arg = shift;
 		foreach(@OPTIONS) {
-			next if(m/:s$/);
-			if( $first_arg =~ m/^(:?$_)$/) {
+			if(m/\b$first_arg\b/) {
 				$OPTS{$first_arg} = 1;
 				last;
 			}
@@ -503,26 +502,23 @@ sub local_to_remote {
 		my @remotes = grep {$_->{push} =~ m/$remote_exp/;} @{$repo->{git}};
 
 		app_message "Source: ", $local->{pull},"\n";
-		if(! -d $local->{pull}) {
-			app_message "\t Error directory not exists.\n";
+		return app_error ("Error: remotes not found.\n") unless(@remotes);
+		return app_error "Error directory not exists.\n" unless(-d $local->{pull});
+		my @push = 'push';
+		my @prepend = $OPTS{'prepend'} || ();
+		my @append = $OPTS{'append'} || ();
+		push @append, $OPTS{'branch'} if($OPTS{branch});
+		if($OPTS{'mirror'}) {
+			@push = ('push','--mirror');
 		}
-		else {
-			my @push = 'push';
-			my @prepend = $OPTS{'prepend'} || ();
-			my @append = $OPTS{'append'} || ();
-			push @append, $OPTS{'branch'} if($OPTS{branch});
-			if($OPTS{'mirror'}) {
-				@push = ('push','--mirror');
-			}
-			elsif($OPTS{'force'}) {
-				@push = qw/push --force/;
-			}
-			foreach(@remotes) {
-				#next unless($_->{push} =~ m/$remote_exp/);
-				#or $_->{host} =~ m/$remote_exp/);
-				app_message "  Dest: ",$_->{push}, " (", join(" ",@push), ") \n";
-				run_s('git',@prepend,'--git-dir',$local->{pull},'--bare',@push ,$_->{push},@append);
-			}
+		elsif($OPTS{'force'}) {
+			@push = qw/push --force/;
+		}
+		foreach(@remotes) {
+			#next unless($_->{push} =~ m/$remote_exp/);
+			#or $_->{host} =~ m/$remote_exp/);
+			app_message "  Dest: ",$_->{push}, " (", join(" ",@push), ") \n";
+			run_s('git',@prepend,'--git-dir',$local->{pull},'--bare',@push ,$_->{push},@append);
 		}
 	}
 	return 1;
@@ -635,7 +631,7 @@ sub initialize {
 	}	
 	if($file) {
 		if(-f $file) {
-			app_message "reading \"$file\"... ";
+			app_message "Reading \"$file\" ...\n";
 			return $config->from_file($file);
 	    }
 	}
@@ -670,7 +666,7 @@ initialize($config);
 my @names = $config->get_names();
 
 my $total = scalar(@names);
-app_message "$total", $total > 1 ? " projects" : " project", ".\n";
+app_message ("$total " . ($total > 1 ? " projects" : " project") .  " read.\n");
 
 my @query = @ARGV;
 if(!@query and -f ".git/config") {
@@ -722,53 +718,59 @@ my $count = scalar(@targets);
 my $action;
 my $action_sub;
 if($OPTS{checkout}) {
-	$action = 'checkout';
+	$action = 'Checking out %s';
 	$action_sub = \&checkout_repo;
 }
 elsif($OPTS{check}) {
-	$action = 'check';
+	$action = 'Checking %s';
 	$action_sub = \&check_repo;
 }
 elsif($OPTS{sync}) {
-	$action = 'sync';
+	$action = 'Syncing %s';
 	$action_sub = sub {eval 'sync_repo(@_,1)';};
 }
 elsif($OPTS{'sync-all'}) {
-	$action = 'sync-all';
+	$action = 'Syncing all for %s';
 	$action_sub = \&sync_repo;
 }
 elsif($OPTS{'to-local'}) {
-	$action = 'to-local';
+	$action = 'Syncing %s to local';
 	$action_sub = \&sync_to_local;
 }
 elsif($OPTS{'to-remote'}) {
-	$action = 'Push';
+	$action = 'Syncing %s to remotes';
 	$action_sub = \&local_to_remote;
 }
 elsif($OPTS{'config-local'}) {
-	$action = 'Configuring local';
+	$action = 'Configuring %s';
 	$action_sub = \&config_local;
 }
 elsif($OPTS{'list'}) {
-	$action = 'List';
+	$action = 'Listing %s';
 	$action_sub =\&list_repo;
 }
 elsif($OPTS{'query'}) {
-	$action = 'Query';
+	$action = 'Quering %s';
 	$action_sub = \&query_repo;
 }
 elsif($OPTS{'exec-local'}) {
-	$action = 'Exec Local';
+	$action = 'Executing commands for %s';
 	$action_sub = \&exec_local;
 }
 else {
-	die("Invalid action specified!\n");
+	app_error ("Invalid action specified!\n");
+	exit 1;
 }
 
-app_message "To $action $count ", $count > 1 ? "projects" : "project", " ...\n";
+my $message = sprintf(
+			$action, 
+			$count > 1 ? " $count projects" : "1 project"
+		);
+app_message($message . " ...\n");
 foreach my $repo (@targets) {
         $idx++;
-        app_message "[$idx/$count] $action" . " project [$repo->{name}]\n";
+		$message = sprintf($action, "project [$repo->{name}]");
+        app_message "[$idx/$count] $message\n";
 		&$action_sub($repo) or die("\n");
 }
 
