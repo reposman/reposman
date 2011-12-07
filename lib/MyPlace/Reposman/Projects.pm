@@ -78,7 +78,7 @@ sub modify_repo_target {
 
 sub query_repos {
 	my $self = shift;
-	my @query = shift;
+	my @query = @_;
 	my $projects = $self->{projects};
 	my @names;
 	my @repos;
