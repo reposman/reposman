@@ -724,11 +724,24 @@ my $total = scalar(@names);
 app_message ($total,($total > 1 ? " projects" : " project")," read.\n");
 
 my @query = @ARGV;
-if(!@query and -f ".git/config") {
+if(!@query and -f '.git/config') {
 	my $query = qx/git config --get reposman.query/;
 	chomp($query);
 	if($query) {
 		@query = split(/\s*,\s*/,$query);
+	}
+}
+if(!@query) {
+	foreach my $file ('.reposman') {
+		last if(@query);
+		next unless(-f $file);
+		if(open FI,"<",$file) {
+			foreach(<FI>) {
+				chomp;
+				next unless($_);
+				push  @query, split(/\s*,\s*/);
+			}
+		}
 	}
 }
 my @targets;
