@@ -23,7 +23,7 @@ foreach(qw/
 	sync|s
 	sync-all|sa
 	checkout|co|c
-	reset-config
+	reset-target
 	pull 
 	push
 	config|conf
@@ -65,6 +65,7 @@ my @OPTIONS = qw/
 				remotes|r:s
 				commands|c:s
 				property|p:s
+				reset-config
 			/;
 if(@ARGV)
 {
@@ -654,6 +655,26 @@ sub action_dump {
 	return 0;
 }
 
+sub reset_target {
+	my $repo = shift;
+	my $name = $repo->{name};
+	my $target = $repo->{target};
+	return error('Target not exists: ' . $target) unless(-d $target);
+	if($repo->{git} and !$OPTS{'no-git'}) {
+		my $local = shift @{$repo->{git}};
+		app_message "Source: $target\n";
+			my @remotes = git_get_remotes($target,1);
+			foreach(@remotes) {
+				app_message "\t Remove old remote [$_]\n";
+				run_git($target,qw/remote rm/,$_);
+			}
+			run_git($target,qw/remote add origin/,$local->{'push'});
+			git_add_remotes($target,@{$repo->{git}});
+			run_git($target,qw/remote -v/);
+	}
+	return 1;
+}
+
 sub initialize {
 	my $config = shift;
 	my $file;
@@ -800,6 +821,10 @@ elsif($command eq 'query') {
 elsif($command eq 'exec') {
 	$msg_fmt = 'Executing commands for %s';
 	$action_sub = \&exec_local;
+}
+elsif($command eq 'reset-target') {
+	$msg_fmt = 'Resetting %s';
+	$action_sub = \&reset_target;
 }
 else {
 	app_error ("Invalid action specified!\n");
@@ -1066,6 +1091,12 @@ Repositories manager, supporting git, svn and mercurial
 		* Update manual
 		* Rename actions.
 		* version 2.200
+
+	2011-12-12	xiaoranzzz	<xiaoranzzz@myplace.hell>
+
+		* Read query from ".git/config" or ".reposman"
+		* Add action "reset-target"
+		* version 2.201
 
 =head1  AUTHOR
 
