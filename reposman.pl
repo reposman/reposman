@@ -682,7 +682,7 @@ sub initialize {
 		$file=$OPTS{file};
 	}
 	else {
-		foreach my $fn (".PROJECTS","~/.PROJECTS","~/.reposman/PROJECTS","/etc/reposman/PROJECTS") {
+		foreach my $fn (".PROJECTS","~/.PROJECTS","$ENV{HOME}/.reposman/PROJECTS","/etc/reposman/PROJECTS") {
 			if(-f $fn) {
 				$file = $fn;
 		        last;
