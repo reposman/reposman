@@ -1,7 +1,8 @@
 #!/bin/sh
 
 cp -av reposman.pl /myplace/workspace/perl/reposman
-cp -av lib/MyPlace/IniExt.pm /myplace/workspace/perl/modules/MyPlace/IniExt.pm
 cp -av {lib,/myplace/workspace/perl/modules}/MyPlace/Reposman/Projects.pm
+cp -av {lib,/myplace/workspace/perl/modules}/MyPlace/IniExt.pm
+cp -av {lib,/myplace/workspace/perl/modules}/MyPlace/Script/Message.pm
 
 
