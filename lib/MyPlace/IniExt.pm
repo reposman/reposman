@@ -15,6 +15,8 @@ our $LIST_START_EXP = '^\s*{\s*$';
 our $LIST_END_EXP = '^\s*}\s*$';
 our $LINE_START_EXP = '^\s*\(\s*$';
 our $LINE_END_EXP = '^\s*\)\s*$';
+our $ARRAY_NAME_EXP = '^([^\[\]]+)\s*\[(\s*\d+\s*)\]$';
+our $HASH_NAME_EXP = '^([^\{\}]+)\s*\{\s*(.+)?\s*\}$';
 
 
 sub parse_file {
@@ -101,6 +103,24 @@ PROCESS_LINE:
 			elsif((!$in_list) && $value =~ m/$LINE_START_EXP/) {
 				$value = [];
 				$in_line = 1;
+				next;
+			}
+			elsif($name =~ $ARRAY_NAME_EXP) {
+				$name = $1;
+				my $array_index = $2;
+				if(!$DATA{$current_section}->{$name}) {
+					$DATA{$current_section}->{$name} = [];
+				}
+				$DATA{$current_section}->{$name}->[$array_index] = $value;;
+				next;
+			}
+			elsif($name =~ $HASH_NAME_EXP) {
+				$name = $1;
+				my $key = $2;
+				if(!$DATA{$current_section}->{$name}) {
+					$DATA{$current_section}->{$name} = {};
+				}
+				$DATA{$current_section}->{$name}->{$key}= $value;
 				next;
 			}
 		}
