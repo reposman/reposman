@@ -1,8 +1,19 @@
 #!/bin/sh
+dst_bin=/myplace/workspace/perl
+dst_lib="$dst_bin/modules"
 
-cp -av reposman.pl /myplace/workspace/perl/reposman
-cp -av {lib,/myplace/workspace/perl/modules}/MyPlace/Reposman/Projects.pm
-cp -av {lib,/myplace/workspace/perl/modules}/MyPlace/IniExt.pm
-cp -av {lib,/myplace/workspace/perl/modules}/MyPlace/Script/Message.pm
+[ -n "$1" ] && dst_bin="$1"
+[ -n "$2" ] && dst_lib="$2"
+
+if [ -d "bin" ] ; then
+	cp -av -- bin/* "$dst_bin/"
+fi
+
+if [ -d "lib" ] ; then
+	cp -av -- lib/* "$dst_lib/"
+fi
+
+cp -av reposman.pl "$dst_bin/"
+
 
 
