@@ -151,6 +151,7 @@ sub from_strings {
 		}
 		elsif($_ =~ m/^host\.(.+)$/) {
 			$HOSTS{$1} = $DATA{$_};
+			$HOSTS{$1}->{name} = $1;
 		}
 		elsif($_ =~ m/^map\.(.+)$/) {
 			$MAPS{$1} = $DATA{$_};
@@ -245,12 +246,19 @@ sub parse_url {
 		$entry = "";
 	}
 	if($template =~ m/\/$/) {
-		if(ref $host and $host->{map} and $host->{map} eq 'localname') {
-			$entry .= $project->{localname};
+		my $default_entry = $name;
+		if(ref $host) {
+			if($host->{map} and $host->{map} eq 'localname') {
+				$default_entry = $project->{localname};
+			}
+			for($host->{name},$host->{$service}->{default}){
+				if($_ && $project->{$_}) {
+					$default_entry = $project->{$_};
+					last;
+				}
+			}
 		}
-		else {
-			$entry .= $name;
-		}
+		$entry .= $default_entry;;
 	}
 	my ($push,$pull,$type);
 	if($host) {
@@ -294,28 +302,35 @@ sub new_repo {
 	my $name = shift;
 	my $project = shift;
 	my %r;
-	$project = {'local'=>'local.git/'} unless($project);
-    $r{shortname} = $name ? $name : $project->{shortname};
-	$r{name} = $project->{name} ? $project->{name} : $r{shortname};
-	$r{localname} = $project->{localname} ? $project->{localname} : $r{name};
+	$project = {'source'=>'local.git/'} unless($project);
+	%r = %{$project};
+#	foreach(qw/shortname name localname email author type checkout login/) {
+#		$r{$_} = $project->{$_} || $self->{config}->{$_};
+#		delete $r{$_} unless($r{$_});
+#	}
+    $r{shortname} = $name if($name);
+	$r{name} = $r{shortname} unless($r{name});
+	$r{localname} = $r{name} unless($r{localname});
 	foreach(keys %{$self->{maps}->{localname}}) {
 		$r{localname} =~ s/$_/$self->{maps}->{localname}->{$_}/g;
 	}
-	foreach(qw/email author type checkout/) {
-		$r{$_} = $project->{$_} ? $project->{$_} : $self->{config}->{$_};
-	}
-	foreach(qw/user username login/) {
-		$r{login} = $project->{$_} if($project->{$_});
-	}
+	$r{login} = $r{login} 
+				|| $project->{user} 
+				|| $project->{username};
 	$r{target} = $r{checkout} || $name;
 	if($r{target} =~ m/\/$/) {
 		$r{target} .= $name;
 	}
-	foreach my $url_type (qw/local source mirror mirrors_1 mirrors_2 mirrors_3 mirrors_4 mirrors_5 mirrors_6/) {
-		my $key = "$url_type";
+	foreach my $key (qw/source origin mirror/) {
 		if($project->{$key}) {
 			my $url = $self->parse_url($r{name},$project->{$key},\%r);
-			push @{$r{$url->{type}}},$url;
+			push @{$r{$url->{type}}},$url if($url);
+		}
+	}
+	foreach (keys %{$project}) {
+		if(m/^mirror_.+/) {
+			my $url = $self->parse_url($r{name},$project->{$_},\%r);
+			push @{$r{$url->{type}}},$url if($url);
 		}
 	}
 	if($project->{"mirrors"}) {
