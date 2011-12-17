@@ -1,0 +1,14 @@
+[test_array]
+no_array = 1
+array[1] = 2
+array[3] = 4
+array_in_list = {
+	sub_array[2] = 3
+	sub_array[100] = 4
+}
+[test_hash]
+no_hash = 1
+no_hash = 2
+hash{key} = 3
+hash{key4} = 4
+
