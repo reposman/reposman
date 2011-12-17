@@ -30,14 +30,6 @@ foreach(qw/
 	list|l
 	query|q
 	dump|d 
-	dump-projects|dp 
-	dump-config|dc 
-	dump-data|dd 
-	dump-hosts|dh 
-	dump-target|dt 
-	dump-maps|dm 
-	dump-repos|dr
-	dump-all|da 
 	exec|e 
 /) {
 	if(m/([^|]+)\|/) {
@@ -66,6 +58,14 @@ my @OPTIONS = qw/
 				commands|c:s
 				property|p:s
 				reset-config
+				dump-projects|dp 
+				dump-config|dc 
+				dump-data|dd 
+				dump-hosts|dh 
+				dump-target|dt 
+				dump-maps|dm 
+				dump-repos|dr
+				dump-all|da 
 			/;
 if(@ARGV)
 {
