@@ -557,21 +557,45 @@ sub list_repo {
 		app_message "checkout point: $repo->{target}\n";
 	}
 }
+
+sub get_property {
+	my $repo = shift;
+	@_ = ('name') unless(@_);
+	my %r;
+	my $name = $repo->{name};
+	my $point = '->';
+	foreach(@_) {
+		if(m/^\s*([^\[]+)?\s*\[\s*(\d+)\s*\]\s*$/) {
+			$r{$name . $point . $_} = $repo->{$1}->[$2];
+		}
+		elsif(m/^\s*([^\[]+)?\s*\[\s*(\d+)\s*\]\s*$/) {
+			$r{$name . $point . $_} = $repo->{$1}->{$2};
+		}
+		elsif($_ eq '_all') {
+			$r{$name} = $repo;
+		}
+		else {
+			$r{$name . $point . $_} = $repo->{$_};
+		}
+	}
+	return %r;
+}
+
 sub query_repo {
 	my $repo = shift;
 	if(!$OPTS{property}) {
 		$OPTS{'property'} = 'shortname';
 	}
 	my $property = $OPTS{property};
-	my $value = $repo->{$property};
-	if($property eq '_all') {
-		app_message Data::Dumper->Dump([$repo],["*$repo->{shortname}"]);
-	}
-	elsif(ref $value) {
-		app_message Data::Dumper->Dump([$value],["*$repo->{shortname}" . '->{' . "$property" . '}']);	
-	}
-	else {
-		app_message "$property = $value\n";
+	my $value = $repo->{$property} || '';
+	my %report = get_property($repo,$property);
+	foreach(keys %report) {
+		if(ref $report{$_}) {
+			print(Data::Dumper->Dump([$report{$_}],['*' . $_]),"\n")
+		}
+		else {
+			print "$_ = $report{$_}\n"
+		}
 	}
 	return 1;
 }
