@@ -1,6 +1,6 @@
 #!/bin/sh
 dst_bin=/myplace/workspace/perl
-dst_lib="$dst_bin/modules"
+dst_lib="/myplace/lib/perl"
 
 [ -n "$1" ] && dst_bin="$1"
 [ -n "$2" ] && dst_lib="$2"

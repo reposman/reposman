@@ -41,15 +41,15 @@ foreach(qw/
 }
 my @OPTIONS = qw/
 				help|h|? 
-				manual|m 
+				manual|man
 				test|t 
-				debug 
+				debug|d 
 				file|f:s 
 				fetch-all 
-				login|nu 
-				no-local 
-				no-remote 
-				force 
+				login|u
+				no-local|nl
+				no-remotes|nr
+				force
 				mirror
 				branch|b:s 
 				append|aa:s 
@@ -57,7 +57,7 @@ my @OPTIONS = qw/
 				remotes|r:s
 				commands|c:s
 				property|p:s
-				reset-config
+				reset-config|rc
 				dump-projects|dp 
 				dump-config|dc 
 				dump-data|dd 
@@ -355,7 +355,7 @@ sub checkout_repo {
 			run_git($target,qw/remote rm origin/);
 			run_git($target,qw/remote add origin/,$source->{'push'});
 		}
-		if(!$OPTS{'no-remote'}) {
+		if(!$OPTS{'no-remotes'}) {
 			git_add_remotes($target,@{$repo->{git}});
 		}
 		if($OPTS{'fetch-all'}) {
@@ -475,7 +475,7 @@ sub sync_to_local {
 		run_git(undef,'--bare','clone',$source->{'pull'},$target);
 		run_git('#silent',$target,qw/remote rm origin/);
 		run_git($target,qw/remote add origin/,$source->{'push'});
-		if(!$OPTS{'no-remote'}) {
+		if(!$OPTS{'no-remotes'}) {
 			git_add_remotes($target,@{$repo->{git}});
 		}
 		if($OPTS{'fetch-all'}) {
@@ -693,7 +693,7 @@ sub reset_target {
 				run_git($target,qw/remote rm/,$_);
 			}
 			run_git($target,qw/remote add origin/,$local->{'push'});
-			git_add_remotes($target,@{$repo->{git}});
+			git_add_remotes($target,@{$repo->{git}}) unless($OPTS{'no-remotes'});
 			run_git($target,qw/remote -v/);
 	}
 	return 1;
@@ -794,9 +794,8 @@ if(@query) {
 	@targets = $config->query_repos(@query);
 }
 else {
-	@targets = $config->get_repos();
+	@targets = values %{$config->get_repos()};
 }
-
 if($command eq 'dump') {
 	exit &action_dump($config,\@targets);
 }
