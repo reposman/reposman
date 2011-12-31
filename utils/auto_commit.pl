@@ -2,7 +2,7 @@
 use strict;
 use Cwd qw/getcwd/;
 use File::Spec;
-my @subrepos = ('svn','git','git/privepo');
+my @subrepos = ('svn','git' );#,'git/privepo');
 my $sub_script = 'update_modified.pl';
 my $commit_script = 'commit.pl';
 sub run {
@@ -11,7 +11,10 @@ sub run {
 }
 sub update_subrepo {
 	my $dir = shift;
-	print STDERR "$dir not exist.\n" unless(-d $dir);
+	if(! -d $dir) {
+		print STDERR "$dir not exist.\n";
+		return;
+	}
 	chdir($dir) or die("$!\n");
 	my $script;
 	foreach('scripts/' . $sub_script, $sub_script) {

@@ -39,16 +39,25 @@ my @glob1 = qw{
 	*.git/index
 	*.git/refs/heads/*
 	*.git/HEAD
+	*/*.git/index
+	*/*.git/refs/heads/*
+	*/*.git/HEAD
 };
 my @glob2 = qw{
 	*/git/index
 	*/git/refs/heads/*
 	*/git/HEAD
+	*/*/git/index
+	*/*/git/refs/heads/*
+	*/*/git/HEAD
 };
 my @glob3 = qw{
 	*/.git/index
 	*/.git/refs/heads/*
 	*/.git/HEAD
+	*/*/.git/index
+	*/*/.git/refs/heads/*
+	*/*/.git/HEAD
 };
 
 my @list_cmd = qw/is-modified.pl/;
