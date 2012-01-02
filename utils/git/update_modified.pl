@@ -92,7 +92,7 @@ foreach(keys %repos) {
 	if(-f "$_/.reposman") {
 		chdir($_);
 		print STDERR "[$_] ";
-		run('reposman','push');
+		run('reposman','push',@ARGV);
 		chdir($cwd);
 	}
 	elsif(m/^.*?([^\/]+)\/git$/) {
@@ -102,7 +102,7 @@ foreach(keys %repos) {
 		if(-f "$1/.reposman") {
 			chdir($1);
 			print STDERR "[$1]";
-			run('reposman','push');
+			run('reposman','push',@ARGV);
 			chdir($cwd);
 		}
 		else {
@@ -117,6 +117,7 @@ foreach(keys %repos) {
 	}
 }
 #run('sh',"$scriptdir/sync-repos.sh",keys %repos,@ARGV) unless($TEST);
+run('git','add','.is-modified');
 print STDERR "Done.\n";
 #use Data::Dumper;print Data::Dumper->Dump([\%status,\%repos],[qw/*status *repos/]);
 
