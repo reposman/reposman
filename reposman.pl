@@ -43,7 +43,7 @@ my @OPTIONS = qw/
 				help|h|? 
 				manual|man
 				test|t 
-				debug|d 
+				debug|D 
 				file|f:s 
 				fetch-all 
 				login|u
@@ -742,6 +742,9 @@ if(@ARGV) {
 				last;
 			}
 		}
+	}
+	if(!$command) {
+		unshift @ARGV,$first;
 	}
 }
 else {

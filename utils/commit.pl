@@ -4,11 +4,12 @@ use Cwd qw/getcwd/;
 use File::Spec;
 
 my @GIT = qw/git/;
-my @Files = qw/
+my @Files = qw{
 	git-repos.log
 	git-repos.log.old
 	git-repos.log.diff
-	/;
+	*/.is-modified
+};
 my $cwd = getcwd();
 my $scriptdir = File::Spec->rel2abs($0,$cwd);#;#ARGV[0];
 (undef,$scriptdir,undef) = File::Spec->splitpath($scriptdir);
