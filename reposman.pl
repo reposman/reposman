@@ -1,6 +1,8 @@
 #!/usr/bin/perl -w
 # $Id$
 use strict;
+our $APPNAME = "reposman";
+our $APPDESC = "a repositories manager";
 our $VERSION = '2.200';
 BEGIN
 {
@@ -39,7 +41,7 @@ foreach(qw/
 		$SUBCMDS{$_} = $_;
 	}
 }
-my @OPTIONS = qw/
+my @GLOBAL_OPTIONS = qw/
 				help|h|? 
 				manual|man
 				test|t 
@@ -49,8 +51,6 @@ my @OPTIONS = qw/
 				login|u
 				no-local|nl
 				no-remotes|nr
-				force
-				mirror
 				branch|b:s 
 				append|aa:s 
 				prepend|pa:s
@@ -67,19 +67,40 @@ my @OPTIONS = qw/
 				dump-repos|dr
 				dump-all|da 
 			/;
-if(@ARGV)
-{
-    require Getopt::Long;
-    Getopt::Long::GetOptions(\%OPTS,@OPTIONS);
-}
-else {
-    $OPTS{help} = 1;
-}
 
 my $F_TEST = $OPTS{test};
 my @HG = qw/hg -v/;
 my @GIT = qw/git/;
 my @SVN = qw/svn/;
+
+my %Commands;
+
+sub def_cmd {
+	my $def = shift;
+	return unless $def->{name};
+	my $name = $def->{name};
+	$Commands{$name} = {} unless($Commands{$name});
+	my $cmd = $Commands{$name};
+	foreach my $key (qw/desc prompt options usage summary help class/) {
+		$cmd->{$key} = $def->{$key} if($def->{$key});
+	}
+	if(!$cmd->{class}) {
+		$cmd->{class} = 0;
+	}
+	return $cmd;
+}
+
+sub get_action {
+	my $name = shift;
+	$name =~ s/[^a-zA-Z]/_/g;
+	$name = "do_$name";
+	if(defined $main::{$name}) {
+		return $main::{$name};
+	}
+	else {
+		return undef;
+	}
+}
 
 sub dump_var {
 	use Data::Dumper;
@@ -87,6 +108,14 @@ sub dump_var {
 	my $name = shift || '$var';
 	print STDERR Data::Dumper->Dump([$var],[$name]),"\n";
 	return $var;
+}
+sub empty_unless {
+	my $s = shift;
+	my $t = shift;
+	if($s) {
+		return sprintf($t,$s);
+	}
+	return '';
 }
 sub run {
     app_message 'Execute:',join(" ",@_),"\n";
@@ -284,30 +313,18 @@ sub svnsync {
 		or return error("fatal: while syncing $DEST_URL\n");
 	return 1;
 }
-sub git_push_remote {
-    my @remotes = git_get_remotes();
-    if(@remotes) {
-        my $idx=0;
-        my $count=@remotes;
-        foreach(@remotes) {
-            $idx++;
-            my $url = `git config --get "remote.$_.url"`;
-            chomp($url);
-            app_message "[$idx/$count]pushing to [$_] $url ...\n";
-            if(system(qw/git push/,$_,@_)!=0) {
-                app_message "[$idx/$count]pushing to [$_] failed\n";
-                return undef;
-            }
-        }
-    }
-    else {
-       app_warning "NO remotes found, stop pushing\n";
-       return undef;
-    }
-    return 1;
-}
 
-sub checkout_repo {
+def_cmd({
+	name=>		"checkout",
+	desc=>		"Checkout repositories to local",
+	prompt=>	"Checking out %s",
+	usage=>		"[options] [queires]",
+	options=>	{
+			'reset-config'=>"--reset\tReset configuration",
+			'no-local'=>"--no-local\tCheckout from remote repository",
+		},
+});
+sub do_checkout {
 	my $repo = shift;
 	my $target = $repo->{target};
 	my $name = $repo->{name};
@@ -487,38 +504,6 @@ sub sync_to_local {
 	return 1;
 }
 
-sub local_to_remote {
-	my $repo = shift;
-	my $first_only = shift;
-	my $remote_exp = $OPTS{'remotes'} || '.';
-	if($repo->{git} and !$OPTS{'no-git'}) {
-		my $local = shift @{$repo->{git}};
-
-		#Select old matched remote.
-		my @remotes = grep {$_->{push} =~ m/$remote_exp/;} @{$repo->{git}};
-
-		app_message "Source: ", $local->{pull},"\n";
-		return app_error ("Error: remotes not found.\n") unless(@remotes);
-		return app_error "Error directory not exists.\n" unless(-d $local->{pull});
-		my @push = 'push';
-		my @prepend = $OPTS{'prepend'} || ();
-		my @append = $OPTS{'append'} || ();
-		push @append, $OPTS{'branch'} if($OPTS{branch});
-		if($OPTS{'mirror'}) {
-			@push = ('push','--mirror');
-		}
-		elsif($OPTS{'force'}) {
-			@push = qw/push --force/;
-		}
-		foreach(@remotes) {
-			#next unless($_->{push} =~ m/$remote_exp/);
-			#or $_->{host} =~ m/$remote_exp/);
-			app_message "  Dest: ",$_->{push}, " (", join(" ",@push), ") \n";
-			run_s('git',@prepend,'--git-dir',$local->{pull},'--bare',@push ,$_->{push},@append);
-		}
-	}
-	return 1;
-}
 
 sub config_local {
 	my $repo = shift;
@@ -636,20 +621,36 @@ sub exec_local {
 	}
 	return 1;
 }
-
-sub action_dump {
+def_cmd({
+	name=>		'dump',
+	class=>		'2',
+	desc=>		'Dump repositories data',
+	prompt=>	'Dumping repository %s',
+	usage=>		'[options] [queries]',
+	options=>	{
+			all=>"--all\tDump all information",
+			data=>"--data\tDump data",
+			config=>"--config\tDump config",
+			maps=>"--maps\tDump maps",
+			hosts=>"--hosts\tDump hosts",
+			projects=>"--projects\tDump projects",
+			repos=>"--repos\tDump repositories",
+			targets=>"--targets\tDump targets",
+		},
+});
+sub do_dump {
 	my $config = shift;
 	my $targets = shift;
 	my $have_arg = undef;
-	if($OPTS{'dump-all'}) {
+	if($OPTS{'all'}) {
 		foreach (qw/
-			dump-data 
-			dump-config
-			dump-maps
-			dump-hosts
-			dump-projects
-			dump-repos
-			dump-target
+			data 
+			config
+			maps
+			hosts
+			projects
+			repos
+			target
 		/) {
 			$OPTS{$_} = 1;
 		}
@@ -657,10 +658,10 @@ sub action_dump {
 	}
 	if(!$have_arg) {
 		foreach(qw/
-			dump-data	dump-config
-			dump-maps	dump-hosts
-			dump-repos	dump-projects
-			dump-target
+			data	config
+			maps	hosts
+			repos	projects
+			target
 			/) {
 				if($OPTS{$_}) {
 					$have_arg = 1;
@@ -668,14 +669,14 @@ sub action_dump {
 				}
 		}
 	}		
-	$OPTS{'dump-target'} = 1 unless($have_arg);
-	dump_var($config->get_raw(),"*DATA") if($OPTS{'dump-data'});
-	dump_var([$config->get_config()],["*CONFIG"]) if($OPTS{'dump-config'});
-	dump_var([$config->get_maps()],["*MAPS"]) if($OPTS{'dump-maps'});
-	dump_var([$config->get_hosts()],["*HOSTS"]) if($OPTS{'dump-hosts'});
-	dump_var([$config->get_projects()],["*PROJECTS"]) if($OPTS{'dump-projects'});
-	dump_var([$config->get_repos()],["*REPOS"]) if($OPTS{'dump-repos'});
-	dump_var([$targets],["*targets"]) if($OPTS{'dump-target'});
+	$OPTS{'target'} = 1 unless($have_arg);
+	dump_var($config->get_raw(),"*DATA") if($OPTS{'data'});
+	dump_var([$config->get_config()],["*CONFIG"]) if($OPTS{'config'});
+	dump_var([$config->get_maps()],["*MAPS"]) if($OPTS{'maps'});
+	dump_var([$config->get_hosts()],["*HOSTS"]) if($OPTS{'hosts'});
+	dump_var([$config->get_projects()],["*PROJECTS"]) if($OPTS{'projects'});
+	dump_var([$config->get_repos()],["*REPOS"]) if($OPTS{'repos'});
+	dump_var([$targets],["*targets"]) if($OPTS{'target'});
 	return 0;
 }
 
@@ -726,7 +727,160 @@ sub initialize {
 }
 
 
+def_cmd({
+	class=>		1,
+	name=>		"help",
+	desc=>		"Display usage text",
+	prompt=>	"Display usage text for %s",
+	help=>		"[command]",
+});
+
+sub do_help {
+	my $what = shift @ARGV;
+	my $s = "    ";
+	if(!$what) {
+		$what = "help";
+		if($OPTS{manual}) {
+			require Pod::Usage;
+			Pod::Usage::pod2usage(-exitval=>0,-verbose => 2);
+		}
+		else {
+			require Pod::Usage;
+			Pod::Usage::pod2usage(-exitval=>0,-verbose => 1);
+		}
+		#print STDERR "$APPNAME\n$s- $APPDESC\n";
+		#print STDERR "Usage: $APPNAME [command] [options] ...\n";
+		#print STDERR "Supported commands are:\n";
+		#foreach (keys %Commands) {
+		#	print STDERR "$s$_\t$Commands{$_}->{desc}\n";
+		#}
+		return 0;
+	}
+	my $action = $Commands{$what};
+
+	if(!$action) {
+		print STDERR "Error command undefined: $what\n";
+		return 2;
+	}
+
+	print STDERR "$APPNAME $what\n";
+	print STDERR empty_unless($action->{desc},"$s- %s\n");
+	print STDERR empty_unless($action->{usage},"Usage: $what %s\n");
+	if($action->{options}) {
+		print STDERR "Options:\n";
+		foreach(keys %{$action->{options}}) {
+			print STDERR "$s$action->{options}->{$_}\n";
+		}
+	}
+	print STDERR empty_unless($action->{summary},"%s\n");
+	return 0;
+}
+
+def_cmd({
+	name=>		'push',
+	prompt=>	'Syncing %s to remotes',
+	desc=>		'Syncing repositories to remotes',
+	usage=>		'[optoins]',
+	summary=>	'',
+	options=>	{
+				'mirror'=>"--mirror\tMirroring repositories",
+				'force'=>"--force\tForce mode, override remots",
+				'all'=>"--all\tPush all branches",
+				'tags'=>"--tags\tPush tags",
+				'remotes'=>"--remotes\tPush to specified remotes",
+		},
+});
+sub do_push {
+	my $repo = shift;
+	my $first_only = shift;
+	my $remote_exp = $OPTS{'remotes'} || '.';
+	if($repo->{git} and !$OPTS{'no-git'}) {
+		my $local = shift @{$repo->{git}};
+
+		#Select old matched remote.
+		my @remotes = grep {$_->{push} =~ m/$remote_exp/;} @{$repo->{git}};
+
+		app_message "Source: ", $local->{pull},"\n";
+		return app_error ("Error: remotes not found.\n") unless(@remotes);
+		return app_error "Error directory not exists.\n" unless(-d $local->{pull});
+		my @push = ('push');
+		my @prepend = $OPTS{'prepend'} || ();
+		my @append = $OPTS{'append'} || ();
+		push @append, $OPTS{'branch'} if($OPTS{branch});
+		if($OPTS{'mirror'}) {
+			push @push,'--mirror';
+		}
+		if($OPTS{'force'}) {
+			push @push,'--force';
+		}
+		if($OPTS{'all'}) {
+			push @push,'--all';
+		}
+		foreach(@remotes) {
+			#next unless($_->{push} =~ m/$remote_exp/);
+			#or $_->{host} =~ m/$remote_exp/);
+			app_message "  Dest: ",$_->{push}, " (", join(" ",@push), ") \n";
+			run_s('git',@prepend,'--git-dir',$local->{pull},'--bare',@push ,$_->{push},@append);
+		}
+	}
+	return 1;
+}
+#if($command eq 'checkout') {
+#	$msg_item = 'Checking out %s';
+#	$action_sub = \&checkout_repo;
+#}
+#elsif($command eq 'check') {
+#	$msg_item = 'Checking %s';
+#	$action_sub = \&check_repo;
+#}
+#elsif($command eq 'sync') {
+#	$msg_item = 'Syncing %s';
+#	$action_sub = sub {eval 'sync_repo(@_,1)';};
+#}
+#elsif($command eq 'sync-all') {
+#	$msg_item = 'Syncing all for %s';
+#	$action_sub = \&sync_repo;
+#}
+#elsif($command eq 'pull') {
+#	$msg_item = 'Syncing %s to local';
+#	$action_sub = \&sync_to_local;
+#}
+#elsif($command eq 'push') {
+#	$msg_item = 'Syncing %s to remotes';
+#	$action_sub = \&local_to_remote;
+#}
+#elsif($command eq 'config') {
+#	$msg_item = 'Configuring %s';
+#	$action_sub = \&config_local;
+#}
+#elsif($command eq 'list') {
+#	$msg_action = "Get %s:";
+#	$msg_item = "%s";
+#	$action_sub =\&list_repo;
+#}
+#elsif($command eq 'query') {
+#	$msg_item = 'Quering %s';
+#	$action_sub = \&query_repo;
+#}
+#elsif($command eq 'exec') {
+#	$msg_item = 'Executing commands for %s';
+#	$action_sub = \&exec_local;
+#}
+#elsif($command eq 'reset-target') {
+#	$msg_item = 'Resetting %s';
+#	$action_sub = \&reset_target;
+#}
+#else {
+#	app_error ("Invalid action specified!\n");
+#	exit 1;
+#}
+
+
 my $command;
+my $action;
+my $actor;
+my @options = ();
+
 if(@ARGV) {
 	my $first = shift @ARGV;
 	foreach(keys %SUBCMDS) {
@@ -751,17 +905,32 @@ else {
 	$command = 'help';
 	$OPTS{'help'} = 1;
 }
+$action = $Commands{$command};
+if(!$action) {
+	app_error("Command not defined: $command\n");
+	exit 10;
+}
+$actor = get_action($command);
+if(!$actor) {
+	app_error("Action not defined by command $command\n");
+	exit 11;
+}
+@options = ();
+if($action->{options}) {
+	foreach(keys %{$action->{options}}) {
+		push @options,$_;
+	}
+}
+push @options,@GLOBAL_OPTIONS;
+use Getopt::Long;
+Getopt::Long::GetOptions(\%OPTS,@options);
 
-if($OPTS{manual}) {
-    require Pod::Usage;
-    Pod::Usage::pod2usage(-exitval=>0,-verbose => 2);
-    exit 0;
+
+
+if($action->{class} == 1) {
+	exit &$actor();
 }
-elsif($OPTS{help}) {
-    require Pod::Usage;
-    Pod::Usage::pod2usage(-exitval=>0,-verbose => 1);
-    exit 0;
-}
+
 
 my $config = MyPlace::Reposman::Projects->new();
 initialize($config);
@@ -772,17 +941,26 @@ my $total = scalar(@names);
 app_message ($total,($total > 1 ? " projects" : " project")," read.\n");
 
 my @query = @ARGV;
-if(!@query and -f '.git/config') {
+if(!@query) {
 	my $query = qx/git config --get reposman.query/;
 	chomp($query);
 	if($query) {
 		@query = split(/\s*,\s*/,$query);
+		app_message("Load queries from GIT CONFIG\n");
 	}
 }
 if(!@query) {
-	foreach my $file ('.reposman') {
-		last if(@query);
-		next unless(-f $file);
+	my $max_level = 12;
+	my $file = '.reposman';
+	while($max_level--) {
+		if(@query) {
+			app_message("Load queries from file \"$file\"\n");
+			last;
+		};
+		unless(-f $file) {
+			$file = '../' . $file;
+			next;
+		}
 		if(open FI,"<",$file) {
 			foreach(<FI>) {
 				chomp;
@@ -799,77 +977,31 @@ if(@query) {
 else {
 	@targets = values %{$config->get_repos()};
 }
-if($command eq 'dump') {
-	exit &action_dump($config,\@targets);
+
+if($action->{class} == 2) {
+	#do_dump
+	exit &$actor($config,\@targets);
 }
 
 my $idx = 0;
 my $count = scalar(@targets);
-my $msg_fmt;
-my $action_sub;
+my $msg_action;
 
-if($command eq 'checkout') {
-	$msg_fmt = 'Checking out %s';
-	$action_sub = \&checkout_repo;
-}
-elsif($command eq 'check') {
-	$msg_fmt = 'Checking %s';
-	$action_sub = \&check_repo;
-}
-elsif($command eq 'sync') {
-	$msg_fmt = 'Syncing %s';
-	$action_sub = sub {eval 'sync_repo(@_,1)';};
-}
-elsif($command eq 'sync-all') {
-	$msg_fmt = 'Syncing all for %s';
-	$action_sub = \&sync_repo;
-}
-elsif($command eq 'pull') {
-	$msg_fmt = 'Syncing %s to local';
-	$action_sub = \&sync_to_local;
-}
-elsif($command eq 'push') {
-	$msg_fmt = 'Syncing %s to remotes';
-	$action_sub = \&local_to_remote;
-}
-elsif($command eq 'config') {
-	$msg_fmt = 'Configuring %s';
-	$action_sub = \&config_local;
-}
-elsif($command eq 'list') {
-	$msg_fmt = 'Listing %s';
-	$action_sub =\&list_repo;
-}
-elsif($command eq 'query') {
-	$msg_fmt = 'Quering %s';
-	$action_sub = \&query_repo;
-}
-elsif($command eq 'exec') {
-	$msg_fmt = 'Executing commands for %s';
-	$action_sub = \&exec_local;
-}
-elsif($command eq 'reset-target') {
-	$msg_fmt = 'Resetting %s';
-	$action_sub = \&reset_target;
-}
-else {
-	app_error ("Invalid action specified!\n");
-	exit 1;
-}
 
 my $message = sprintf(
-			$msg_fmt, 
-			$count > 1 ? " $count projects" : "1 project"
+			$msg_action || ucfirst($command . " %s"),
+			$count > 1 ? "$count projects" : "1 project"
 		);
-app_message($message . " ...\n");
+app_message($message . "\n");
+my $r = 0;
 foreach my $repo (@targets) {
         $idx++;
-		$message = sprintf($msg_fmt, "project [$repo->{name}]");
+		$message = sprintf($action->{prompt}, "$repo->{name} \[$repo->{target}\/\]");
         app_message "[$idx/$count] $message\n";
-		&$action_sub($repo) or die("\n");
+		$r = &$actor($repo,\@targets,$config) or die("\n");
 }
 
-exit 0;
+exit $r;
 
 __END__
 
